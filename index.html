@@ -1,15 +1,16 @@
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מועדון NETABEL - מערכת ניהול והתחשבנות</title>
+    <title>מועדון NETABEL - מערכת בנקאות והתחשבנות</title>
     
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- SheetJS for Excel/CSV Handling -->
+    <!-- SheetJS for Ultimate Excel Parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <!-- Tailwind CSS -->
@@ -17,16 +18,18 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap');
-        body { font-family: 'Heebo', sans-serif; background-color: #0b1120; color: #f8fafc; }
-        .glass-panel { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-        .card-gradient { background: linear-gradient(145deg, #1e293b, #0f172a); }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        body { font-family: 'Heebo', sans-serif; background-color: #0b1120; color: #f8fafc; overflow-x: hidden; }
+        .glass-panel { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .card-gradient { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid rgba(255,255,255,0.05); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0b1120; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
         
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .toast-animate { animation: slideUp 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .toast-animate { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .modal-animate { animation: fadeIn 0.2s ease-out forwards; }
     </style>
 </head>
 <body>
@@ -35,8 +38,8 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, Fragment } = React;
 
-        const DEFAULT_CYCLE = "מחזור נוכחי (החל מיום ג' 06:00)";
-        const SYSTEM_EXPENSES_RATE = 0.10; // 10% הוצאות יורד אוטומטית מהרייק
+        const DEFAULT_CYCLE = "מחזור נוכחי";
+        const SYSTEM_EXPENSES_RATE = 0.10; // 10% הוצאות למועדון
 
         const initialUsers = [
             { id: 'admin1', username: 'admin', password: 'X', role: 'admin', name: 'מנהל ראשי' },
@@ -51,16 +54,20 @@
         const formatMoney = (amount) => {
             if (!amount && amount !== 0) return '₪0.00';
             const num = parseFloat(amount);
-            return num.toLocaleString('he-IL', { style: 'currency', currency: 'ILS' });
+            // Handling negatives cleanly for display
+            const isNegative = num < 0;
+            const absoluteValue = Math.abs(num);
+            const formatted = absoluteValue.toLocaleString('he-IL', { style: 'currency', currency: 'ILS' });
+            return isNegative ? `-${formatted}` : formatted;
         };
 
         const getColorClass = (amount, forceGreen = false) => {
             if (forceGreen) return 'text-emerald-400';
-            if (!amount) return 'text-slate-400';
-            return amount > 0 ? 'text-emerald-400' : amount < 0 ? 'text-red-400' : 'text-slate-400';
+            if (!amount || amount === 0) return 'text-slate-400';
+            return amount > 0 ? 'text-emerald-400' : 'text-red-400';
         };
 
-        // --- Icons ---
+        // --- Icons (Inline SVGs) ---
         const Icon = ({ name, size = 20, className = "" }) => {
             const icons = {
                 users: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>,
@@ -75,11 +82,42 @@
                 search: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>,
                 settings: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
                 trash: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
-                eye: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                eye: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>,
+                check: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"></polyline></svg>,
+                alert: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
             };
             return icons[name] || null;
         };
 
+        // --- Custom UI Components ---
+        const Toast = ({ message, type }) => (
+            <div className={`fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.5)] flex items-center gap-3 toast-animate font-bold ${type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
+                <Icon name={type === 'success' ? 'check' : 'alert'} size={18} />
+                {message}
+            </div>
+        );
+
+        const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText = "אישור", confirmColor = "bg-red-600 hover:bg-red-700" }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm modal-animate">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+                        <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
+                        <p className="text-slate-300 mb-6 leading-relaxed">{message}</p>
+                        <div className="flex justify-end gap-3">
+                            <button onClick={onCancel} className="px-5 py-2 rounded-lg font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors">
+                                ביטול
+                            </button>
+                            <button onClick={onConfirm} className={`px-5 py-2 rounded-lg font-bold text-white transition-colors shadow-lg ${confirmColor}`}>
+                                {confirmText}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Main App Component ---
         const App = () => {
             const [currentUser, setCurrentUser] = useState(null);
             const [users, setUsers] = useState([]);
@@ -90,10 +128,10 @@
             const [toast, setToast] = useState(null);
 
             useEffect(() => {
-                const storedUsers = JSON.parse(localStorage.getItem('netabel_app_users'));
-                const storedRecords = JSON.parse(localStorage.getItem('netabel_app_records'));
-                const storedMessages = JSON.parse(localStorage.getItem('netabel_app_messages'));
-                const storedCycles = JSON.parse(localStorage.getItem('netabel_app_cycles'));
+                const storedUsers = JSON.parse(localStorage.getItem('netabel_db_users'));
+                const storedRecords = JSON.parse(localStorage.getItem('netabel_db_records'));
+                const storedMessages = JSON.parse(localStorage.getItem('netabel_db_messages'));
+                const storedCycles = JSON.parse(localStorage.getItem('netabel_db_cycles'));
                 
                 if (storedUsers) setUsers(storedUsers); else setUsers(initialUsers);
                 if (storedRecords) setRecords(storedRecords); else setRecords([]);
@@ -103,23 +141,23 @@
 
             useEffect(() => {
                 if(users.length > 0) {
-                    localStorage.setItem('netabel_app_users', JSON.stringify(users));
-                    localStorage.setItem('netabel_app_records', JSON.stringify(records));
-                    localStorage.setItem('netabel_app_messages', JSON.stringify(messages));
-                    localStorage.setItem('netabel_app_cycles', JSON.stringify(cyclesList));
+                    localStorage.setItem('netabel_db_users', JSON.stringify(users));
+                    localStorage.setItem('netabel_db_records', JSON.stringify(records));
+                    localStorage.setItem('netabel_db_messages', JSON.stringify(messages));
+                    localStorage.setItem('netabel_db_cycles', JSON.stringify(cyclesList));
                 }
             }, [users, records, messages, cyclesList]);
 
             const showToast = (message, type = 'success') => {
                 setToast({ message, type });
-                setTimeout(() => setToast(null), 3000);
+                setTimeout(() => setToast(null), 3500);
             };
 
             const login = (username, password) => {
                 const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
                 if (user) {
                     setCurrentUser(user);
-                    showToast(`ברוך הבא, ${user.name || user.username}`);
+                    showToast(`ברוך הבא למערכת, ${user.name || user.username}`);
                 } else {
                     showToast('שם משתמש או סיסמה שגויים', 'error');
                 }
@@ -138,9 +176,14 @@
                 <div className="min-h-screen flex flex-col text-slate-100 bg-[#0b1120] relative overflow-x-hidden">
                     <TopNavBar user={currentUser} logout={() => setCurrentUser(null)} currentCycle={currentCycle} setCurrentCycle={setCurrentCycle} cyclesList={cyclesList} />
                     <GlobalStatsHeader user={currentUser} users={users} records={records.filter(r => r.cycleId === currentCycle)} />
+                    
                     <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
                         {currentUser.role === 'admin' && (
-                            <AdminDashboard users={users} setUsers={setUsers} records={records} setRecords={setRecords} messages={messages} setMessages={setMessages} currentCycle={currentCycle} cyclesList={cyclesList} setCyclesList={setCyclesList} showToast={showToast} />
+                            <AdminDashboard 
+                                users={users} setUsers={setUsers} records={records} setRecords={setRecords}
+                                messages={messages} setMessages={setMessages} currentCycle={currentCycle} 
+                                cyclesList={cyclesList} setCyclesList={setCyclesList} showToast={showToast}
+                            />
                         )}
                         {currentUser.role === 'agent' && (
                             <AgentDashboard user={currentUser} users={users} records={records} currentCycle={currentCycle} showToast={showToast} />
@@ -154,14 +197,8 @@
             );
         };
 
-        const Toast = ({ message, type }) => (
-            <div className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 toast-animate font-medium ${type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
-                {message}
-            </div>
-        );
-
         const TopNavBar = ({ user, logout, currentCycle, setCurrentCycle, cyclesList }) => (
-            <nav className="glass-panel sticky top-0 z-50">
+            <nav className="glass-panel sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
                     <div className="flex items-center gap-4">
                         <div className="flex-shrink-0 text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 flex items-center gap-2">
@@ -171,7 +208,7 @@
                             NETABEL
                         </div>
                         <div className="ml-8 border-r border-slate-700 pr-4">
-                            <select value={currentCycle} onChange={(e) => setCurrentCycle(e.target.value)} className="bg-slate-800 text-sm rounded border border-slate-600 px-3 py-1.5 text-white outline-none focus:border-emerald-500">
+                            <select value={currentCycle} onChange={(e) => setCurrentCycle(e.target.value)} className="bg-slate-800 text-sm font-medium rounded border border-slate-600 px-3 py-1.5 text-white outline-none focus:border-emerald-500 cursor-pointer shadow-sm">
                                 {cyclesList.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
@@ -236,22 +273,25 @@
             const totalAgainstClub = displayPnL + displayCommission;
 
             return (
-                <div className="bg-slate-900 border-b border-slate-800 py-3 px-4 sm:px-6 lg:px-8 shadow-inner">
-                    <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-                        <div className="text-slate-400 text-sm font-medium">{headerTitle} | פעילים: {activePlayers}</div>
-                        <div className="flex gap-6 sm:gap-8">
-                            <div className="text-right">
-                                <div className="text-[10px] text-slate-500 uppercase tracking-widest">תוצאת שחקנים כללית</div>
-                                <div className={`text-lg font-bold ${getColorClass(displayPnL)}`}>{formatMoney(displayPnL)}</div>
+                <div className="bg-slate-900 border-b border-slate-800 py-4 px-4 sm:px-6 lg:px-8 shadow-inner relative z-30">
+                    <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="text-slate-400 text-sm font-medium tracking-wide flex items-center gap-2">
+                            <Icon name="dashboard" size={16}/>
+                            {headerTitle} <span className="text-slate-600">|</span> פעילים: <span className="text-white">{activePlayers}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-4 sm:gap-8">
+                            <div className="text-right bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700/50">
+                                <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">תוצאת שחקנים כללית</div>
+                                <div className={`text-xl font-black ${getColorClass(displayPnL)}`}>{formatMoney(displayPnL)}</div>
                             </div>
-                            <div className="text-right pl-4 border-l border-slate-700/50">
-                                <div className="text-[10px] text-slate-500 uppercase tracking-widest">{user.role === 'admin' ? "סה\"כ עמלות ששולמו" : "העמלה שלי (נטו)"}</div>
-                                <div className="text-lg font-bold text-emerald-400">{formatMoney(displayCommission)}</div>
+                            <div className="text-right bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700/50">
+                                <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">{user.role === 'admin' ? "סה\"כ עמלות ששולמו" : "העמלה שלי (נטו)"}</div>
+                                <div className="text-xl font-black text-emerald-400">{formatMoney(displayCommission)}</div>
                             </div>
                             {user.role === 'agent' && (
-                                <div className="text-right pl-4 border-l border-slate-700/50">
-                                    <div className="text-[10px] text-emerald-500/70 font-bold uppercase tracking-widest">התחשבנות מול מועדון</div>
-                                    <div className={`text-lg font-black ${getColorClass(totalAgainstClub)}`}>{formatMoney(totalAgainstClub)}</div>
+                                <div className="text-right bg-slate-800/80 px-5 py-2 rounded-lg border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                                    <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-1">התחשבנות סופית (מול המועדון)</div>
+                                    <div className={`text-xl font-black ${getColorClass(totalAgainstClub)}`}>{formatMoney(totalAgainstClub)}</div>
                                 </div>
                             )}
                         </div>
@@ -266,27 +306,29 @@
 
             return (
                 <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#0b1120]">
-                    <div className="absolute top-[10%] left-[10%] w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px]"></div>
-                    <div className="absolute bottom-[10%] right-[10%] w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px]"></div>
+                    <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px]"></div>
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px]"></div>
                     
-                    <div className="glass-panel p-8 rounded-2xl w-full max-w-md z-10 shadow-2xl border border-slate-700/50 card-gradient">
-                        <div className="text-center mb-8">
-                            <div className="w-16 h-16 rounded-full bg-slate-900 flex items-center justify-center border border-emerald-500/30 mx-auto mb-4 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
-                                <span className="text-emerald-400 text-3xl font-black">♠</span>
+                    <div className="glass-panel p-10 rounded-3xl w-full max-w-md z-10 shadow-2xl border border-slate-700/50 card-gradient">
+                        <div className="text-center mb-10">
+                            <div className="w-20 h-20 rounded-full bg-slate-900 flex items-center justify-center border border-emerald-500/30 mx-auto mb-5 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+                                <span className="text-emerald-400 text-4xl font-black">♠</span>
                             </div>
-                            <h2 className="text-2xl font-black text-white tracking-tight">מועדון NETABEL</h2>
-                            <p className="text-slate-400 text-sm mt-1">מערכת התחשבנות לסוכנים ושחקנים</p>
+                            <h2 className="text-3xl font-black text-white tracking-tight">מועדון NETABEL</h2>
+                            <p className="text-slate-400 text-sm mt-2 font-medium">מערכת בנקאות והתחשבנות</p>
                         </div>
-                        <form onSubmit={(e) => { e.preventDefault(); onLogin(user, pass); }} className="space-y-5">
+                        <form onSubmit={(e) => { e.preventDefault(); onLogin(user, pass); }} className="space-y-6">
                             <div>
-                                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">שם משתמש</label>
-                                <input type="text" value={user} onChange={(e) => setUser(e.target.value)} required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">שם משתמש</label>
+                                <input type="text" value={user} onChange={(e) => setUser(e.target.value)} required 
+                                       className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-inner" />
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">סיסמה</label>
-                                <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} required className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" />
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">סיסמה</label>
+                                <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} required 
+                                       className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-inner" />
                             </div>
-                            <button type="submit" className="w-full bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg transform transition active:scale-95 mt-2">
+                            <button type="submit" className="w-full bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-bold text-lg py-4 px-4 rounded-xl shadow-[0_10px_20px_rgba(16,185,129,0.2)] transform transition hover:-translate-y-0.5 active:scale-95 mt-4">
                                 כניסה למערכת
                             </button>
                         </form>
@@ -295,25 +337,31 @@
             );
         };
 
+        // ==========================================
+        // ADMIN DASHBOARD
+        // ==========================================
         const AdminDashboard = ({ users, setUsers, records, setRecords, messages, setMessages, currentCycle, cyclesList, setCyclesList, showToast }) => {
             const [activeTab, setActiveTab] = useState('import'); 
 
             return (
                 <div className="space-y-6">
-                    <div className="flex bg-slate-900/50 rounded-lg p-1 border border-slate-800 overflow-x-auto">
+                    <div className="flex flex-wrap bg-slate-900/80 rounded-xl p-1.5 border border-slate-700/50 shadow-sm">
                         {[
-                            {id: 'import', name: 'ייבוא דוחות (CSV/Excel)'},
-                            {id: 'agents', name: 'סוכנים ותוצאות'},
-                            {id: 'players', name: 'ניהול שחקנים'},
+                            {id: 'import', name: 'ייבוא דוחות פוקר (Excel)'},
+                            {id: 'agents', name: 'סיכום סוכנים'},
+                            {id: 'players', name: 'ניהול שחקנים ועמלות'},
                             {id: 'messages', name: 'מרכז הודעות'},
-                            {id: 'settings', name: 'הגדרות'}
+                            {id: 'settings', name: 'הגדרות מתקדמות'}
                         ].map(tab => (
-                            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 px-4 py-2.5 text-sm font-semibold rounded-md whitespace-nowrap transition-all ${activeTab === tab.id ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'}`}>
+                            <button key={tab.id} onClick={() => setActiveTab(tab.id)} 
+                                    className={`flex-1 min-w-[140px] px-4 py-3 text-sm font-bold rounded-lg whitespace-nowrap transition-all duration-200 
+                                    ${activeTab === tab.id ? 'bg-slate-700 text-white shadow-md' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}>
                                 {tab.name}
                             </button>
                         ))}
                     </div>
-                    <div className="card-gradient rounded-xl p-4 sm:p-6 border border-slate-800 shadow-xl">
+
+                    <div className="card-gradient rounded-2xl p-4 sm:p-8 border border-slate-700/50 shadow-2xl">
                         {activeTab === 'agents' && <AdminAgentsView users={users} records={records} currentCycle={currentCycle} />}
                         {activeTab === 'players' && <AdminPlayersView users={users} setUsers={setUsers} records={records} setRecords={setRecords} currentCycle={currentCycle} showToast={showToast} />}
                         {activeTab === 'import' && <AdminImportView setRecords={setRecords} setUsers={setUsers} users={users} currentCycle={currentCycle} setCyclesList={setCyclesList} cyclesList={cyclesList} records={records} showToast={showToast} />}
@@ -325,35 +373,59 @@
         };
 
         const AdminSettingsView = ({ users, setUsers, records, setRecords, currentCycle, cyclesList, setCyclesList, showToast }) => {
-            const deleteCurrentCycle = () => {
-                if(window.confirm(`האם אתה בטוח שברצונך למחוק את כל הנתונים של מחזור "${currentCycle}"? פעולה זו אינה ניתנת לביטול.`)) {
+            const [modal, setModal] = useState({ isOpen: false, type: null }); // type: 'cycle' or 'all'
+
+            const executeDelete = () => {
+                if (modal.type === 'cycle') {
                     setRecords(records.filter(r => r.cycleId !== currentCycle));
                     const newCycles = cyclesList.filter(c => c !== currentCycle);
                     setCyclesList(newCycles.length > 0 ? newCycles : [DEFAULT_CYCLE]);
-                    showToast('המחזור נמחק בהצלחה', 'success');
+                    showToast('הנתונים של המחזור הנוכחי נמחקו בהצלחה', 'success');
+                } else if (modal.type === 'all') {
+                    setUsers(initialUsers); setRecords([]); setCyclesList([DEFAULT_CYCLE]); 
+                    showToast('המערכת אופסה לחלוטין. נתוני בסיס נטענו.', 'success');
                 }
+                setModal({ isOpen: false, type: null });
             };
-            const resetAllData = () => {
-                if(window.confirm(`אזהרה חמורה! פעולה זו תמחק את כל השחקנים, הסוכנים, והדוחות מהמערכת. האם להמשיך?`)) {
-                    setUsers(initialUsers); setRecords([]); setCyclesList([DEFAULT_CYCLE]); showToast('המערכת אופסה לחלוטין', 'success');
-                }
-            };
+
             return (
-                <div className="space-y-6 max-w-2xl">
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2"><Icon name="settings"/> הגדרות מערכת</h3>
-                    <div className="bg-slate-900/80 p-5 rounded-lg border border-slate-700">
-                        <h4 className="text-red-400 font-bold mb-2">אזור סכנה (מחיקת נתונים)</h4>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <div><div className="text-white font-medium">מחק את המחזור הנוכחי</div><div className="text-xs text-slate-400">מוחק את כל רשומות המשחק למחזור הפעיל.</div></div>
-                                <button onClick={deleteCurrentCycle} className="bg-red-900/30 text-red-400 border border-red-900 hover:bg-red-600 hover:text-white px-4 py-2 rounded text-sm transition-colors">מחק מחזור זה</button>
+                <div className="space-y-6 max-w-2xl mx-auto md:mx-0">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-3"><Icon name="settings" size={24}/> הגדרות מערכת מתקדמות</h3>
+                    
+                    <div className="bg-red-900/10 p-6 rounded-xl border border-red-900/30">
+                        <h4 className="text-red-400 font-bold mb-4 flex items-center gap-2">
+                            <Icon name="trash" size={18} /> אזור סכנה (מחיקת נתונים)
+                        </h4>
+                        <div className="space-y-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <div className="text-white font-medium text-lg">מחיקת המחזור הנוכחי</div>
+                                    <div className="text-sm text-slate-400 mt-1">מוחק את כל רשומות המשחק והשולחנות ששויכו למחזור "{currentCycle}". השחקנים והסוכנים יישארו.</div>
+                                </div>
+                                <button onClick={() => setModal({isOpen: true, type: 'cycle'})} className="bg-red-900/40 text-red-400 border border-red-800 hover:bg-red-600 hover:text-white px-5 py-2.5 rounded-lg font-semibold transition-colors whitespace-nowrap">
+                                    מחק מחזור זה
+                                </button>
                             </div>
-                            <div className="border-t border-slate-800 pt-4 flex items-center justify-between">
-                                <div><div className="text-white font-medium">איפוס מערכת כללי</div><div className="text-xs text-slate-400">מוחק שחקנים, רשומות ומחזורים.</div></div>
-                                <button onClick={resetAllData} className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded text-sm transition-colors font-bold shadow-lg">איפוס כולל למערכת</button>
+                            <div className="border-t border-red-900/30 pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <div className="text-white font-medium text-lg">איפוס מערכת כללי (Factory Reset)</div>
+                                    <div className="text-sm text-slate-400 mt-1">מוחק לחלוטין את כל השחקנים, כל הדוחות, וכל המחזורים. המערכת תחזור למצב ריק עם אדמין וסוכנים בסיסיים בלבד.</div>
+                                </div>
+                                <button onClick={() => setModal({isOpen: true, type: 'all'})} className="bg-red-600 text-white hover:bg-red-700 px-5 py-2.5 rounded-lg font-bold shadow-lg transition-colors whitespace-nowrap">
+                                    איפוס כולל למערכת
+                                </button>
                             </div>
                         </div>
                     </div>
+
+                    <ConfirmModal 
+                        isOpen={modal.isOpen} 
+                        title={modal.type === 'all' ? "איפוס מערכת כולל!" : "מחיקת מחזור"} 
+                        message={modal.type === 'all' ? "האם אתה בטוח לחלוטין שברצונך לאפס את המערכת? פעולה זו תמחק עשרות שחקנים ונתונים ואינה הפיכה לעולם." : `האם למחוק את כל הנתונים של "${currentCycle}"?`}
+                        confirmText={modal.type === 'all' ? "כן, מחק הכל" : "מחק מחזור"}
+                        onConfirm={executeDelete} 
+                        onCancel={() => setModal({isOpen: false, type: null})} 
+                    />
                 </div>
             );
         };
@@ -368,14 +440,17 @@
                 return agents.map(agent => {
                     const agentPlayers = players.filter(p => p.agentId === agent.id).map(p => p.id);
                     const agentRecords = cycleRecords.filter(r => agentPlayers.includes(r.playerId));
+                    
                     const pnl = agentRecords.reduce((sum, r) => sum + (r.pnl + (r.bonus||0)), 0);
                     const hands = agentRecords.reduce((sum, r) => sum + (r.hands || 0), 0);
                     let commission = 0;
+                    
                     agentRecords.forEach(r => {
                         const player = players.find(p => p.id === r.playerId);
                         const rate = player?.customCommission !== null ? player.customCommission : agent.commissionRate;
                         commission += (r.rake * (1 - SYSTEM_EXPENSES_RATE)) * (rate / 100);
                     });
+
                     return { ...agent, pnl, hands, commission, playerCount: agentPlayers.length };
                 }).sort((a, b) => {
                     if (sortBy === 'pnl') return a.pnl - b.pnl;
@@ -387,29 +462,43 @@
 
             return (
                 <div>
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-bold text-white flex items-center gap-2"><Icon name="users" /> סיכום פעילות סוכנים</h3>
-                        <div className="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                        <h3 className="text-xl font-bold text-white flex items-center gap-3"><Icon name="users" size={24} className="text-emerald-400"/> סיכום פעילות סוכנים</h3>
+                        <div className="flex items-center gap-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 shadow-inner">
                             <Icon name="sort" size={16} className="text-slate-400"/>
-                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm text-slate-300 outline-none cursor-pointer">
-                                <option value="pnl">לפי רווח/הפסד</option><option value="commission">לפי עמלה</option><option value="hands">לפי כמות ידיים</option>
+                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm font-medium text-white outline-none cursor-pointer">
+                                <option value="pnl">מיון לפי רווח/הפסד (P&L)</option>
+                                <option value="commission">מיון לפי גובה עמלה</option>
+                                <option value="hands">מיון לפי כמות ידיים</option>
                             </select>
                         </div>
                     </div>
-                    <div className="overflow-x-auto rounded-lg border border-slate-800">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-900/80 text-slate-400 uppercase text-xs tracking-wider">
+                    <div className="overflow-x-auto rounded-xl border border-slate-700/50 shadow-xl">
+                        <table className="w-full text-left text-sm whitespace-nowrap">
+                            <thead className="bg-slate-800 text-slate-300 uppercase text-xs tracking-widest">
                                 <tr>
-                                    <th className="p-4 font-semibold text-right">סוכן</th><th className="p-4 font-semibold text-right">שחקנים פעילים</th><th className="p-4 font-semibold text-right">% בסיס</th><th className="p-4 font-semibold text-right">ידיים (סה"כ)</th><th className="p-4 font-semibold text-right">P&L שחקנים</th><th className="p-4 font-semibold text-right text-emerald-400">עמלת סוכן (נטו)</th><th className="p-4 font-semibold text-right text-purple-400">מול המועדון</th>
+                                    <th className="p-5 font-bold text-right border-b border-slate-700">סוכן</th>
+                                    <th className="p-5 font-bold text-right border-b border-slate-700">שחקנים פעילים</th>
+                                    <th className="p-5 font-bold text-right border-b border-slate-700">% בסיס</th>
+                                    <th className="p-5 font-bold text-right border-b border-slate-700">ידיים (סה"כ)</th>
+                                    <th className="p-5 font-bold text-right border-b border-slate-700">P&L שחקנים</th>
+                                    <th className="p-5 font-bold text-right text-emerald-400 border-b border-slate-700">עמלת סוכן (נטו)</th>
+                                    <th className="p-5 font-bold text-right text-cyan-400 border-b border-slate-700">התחשבנות סופית</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-800">
+                            <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
                                 {agentStats.map(agent => (
-                                    <tr key={agent.id} className="hover:bg-slate-800/30 transition-colors">
-                                        <td className="p-4 text-right"><div className="font-bold text-slate-200">{agent.name}</div><div className="text-[10px] text-slate-500">{agent.id === 'agent_default' ? 'מערכת' : agent.username}</div></td>
-                                        <td className="p-4 text-right">{agent.playerCount}</td><td className="p-4 text-right">{agent.commissionRate}%</td><td className="p-4 text-right">{agent.hands.toLocaleString()}</td>
-                                        <td className={`p-4 text-right font-bold ${getColorClass(agent.pnl)}`}>{formatMoney(agent.pnl)}</td><td className="p-4 text-right font-black text-emerald-400">{formatMoney(agent.commission)}</td>
-                                        <td className={`p-4 text-right font-black ${getColorClass(agent.pnl + agent.commission)}`}>{formatMoney(agent.pnl + agent.commission)}</td>
+                                    <tr key={agent.id} className="hover:bg-slate-800/60 transition-colors">
+                                        <td className="p-5 text-right">
+                                            <div className="font-bold text-white text-base">{agent.name}</div>
+                                            <div className="text-xs text-slate-500 mt-1">{agent.id === 'agent_default' ? 'מערכת' : `יוזר: ${agent.username}`}</div>
+                                        </td>
+                                        <td className="p-5 text-right font-medium text-slate-300">{agent.playerCount}</td>
+                                        <td className="p-5 text-right font-medium text-slate-300">{agent.commissionRate}%</td>
+                                        <td className="p-5 text-right font-medium text-slate-300">{agent.hands.toLocaleString()}</td>
+                                        <td className={`p-5 text-right font-bold text-lg ${getColorClass(agent.pnl)}`}>{formatMoney(agent.pnl)}</td>
+                                        <td className="p-5 text-right font-black text-lg text-emerald-400">{formatMoney(agent.commission)}</td>
+                                        <td className={`p-5 text-right font-black text-lg ${getColorClass(agent.pnl + agent.commission)}`}>{formatMoney(agent.pnl + agent.commission)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -419,53 +508,81 @@
             );
         };
 
-        // --- Shared Component for Drill-down View (Player specifics) ---
+        // --- Shared Drill-down Table (Used in Admin & Agent) ---
         const PlayerDetailsDrilldown = ({ player, record, finalPnl, showToast }) => {
             return (
-                <div className="px-6 sm:px-12 py-6 grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-slate-800/50">
-                    <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2"><Icon name="eye" size={14}/> פרטי התחברות</h4>
-                        <div className="space-y-2 text-sm">
-                            <div className="flex justify-between"><span className="text-slate-500">שם משתמש:</span> <span className="font-mono text-emerald-400">{player.username}</span></div>
-                            <div className="flex justify-between"><span className="text-slate-500">סיסמה:</span> <span className="font-mono text-emerald-400">{player.password}</span></div>
+                <div className="px-6 sm:px-10 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 bg-slate-900/80 shadow-inner border-t-2 border-slate-700">
+                    {/* Left Column: Details & Result */}
+                    <div className="space-y-6">
+                        <div className="bg-slate-800/80 p-5 rounded-xl border border-slate-700 shadow-md">
+                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <Icon name="eye" size={16} className="text-cyan-400"/> פרטי התחברות
+                            </h4>
+                            <div className="space-y-3 text-sm">
+                                <div className="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg">
+                                    <span className="text-slate-500">משתמש:</span> 
+                                    <span className="font-mono font-bold text-emerald-400">{player.username}</span>
+                                </div>
+                                <div className="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg">
+                                    <span className="text-slate-500">סיסמה:</span> 
+                                    <span className="font-mono font-bold text-emerald-400">{player.password}</span>
+                                </div>
+                            </div>
+                            <button onClick={() => { navigator.clipboard.writeText(`משתמש: ${player.username}\nסיסמה: ${player.password}`); showToast('פרטים הועתקו ללוח!'); }} 
+                                    className="mt-4 w-full bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium py-2 rounded-lg transition-colors">
+                                העתק הודעה לשחקן
+                            </button>
                         </div>
-                        <div className="mt-4 pt-3 border-t border-slate-700">
-                            <button onClick={() => { navigator.clipboard.writeText(`משתמש: ${player.username}\nסיסמה: ${player.password}`); showToast('פרטים הועתקו ללוח'); }} className="text-xs text-slate-400 hover:text-white transition w-full text-right">העתק פרטים לשליחה</button>
+
+                        <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-xl border border-slate-700 shadow-md">
+                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תוצאה סופית לשחקן (נטו)</h4>
+                            <div className={`text-4xl font-black tracking-tight ${getColorClass(finalPnl)}`}>{formatMoney(finalPnl)}</div>
+                            {record.bonus > 0 && (
+                                <div className="mt-3 text-sm text-emerald-400 flex items-center gap-1.5 bg-emerald-900/30 inline-flex px-3 py-1 rounded-md font-medium border border-emerald-500/20">
+                                    <Icon name="gift" size={14}/> כולל בונוס ע"ס {formatMoney(record.bonus)}
+                                </div>
+                            )}
                         </div>
                     </div>
-                    <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">תוצאה סופית לשחקן (נטו)</h4>
-                        <div className={`text-3xl font-black ${getColorClass(finalPnl)}`}>{formatMoney(finalPnl)}</div>
-                        {record.bonus > 0 && <div className="text-xs text-emerald-400 mt-1">כולל בונוס מהמועדון: {formatMoney(record.bonus)}</div>}
-                    </div>
-                    <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50 md:col-span-3">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">פירוט שולחנות ומשחקים (תצוגת שחקן)</h4>
+
+                    {/* Right Column: Tables */}
+                    <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 shadow-md lg:col-span-2 flex flex-col">
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <Icon name="dashboard" size={16} className="text-emerald-400"/> פירוט שולחנות ומשחקים
+                        </h4>
                         {record.tables && record.tables.length > 0 ? (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-xs text-right text-slate-300">
-                                    <thead className="border-b border-slate-700 bg-slate-900/50">
-                                        <tr><th className="p-2 text-slate-500 font-medium">שם שולחן / טורניר</th><th className="p-2 text-slate-500 font-medium">סוג משחק</th><th className="p-2 text-slate-500 font-medium">ידיים</th><th className="p-2 text-slate-500 font-medium">תוצאה (P&L)</th></tr>
+                            <div className="overflow-x-auto flex-1">
+                                <table className="w-full text-sm text-right text-slate-300">
+                                    <thead className="bg-slate-900 text-slate-400 text-xs">
+                                        <tr>
+                                            <th className="p-3 font-semibold rounded-tr-lg">שם שולחן / טורניר</th>
+                                            <th className="p-3 font-semibold text-center">ידיים</th>
+                                            <th className="p-3 font-semibold rounded-tl-lg">תוצאה (P&L)</th>
+                                        </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-800/50">
+                                    <tbody className="divide-y divide-slate-700/50">
                                         {record.tables.map((t, idx) => (
                                             <tr key={idx} className="hover:bg-slate-800 transition-colors">
-                                                <td className="py-2 px-2">{t.name}</td>
-                                                <td className="py-2 px-2 text-slate-500">{t.gameType || '-'}</td>
-                                                <td className="py-2 px-2">{t.hands}</td>
-                                                <td className={`py-2 px-2 font-bold ${getColorClass(t.pnl)}`}>{formatMoney(t.pnl)}</td>
+                                                <td className="p-3 font-medium text-slate-200">{t.name}</td>
+                                                <td className="p-3 text-center">{t.hands}</td>
+                                                <td className={`p-3 font-bold text-base ${getColorClass(t.pnl)}`}>{formatMoney(t.pnl)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
-                                    <tfoot className="border-t-2 border-slate-700">
+                                    <tfoot className="border-t-2 border-slate-600 bg-slate-900/50">
                                         <tr>
-                                            <td colSpan="2" className="py-2 px-2 font-bold text-slate-400">סך הכל משחקים:</td>
-                                            <td className="py-2 px-2 font-bold text-white">{record.hands}</td>
-                                            <td className={`py-2 px-2 font-bold ${getColorClass(record.pnl)}`}>{formatMoney(record.pnl)}</td>
+                                            <td className="p-3 font-bold text-slate-400">סה"כ משחקים:</td>
+                                            <td className="p-3 font-bold text-white text-center">{record.hands}</td>
+                                            <td className={`p-3 font-black text-lg ${getColorClass(record.pnl)}`}>{formatMoney(record.pnl)}</td>
                                         </tr>
                                     </tfoot>
                                 </table>
                             </div>
-                        ) : (<span className="text-slate-500 text-sm">אין פירוט ברמת שולחן (הנתונים יובאו מדוח כללי).</span>)}
+                        ) : (
+                            <div className="flex-1 flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-lg p-6 bg-slate-900/30">
+                                אין פירוט שולחנות. ייתכן שהקובץ המיובא היה דוח סיכום כללי ולא דוח מפורט (Ring Game Detail).
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -492,6 +609,7 @@
             const handleAddBonus = (playerId) => {
                 if(!bonusInput.amount) return;
                 const amt = parseFloat(bonusInput.amount);
+                
                 const existingRecIdx = records.findIndex(r => r.cycleId === currentCycle && r.playerId === playerId);
                 if (existingRecIdx >= 0) {
                     const newRecords = [...records];
@@ -508,59 +626,110 @@
 
             return (
                 <div>
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                        <h3 className="text-lg font-bold text-white">הגדרות שחקנים ופירוט משחקים</h3>
-                        <div className="relative w-full sm:w-64">
-                            <input type="text" placeholder="חיפוש שחקן..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-4 pr-10 py-2 text-sm text-white outline-none focus:border-emerald-500" />
-                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500"><Icon name="search" size={16} /></div>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
+                        <div>
+                            <h3 className="text-xl font-bold text-white">הגדרות שחקנים</h3>
+                            <p className="text-sm text-slate-400 mt-1">שיוך לסוכנים, הגדרת עמלות חריגות ופירוט שולחנות.</p>
+                        </div>
+                        <div className="relative w-full md:w-80">
+                            <input 
+                                type="text" 
+                                placeholder="חפש שחקן (שם או כינוי)..." 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-slate-900/80 border border-slate-600 rounded-xl pl-4 pr-12 py-3 text-sm text-white outline-none focus:border-emerald-500 shadow-inner transition-colors"
+                            />
+                            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-emerald-500">
+                                <Icon name="search" size={18} />
+                            </div>
                         </div>
                     </div>
+
                     {players.length === 0 ? (
-                        <div className="p-8 text-center border-2 border-dashed border-slate-700 rounded-xl bg-slate-800/20 text-slate-400">לא נמצאו שחקנים התואמים לחיפוש, או שטרם הועלו נתונים למערכת.</div>
+                        <div className="p-12 text-center border-2 border-dashed border-slate-700 rounded-2xl bg-slate-800/20">
+                            <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-slate-500 mx-auto mb-4"><Icon name="users" size={32}/></div>
+                            <h4 className="text-lg font-bold text-white mb-2">אין שחקנים במערכת</h4>
+                            <p className="text-slate-400">יש לגשת ללשונית "ייבוא דוחות" ולהעלות קובץ אקסל כדי לאכלס את המערכת.</p>
+                        </div>
                     ) : (
-                    <div className="overflow-x-auto rounded-lg border border-slate-800">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-900/80 text-slate-400 uppercase text-xs tracking-wider">
-                                <tr><th className="p-4 font-semibold text-right w-10"></th><th className="p-4 font-semibold text-right">שחקן</th><th className="p-4 font-semibold text-right">סוכן נוכחי</th><th className="p-4 font-semibold text-right">עמלה עקיפה</th><th className="p-4 font-semibold text-right">בונוסים</th></tr>
+                    <div className="overflow-x-auto rounded-xl border border-slate-700/50 shadow-xl">
+                        <table className="w-full text-left text-sm whitespace-nowrap">
+                            <thead className="bg-slate-800 text-slate-300 uppercase text-[11px] tracking-widest">
+                                <tr>
+                                    <th className="p-4 font-bold text-center border-b border-slate-700 w-12">פירוט</th>
+                                    <th className="p-4 font-bold text-right border-b border-slate-700">שחקן</th>
+                                    <th className="p-4 font-bold text-right border-b border-slate-700">סוכן משויך</th>
+                                    <th className="p-4 font-bold text-center border-b border-slate-700">עמלה עקיפה (%)</th>
+                                    <th className="p-4 font-bold text-right border-b border-slate-700">תוספת בונוס</th>
+                                </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-800">
+                            <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
                                 {players.map(player => {
                                     const record = records.find(r => r.cycleId === currentCycle && r.playerId === player.id) || { pnl: 0, bonus: 0, tables: [] };
                                     const finalPnl = record.pnl + (record.bonus || 0);
+
                                     return (
                                         <Fragment key={player.id}>
-                                            <tr className="hover:bg-slate-800/30 transition-colors">
-                                                <td className="p-4 text-center cursor-pointer text-slate-500 hover:text-emerald-400" onClick={() => toggleRow(player.id)}>
-                                                    {expandedRow === player.id ? <Icon name="chevronUp" size={18}/> : <Icon name="chevronDown" size={18}/>}
+                                            <tr className={`transition-colors ${expandedRow === player.id ? 'bg-slate-800' : 'hover:bg-slate-800/50'}`}>
+                                                <td className="p-4 text-center cursor-pointer text-slate-400 hover:text-emerald-400" onClick={() => toggleRow(player.id)}>
+                                                    <div className={`p-1.5 rounded-md inline-flex ${expandedRow === player.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800'}`}>
+                                                        {expandedRow === player.id ? <Icon name="chevronUp" size={16}/> : <Icon name="chevronDown" size={16}/>}
+                                                    </div>
                                                 </td>
-                                                <td className="p-4 text-right cursor-pointer" onClick={() => toggleRow(player.id)}><div className="font-bold text-slate-200">{player.name}</div></td>
+                                                <td className="p-4 text-right cursor-pointer" onClick={() => toggleRow(player.id)}>
+                                                    <div className="font-bold text-white text-base">{player.name}</div>
+                                                    <div className="text-xs text-slate-500">מזהה: {player.id.substring(0,6)}...</div>
+                                                </td>
                                                 <td className="p-4 text-right">
-                                                    <select value={player.agentId} onChange={(e) => updatePlayer(player.id, 'agentId', e.target.value)} className={`bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-white ${player.agentId === 'agent_default' ? 'border-red-500/50 text-red-300' : ''}`}>
+                                                    <select 
+                                                        value={player.agentId} 
+                                                        onChange={(e) => updatePlayer(player.id, 'agentId', e.target.value)}
+                                                        className={`bg-slate-900 border rounded-lg px-3 py-2 text-sm text-white font-medium outline-none cursor-pointer transition-colors
+                                                            ${player.agentId === 'agent_default' ? 'border-red-500/50 text-red-400 bg-red-900/10' : 'border-slate-600 focus:border-emerald-500'}`}
+                                                    >
                                                         {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                                                     </select>
                                                 </td>
-                                                <td className="p-4 text-right">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <input type="number" placeholder="דיפולט" value={player.customCommission !== null ? player.customCommission : ''} onChange={(e) => updatePlayer(player.id, 'customCommission', e.target.value === '' ? null : Number(e.target.value))} className={`bg-slate-900 border rounded px-2 py-1 text-sm text-white w-20 text-center focus:border-emerald-500 outline-none ${player.customCommission !== null ? 'border-emerald-500/50 text-emerald-300' : 'border-slate-700'}`} />
-                                                        <span className="text-slate-500">%</span>
+                                                <td className="p-4 text-center">
+                                                    <div className="inline-flex items-center bg-slate-900 border border-slate-600 rounded-lg overflow-hidden focus-within:border-emerald-500 transition-colors">
+                                                        <input 
+                                                            type="number" 
+                                                            placeholder="דיפולט"
+                                                            value={player.customCommission !== null ? player.customCommission : ''}
+                                                            onChange={(e) => updatePlayer(player.id, 'customCommission', e.target.value === '' ? null : Number(e.target.value))}
+                                                            className={`bg-transparent px-3 py-2 text-sm text-center w-20 outline-none
+                                                                ${player.customCommission !== null ? 'text-emerald-400 font-bold' : 'text-white'}`}
+                                                        />
+                                                        <span className="bg-slate-800 text-slate-400 px-3 py-2 font-bold">%</span>
                                                     </div>
                                                 </td>
                                                 <td className="p-4 text-right">
                                                     {bonusInput.playerId === player.id ? (
-                                                        <div className="flex items-center justify-end gap-2">
-                                                            <input type="number" value={bonusInput.amount} onChange={(e)=>setBonusInput({...bonusInput, amount: e.target.value})} placeholder="סכום" className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm w-20 text-white" />
-                                                            <button onClick={() => handleAddBonus(player.id)} className="bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white px-2 py-1 rounded text-xs transition-colors">שמור</button>
-                                                            <button onClick={() => setBonusInput({playerId: null, amount:''})} className="text-slate-500 hover:text-slate-300 text-xs px-2 py-1">בטל</button>
+                                                        <div className="flex items-center justify-end gap-2 bg-slate-900 p-1.5 rounded-lg border border-slate-600">
+                                                            <input 
+                                                                type="number" 
+                                                                value={bonusInput.amount} 
+                                                                onChange={(e)=>setBonusInput({...bonusInput, amount: e.target.value})}
+                                                                placeholder="סכום..."
+                                                                className="bg-transparent text-sm w-20 text-white outline-none px-2 text-center"
+                                                                autoFocus
+                                                            />
+                                                            <button onClick={() => handleAddBonus(player.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors">שמור</button>
+                                                            <button onClick={() => setBonusInput({playerId: null, amount:''})} className="text-slate-400 hover:text-white px-2 py-1.5 text-xs transition-colors">בטל</button>
                                                         </div>
                                                     ) : (
-                                                        <button onClick={() => setBonusInput({playerId: player.id, amount: ''})} className="text-emerald-500 hover:text-emerald-400 text-sm flex items-center gap-1 justify-end w-full transition-colors">
-                                                            <Icon name="gift" size={16}/> {record.bonus > 0 ? `(עודכן ${formatMoney(record.bonus)})` : 'הוסף בונוס'}
+                                                        <button onClick={() => setBonusInput({playerId: player.id, amount: ''})} 
+                                                                className={`text-sm flex items-center justify-end gap-2 w-full transition-colors font-medium px-3 py-2 rounded-lg
+                                                                ${record.bonus > 0 ? 'bg-emerald-900/20 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                                                            <Icon name="gift" size={16}/> 
+                                                            {record.bonus > 0 ? `עודכן: ${formatMoney(record.bonus)}` : 'הוסף בונוס'}
                                                         </button>
                                                     )}
                                                 </td>
                                             </tr>
+                                            {/* Drill-down uses the shared component */}
                                             {expandedRow === player.id && (
-                                                <tr className="bg-slate-900/50"><td colSpan="5" className="p-0 border-b border-slate-800">
+                                                <tr className="bg-slate-900"><td colSpan="5" className="p-0 border-b border-slate-800">
                                                     <PlayerDetailsDrilldown player={player} record={record} finalPnl={finalPnl} showToast={showToast} />
                                                 </td></tr>
                                             )}
@@ -575,6 +744,7 @@
             );
         };
 
+        // --- THE ULTIMATE EXCEL PARSER ---
         const AdminImportView = ({ setRecords, setUsers, users, currentCycle, cyclesList, setCyclesList, records, showToast }) => {
             const [newCycleName, setNewCycleName] = useState('');
             const [isParsing, setIsParsing] = useState(false);
@@ -593,69 +763,88 @@
                         
                         let newPlayersCount = 0;
                         let newRecordsCount = 0;
-                        let tablesAdded = 0;
-                        
                         let newUsers = [...users];
                         let newRecordsList = [...records];
 
-                        const cleanNum = (str) => {
-                            if (str === undefined || str === null || str === '') return 0;
-                            // מנקה פסיקים, סמלי מטבע ומרכאות
-                            const cleaned = str.toString().replace(/["',₪$€]/g, '').trim();
+                        // Helper to meticulously clean dirty numbers
+                        const cleanNum = (val) => {
+                            if (val === undefined || val === null || val === '') return 0;
+                            let str = String(val).trim();
+                            // Handle accounting negative format (1,500.00)
+                            if (str.startsWith('(') && str.endsWith(')')) {
+                                str = '-' + str.slice(1, -1);
+                            }
+                            // Strip everything except digits, minus, and dot
+                            const cleaned = str.replace(/[^\d.-]/g, '');
                             const num = parseFloat(cleaned);
                             return isNaN(num) ? 0 : num;
                         };
 
-                        // עוברים על *כל הלשוניות* בקובץ האקסל
+                        // 1. Iterate over EVERY sheet in the workbook
                         workbook.SheetNames.forEach(sheetName => {
                             const worksheet = workbook.Sheets[sheetName];
                             const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
+                            if (!rows || rows.length === 0) return; // Empty sheet
 
-                            let nicknameIndex = -1, pnlIndex = -1, rakeIndex = -1, handsIndex = -1, tableIndex = -1;
+                            let nicknameIdx = -1, pnlIdx = -1, rakeIdx = -1, handsIdx = -1;
                             let dataStartRow = -1;
+                            let tableName = sheetName; // Default table name to sheet name
 
-                            // סריקת 20 השורות הראשונות *בכל לשונית* כדי למצוא את הכותרות
-                            for (let i = 0; i < Math.min(20, rows.length); i++) {
-                                if (!rows[i]) continue;
-                                rows[i].forEach((cell, colIdx) => {
+                            // 2. Scan up to first 30 rows to find headers and metadata
+                            for (let i = 0; i < Math.min(30, rows.length); i++) {
+                                const row = rows[i];
+                                if (!row) continue;
+
+                                // Try to find explicit Table Name in metadata rows
+                                const rowStr = row.join(" ").toLowerCase();
+                                if (rowStr.includes("table name") || rowStr.includes("tournament title") || rowStr.includes("שולחן")) {
+                                    // Extract from the cell that contains it, or the cell next to it
+                                    const cellWithTitle = row.find(c => String(c).toLowerCase().includes("table name") || String(c).toLowerCase().includes("tournament"));
+                                    if(cellWithTitle) {
+                                        tableName = cellWithTitle.toString().split(':')[1]?.trim() || sheetName;
+                                    }
+                                }
+
+                                // Hunt for the actual table headers
+                                row.forEach((cell, colIdx) => {
                                     if (cell === undefined || cell === null) return;
                                     const t = cell.toString().toLowerCase().trim();
                                     
-                                    // חיפוש רחב יותר של כותרות
-                                    if (t === 'nickname' || t === 'player' || t === 'player name' || t === 'שם שחקן') nicknameIndex = colIdx;
-                                    if (t === 'p&l' || t === 'player p&l' || t === 'profit' || t === 'net' || t === 'total win/loss' || t === 'תוצאה') pnlIndex = colIdx;
-                                    if (t === 'rake' || t === 'contribution fee' || t.includes('rake&fee') || t === 'fee' || t === 'רייק') rakeIndex = colIdx;
-                                    if (t === 'hands' || t === 'played hands' || t === 'hand count' || t === 'ידיים') handsIndex = colIdx;
-                                    if (t === 'table name' || t === 'tournament title' || t === 'table' || t === 'שולחן') tableIndex = colIdx;
+                                    // Broad matching for different CSV variations
+                                    if (t === 'nickname' || t === 'player' || t.includes('שם שחקן')) nicknameIdx = colIdx;
+                                    if (t === 'p&l' || t === 'net' || t.includes('profit') || t.includes('תוצאה') || t === 'payouts') pnlIdx = colIdx;
+                                    if (t === 'rake' || t === 'fee' || t.includes('contribution') || t.includes('רייק')) rakeIdx = colIdx;
+                                    if (t === 'hands' || t.includes('played') || t.includes('ידיים')) handsIdx = colIdx;
                                 });
-                                if (nicknameIndex !== -1) {
+
+                                // If we found the Nickname column, this is the header row. Data starts next row.
+                                if (nicknameIdx !== -1) {
                                     dataStartRow = i + 1;
-                                    break;
+                                    break; 
                                 }
                             }
 
-                            // אם אין עמודת כינוי בלשונית הזו, היא כנראה לשונית סיכום ריקה - נדלג עליה
-                            if (nicknameIndex === -1) return;
+                            // If we never found a Nickname column, skip this sheet completely.
+                            if (nicknameIdx === -1 || dataStartRow === -1) return;
 
-                            const hasTables = tableIndex !== -1;
-
-                            // קריאת הנתונים מהשורה שבה מצאנו את הכותרות והלאה
+                            // 3. Process the actual data rows for this sheet
                             for (let idx = dataStartRow; idx < rows.length; idx++) {
                                 const row = rows[idx];
-                                if(!row || row.length < nicknameIndex) continue; 
+                                if (!row || row.length <= nicknameIdx) continue;
                                 
-                                const nicknameRaw = row[nicknameIndex];
-                                if(nicknameRaw === undefined || nicknameRaw === null) continue;
+                                const nicknameRaw = row[nicknameIdx];
+                                if (!nicknameRaw) continue;
                                 
-                                const nickname = nicknameRaw.toString().replace(/["']/g, '').trim();
+                                const nickname = nicknameRaw.toString().trim();
                                 
-                                // סינון שורות ריקות, שורות סיכום וכותרות שחוזרות על עצמן
-                                if(!nickname || nickname === '-' || nickname.toLowerCase() === 'nickname' || nickname.toLowerCase() === 'player' || nickname.toLowerCase().includes('total') || nickname === 'סה"כ') continue;
+                                // Ignore empty, formatting, or total rows
+                                if (!nickname || nickname === '-' || nickname.toLowerCase().includes('total') || nickname.toLowerCase().includes('סה"כ')) continue;
 
+                                // Create User if not exists
                                 let player = newUsers.find(u => u.username === nickname);
-                                if(!player) {
+                                if (!player) {
                                     player = {
-                                        id: 'p_' + Date.now() + Math.random(),
+                                        id: 'p_' + Date.now() + Math.random().toString(36).substr(2, 9),
                                         username: nickname,
                                         password: '123',
                                         role: 'player',
@@ -667,28 +856,29 @@
                                     newPlayersCount++;
                                 }
 
-                                const pnl = pnlIndex !== -1 ? cleanNum(row[pnlIndex]) : 0;
-                                const rake = rakeIndex !== -1 ? cleanNum(row[rakeIndex]) : 0;
-                                const hands = handsIndex !== -1 ? Math.round(cleanNum(row[handsIndex])) : 0;
-                                
-                                // אם אין עמודת שולחן, שם השולחן יהיה פשוט שם הלשונית!
-                                const tableName = hasTables ? (row[tableIndex] || sheetName) : sheetName;
+                                // Extract values safely
+                                const pnl = pnlIdx !== -1 ? cleanNum(row[pnlIdx]) : 0;
+                                const rake = rakeIdx !== -1 ? cleanNum(row[rakeIdx]) : 0;
+                                const hands = handsIdx !== -1 ? Math.round(cleanNum(row[handsIdx])) : 0;
 
+                                // Skip purely empty stat rows
                                 if (pnl === 0 && rake === 0 && hands === 0) continue;
 
+                                // Update or create record for current cycle
                                 const existingRecordIndex = newRecordsList.findIndex(r => r.cycleId === currentCycle && r.playerId === player.id);
                                 
                                 if (existingRecordIndex >= 0) {
+                                    // Add aggregates
                                     newRecordsList[existingRecordIndex].pnl += pnl;
                                     newRecordsList[existingRecordIndex].rake += rake;
                                     newRecordsList[existingRecordIndex].hands += hands;
                                     
-                                    if(hasTables || pnl !== 0) {
-                                        newRecordsList[existingRecordIndex].tables.push({ name: tableName, hands: hands, pnl: pnl, rake: rake });
-                                        tablesAdded++;
-                                    }
+                                    // Append table details
+                                    newRecordsList[existingRecordIndex].tables.push({ 
+                                        name: tableName, hands: hands, pnl: pnl, rake: rake 
+                                    });
                                 } else {
-                                    const initialTables = (hasTables || pnl !== 0) ? [{ name: tableName, hands: hands, pnl: pnl, rake: rake }] : [];
+                                    // New record
                                     newRecordsList.push({
                                         id: Date.now() + Math.random(),
                                         cycleId: currentCycle,
@@ -697,74 +887,79 @@
                                         rake: rake,
                                         hands: hands,
                                         bonus: 0,
-                                        tables: initialTables
+                                        tables: [{ name: tableName, hands: hands, pnl: pnl, rake: rake }]
                                     });
                                     newRecordsCount++;
                                 }
                             }
-                        });
+                        }); // End of Sheets loop
 
                         setUsers(newUsers);
                         setRecords(newRecordsList);
                         setIsParsing(false);
                         
                         if (newPlayersCount === 0 && newRecordsCount === 0) {
-                            showToast('לא נמצאו נתוני P&L או שחקנים באף לשונית.', 'error');
+                            showToast('לא נמצאו נתונים תקינים באף לשונית בקובץ.', 'error');
                         } else {
-                            showToast(`הקובץ פוענח! ${newPlayersCount} שחקנים חדשים, ${newRecordsCount} רשומות עודכנו מכל הלשוניות.`);
+                            showToast(`הקובץ פוענח מושלם! נוצרו ${newPlayersCount} שחקנים. נסרקו ${newRecordsCount} שולחנות/רשומות.`);
                         }
-                        
-                        e.target.value = ''; 
+                        e.target.value = ''; // Reset input
                     } catch (err) {
                         console.error("Excel Parsing Error:", err);
                         setIsParsing(false);
-                        showToast('שגיאה בקריאת הקובץ - ודא שזהו אקסל תקין', 'error');
+                        showToast('שגיאה קריטית בקריאת הקובץ - ודא שזה קובץ אקסל תקין.', 'error');
                         e.target.value = '';
                     }
                 };
-                reader.readAsArrayBuffer(file); 
+                reader.readAsArrayBuffer(file);
             };
 
             const addCycle = () => {
                 if(newCycleName && !cyclesList.includes(newCycleName)) {
                     setCyclesList([newCycleName, ...cyclesList]);
                     setNewCycleName('');
-                    showToast('מחזור חדש נוצר במערכת!');
+                    showToast('מחזור חדש נוצר ונוסף לרשימה!');
                 }
             };
 
             return (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-slate-700 hover:border-emerald-500/50 rounded-xl bg-slate-900/30 transition-colors">
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 shadow-lg border ${isParsing ? 'bg-emerald-900/50 border-emerald-500 animate-pulse text-emerald-300' : 'bg-slate-800 border-slate-700 text-emerald-400'}`}>
-                            <Icon name="upload" size={32} />
+                    <div className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed border-slate-700 hover:border-emerald-500/50 rounded-2xl bg-slate-900/40 transition-colors shadow-inner relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-2xl border-2 relative z-10 
+                            ${isParsing ? 'bg-emerald-900/50 border-emerald-500 animate-pulse text-emerald-300' : 'bg-slate-800 border-slate-600 text-emerald-400'}`}>
+                            <Icon name="upload" size={40} />
                         </div>
-                        <h3 className="text-xl font-bold mb-2 text-white">{isParsing ? 'מפענח את כל הלשוניות...' : 'ייבוא נתונים (CSV/Excel)'}</h3>
-                        <p className="text-slate-400 text-sm mb-6 max-w-sm">
-                            העלה את הקובץ. המערכת תסרוק כעת את <strong>כל הלשוניות</strong> בקובץ ותחבר הכל לשחקנים.
+                        <h3 className="text-2xl font-black mb-3 text-white relative z-10">{isParsing ? 'הקסם קורה עכשיו...' : 'ייבוא דוחות אקסל'}</h3>
+                        <p className="text-slate-400 text-sm mb-8 max-w-sm relative z-10 leading-relaxed">
+                            העלה את דוח ה-Excel. המערכת תסרוק אוטומטית <strong className="text-slate-200">את כל הלשוניות בקובץ</strong>, תאתר שולחנות ותשייך נתונים מדויקים.
                         </p>
-                        <label className={`cursor-pointer text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all border ${isParsing ? 'bg-slate-600 border-slate-500 opacity-50 cursor-not-allowed' : 'bg-slate-800 hover:bg-slate-700 border-slate-600'}`}>
-                            בחר קובץ לחלץ נתונים
+                        <label className={`cursor-pointer text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all relative z-10 border 
+                            ${isParsing ? 'bg-slate-700 border-slate-600 opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 border-transparent hover:-translate-y-1'}`}>
+                            בחר קובץ Excel / CSV
                             <input type="file" className="hidden" accept=".csv, text/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .xlsx" onChange={handleFileUpload} disabled={isParsing} />
                         </label>
                     </div>
 
-                    <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 flex flex-col justify-center">
-                        <h3 className="text-lg font-bold text-white mb-4">ניהול מחזורים</h3>
-                        <p className="text-slate-400 text-sm mb-4">
-                            המחזור הפעיל: <strong className="text-emerald-400">{currentCycle}</strong>.<br/>
-                            כדי להתחיל שבוע חדש, צור מחזור ולאחר מכן ייבא דוחות.
+                    <div className="bg-slate-900/60 p-8 rounded-2xl border border-slate-700/80 flex flex-col justify-center shadow-xl">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-600 text-cyan-400"><Icon name="dashboard" size={20}/></div>
+                            <h3 className="text-xl font-bold text-white">ניהול מחזורים</h3>
+                        </div>
+                        <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+                            הנתונים שתייבא כעת ישויכו למחזור: <strong className="text-emerald-400 bg-emerald-900/20 px-2 py-1 rounded border border-emerald-500/20">{currentCycle}</strong>.<br/><br/>
+                            אם התחיל שבוע חדש (יום שלישי 06:00), צור מחזור חדש לפני העלאת הדוח.
                         </p>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-3">
                             <input 
                                 type="text" 
                                 value={newCycleName}
                                 onChange={(e)=>setNewCycleName(e.target.value)}
-                                placeholder="לדוג': 26/05 - 02/06" 
-                                className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none focus:border-emerald-500"
+                                placeholder="שם מחזור (לדוג': 26/05 - 02/06)" 
+                                className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white outline-none focus:border-emerald-500 shadow-inner"
                             />
-                            <button onClick={addCycle} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap">
-                                הוסף מחזור
+                            <button onClick={addCycle} className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-xl font-bold transition-colors whitespace-nowrap shadow-md">
+                                צור מחזור
                             </button>
                         </div>
                     </div>
@@ -773,50 +968,73 @@
         };
 
         const AdminMessagesView = ({ users, messages, setMessages, showToast }) => {
-            const [text, setText] = useState(''); const [imgUrl, setImgUrl] = useState(''); const [targetId, setTargetId] = useState('all');
+            const [text, setText] = useState('');
+            const [imgUrl, setImgUrl] = useState('');
+            const [targetId, setTargetId] = useState('all');
+
             const sendMsg = () => {
                 if(!text) return;
-                setMessages([{ id: Date.now(), senderId: 'admin1', receiverId: targetId, text, image: imgUrl, date: new Date().toLocaleDateString('he-IL') }, ...messages]);
-                setText(''); setImgUrl(''); showToast('ההודעה נשלחה לנמענים!');
+                const newMsg = { id: Date.now(), senderId: 'admin1', receiverId: targetId, text, image: imgUrl, date: new Date().toLocaleDateString('he-IL') };
+                setMessages([newMsg, ...messages]);
+                setText(''); setImgUrl('');
+                showToast('ההודעה נשלחה לנמענים!');
             };
+
             return (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2"><Icon name="message" size={20}/> שלח הודעה חדשה</h3>
+                    <div className="space-y-5 bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50">
+                        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-3"><Icon name="message" size={24} className="text-emerald-400"/> שליחת הודעת מערכת</h3>
                         <div>
-                            <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">נמען</label>
-                            <select value={targetId} onChange={(e)=>setTargetId(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-emerald-500">
-                                <option value="all">כולם (גלובלי לשחקנים וסוכנים)</option>
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">נמען</label>
+                            <select value={targetId} onChange={(e)=>setTargetId(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner font-medium">
+                                <option value="all">שידור לכולם (גלובלי)</option>
                                 <optgroup label="סוכנים">{users.filter(u=>u.role==='agent').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup>
                                 <optgroup label="שחקנים">{users.filter(u=>u.role==='player').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">תוכן ההודעה</label>
-                            <textarea value={text} onChange={(e)=>setText(e.target.value)} rows="4" className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-emerald-500" placeholder="הקלד כאן..."></textarea>
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תוכן ההודעה</label>
+                            <textarea value={text} onChange={(e)=>setText(e.target.value)} rows="4" className="w-full bg-slate-800 border border-slate-600 rounded-xl p-4 text-white outline-none focus:border-emerald-500 shadow-inner resize-none" placeholder="הקלד את ההודעה שתקפוץ למשתמשים..."></textarea>
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">תמונה (אופציונלי)</label>
-                            <input type="text" value={imgUrl} onChange={(e)=>setImgUrl(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-emerald-500" placeholder="https://..." />
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תמונה מצורפת (אופציונלי)</label>
+                            <input type="text" value={imgUrl} onChange={(e)=>setImgUrl(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner" placeholder="הדבק URL של תמונה (https://...)" />
                         </div>
-                        <button onClick={sendMsg} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition-transform active:scale-95 w-full">שגר הודעה במערכת</button>
+                        <button onClick={sendMsg} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg py-4 rounded-xl shadow-lg transition-transform active:scale-95 w-full mt-2">
+                            שגר הודעה
+                        </button>
                     </div>
-                    <div className="bg-slate-900 rounded-xl p-5 border border-slate-800 h-[500px] overflow-y-auto">
-                        <h4 className="text-sm font-semibold text-slate-400 mb-4 sticky top-0 bg-slate-900 pb-2 border-b border-slate-800">היסטוריית הודעות שנשלחו</h4>
-                        <div className="space-y-4">
+
+                    <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-700/50 flex flex-col h-[600px] shadow-inner">
+                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 pb-3 border-b border-slate-700 flex items-center gap-2">
+                            <Icon name="dashboard" size={16}/> היסטוריית שידורים
+                        </h4>
+                        <div className="space-y-4 overflow-y-auto flex-1 pr-2">
                             {messages.filter(m => m.senderId === 'admin1').map(m => (
-                                <div key={m.id} className="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50 text-sm relative">
-                                    <div className="flex justify-between items-start mb-2"><span className="font-bold text-emerald-400 text-xs">נמען: {m.receiverId === 'all' ? 'כולם' : users.find(u=>u.id===m.receiverId)?.name || 'לא ידוע'}</span><span className="text-[10px] text-slate-500">{m.date}</span></div>
-                                    <p className="text-slate-200 leading-relaxed">{m.text}</p>
-                                    {m.image && <img src={m.image} alt="Attachment" className="mt-3 rounded border border-slate-700 max-h-32 object-cover" />}
+                                <div key={m.id} className="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-sm relative">
+                                    <div className="flex justify-between items-start mb-3 border-b border-slate-700/50 pb-2">
+                                        <span className="font-bold text-emerald-400 text-sm">נמען: {m.receiverId === 'all' ? 'כולם' : users.find(u=>u.id===m.receiverId)?.name || 'לא ידוע'}</span>
+                                        <span className="text-[10px] text-slate-500 font-medium">{m.date}</span>
+                                    </div>
+                                    <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{m.text}</p>
+                                    {m.image && <img src={m.image} alt="Attachment" className="mt-3 rounded-lg border border-slate-600 max-h-40 object-cover shadow-md" />}
                                 </div>
                             ))}
+                            {messages.length === 0 && (
+                                <div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50">
+                                    <Icon name="message" size={48} className="mb-4" />
+                                    <p>טרם נשלחו הודעות.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             );
         };
 
+        // ==========================================
+        // AGENT DASHBOARD
+        // ==========================================
         const AgentDashboard = ({ user, users, records, currentCycle, showToast }) => {
             const [sortBy, setSortBy] = useState('pnl');
             const [expandedRow, setExpandedRow] = useState(null);
@@ -849,66 +1067,98 @@
             const totalPnl = playerStats.reduce((sum, p) => sum + p.finalPnl, 0);
             const totalNetCommission = playerStats.reduce((sum, p) => sum + p.generatedCommissionNet, 0);
             const totalAgentCommission = playerStats.reduce((sum, p) => sum + p.calculatedCommission, 0);
+            
+            // The Agent's final settlement with the club
             const totalAgainstClub = totalPnl + totalAgentCommission;
 
             const toggleRow = (id) => setExpandedRow(expandedRow === id ? null : id);
 
             return (
                 <div className="space-y-6">
-                    <div className="card-gradient rounded-xl p-4 sm:p-6 border border-slate-800 shadow-xl">
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                            <h3 className="text-lg font-bold text-white">רשימת השחקנים שלי</h3>
-                            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                                <div className="relative w-full sm:w-56">
-                                    <input type="text" placeholder="חיפוש שחקן..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-4 pr-10 py-1.5 text-sm text-white outline-none focus:border-emerald-500" />
-                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500"><Icon name="search" size={16} /></div>
+                    <div className="card-gradient rounded-2xl p-4 sm:p-8 border border-slate-700/50 shadow-2xl">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
+                            <div>
+                                <h3 className="text-2xl font-black text-white">רשימת השחקנים שלי</h3>
+                                <p className="text-slate-400 text-sm mt-1">לחץ על שחקן כדי לראות פירוט שולחנות וסיסמה.</p>
+                            </div>
+                            
+                            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                                <div className="relative w-full sm:w-64">
+                                    <input 
+                                        type="text" 
+                                        placeholder="חיפוש שחקן..." 
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full bg-slate-900/80 border border-slate-600 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white outline-none focus:border-emerald-500 shadow-inner transition-colors"
+                                    />
+                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500">
+                                        <Icon name="search" size={18} />
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 w-full sm:w-auto">
-                                    <Icon name="sort" size={16} className="text-slate-400"/>
-                                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm text-slate-300 outline-none cursor-pointer w-full">
-                                        <option value="pnl">מיון: P&L</option><option value="commission">מיון: עמלה</option><option value="hands">מיון: ידיים</option>
+                                <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-600 rounded-xl px-4 py-2.5 w-full sm:w-auto shadow-inner">
+                                    <Icon name="sort" size={18} className="text-slate-400"/>
+                                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm font-medium text-white outline-none cursor-pointer w-full">
+                                        <option value="pnl">מיון: תוצאה (P&L)</option>
+                                        <option value="commission">מיון: עמלה</option>
+                                        <option value="hands">מיון: ידיים</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="overflow-x-auto rounded-lg border border-slate-800">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-slate-900/80 text-slate-400 uppercase text-[11px] tracking-wider">
+                        <div className="overflow-x-auto rounded-xl border border-slate-700/50 shadow-xl">
+                            <table className="w-full text-left text-sm whitespace-nowrap">
+                                <thead className="bg-slate-800 text-slate-300 uppercase text-[11px] tracking-widest">
                                     <tr>
-                                        <th className="p-4 font-semibold text-right w-10"></th><th className="p-4 font-semibold text-right">שחקן</th><th className="p-4 font-semibold text-right">סה"כ ידיים</th><th className="p-4 font-semibold text-right">תוצאה (P&L)</th><th className="p-4 font-semibold text-right text-emerald-500">עמלה שייצר (נטו)</th><th className="p-4 font-semibold text-right text-emerald-400">העמלה שלי</th>
+                                        <th className="p-5 font-bold text-center border-b border-slate-700 w-12">פירוט</th>
+                                        <th className="p-5 font-bold text-right border-b border-slate-700">כינוי השחקן</th>
+                                        <th className="p-5 font-bold text-center border-b border-slate-700">סה"כ ידיים</th>
+                                        <th className="p-5 font-bold text-right border-b border-slate-700">תוצאה (P&L)</th>
+                                        <th className="p-5 font-bold text-right text-emerald-500 border-b border-slate-700">עמלה שייצר (נטו)</th>
+                                        <th className="p-5 font-bold text-right text-emerald-400 border-b border-slate-700 bg-emerald-900/10">העמלה שלי</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-800">
+                                <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
                                     {playerStats.map(stat => (
                                         <Fragment key={stat.id}>
-                                            <tr className="hover:bg-slate-800/30 transition-colors cursor-pointer group" onClick={() => toggleRow(stat.id)}>
-                                                <td className="p-4 text-center text-slate-500 group-hover:text-emerald-400">{expandedRow === stat.id ? <Icon name="chevronUp" size={18}/> : <Icon name="chevronDown" size={18}/>}</td>
-                                                <td className="p-4 text-right"><div className="font-bold text-slate-200">{stat.name}</div><div className="text-[10px] text-slate-500">{stat.username}</div></td>
-                                                <td className="p-4 text-right font-medium">{stat.hands.toLocaleString()}</td>
-                                                <td className={`p-4 text-right font-bold ${getColorClass(stat.finalPnl)}`}>{formatMoney(stat.finalPnl)}</td>
-                                                <td className="p-4 text-right font-bold text-emerald-500/80">{formatMoney(stat.generatedCommissionNet)}</td>
-                                                <td className="p-4 text-right font-black text-emerald-400">{formatMoney(stat.calculatedCommission)}</td>
+                                            <tr className={`transition-colors cursor-pointer group ${expandedRow === stat.id ? 'bg-slate-800' : 'hover:bg-slate-800/50'}`} onClick={() => toggleRow(stat.id)}>
+                                                <td className="p-5 text-center text-slate-500 group-hover:text-emerald-400">
+                                                    <div className={`p-1.5 rounded-md inline-flex ${expandedRow === stat.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800'}`}>
+                                                        {expandedRow === stat.id ? <Icon name="chevronUp" size={16}/> : <Icon name="chevronDown" size={16}/>}
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-right">
+                                                    <div className="font-bold text-white text-base">{stat.name}</div>
+                                                    <div className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">{stat.username}</div>
+                                                </td>
+                                                <td className="p-5 text-center font-medium text-slate-300">{stat.hands.toLocaleString()}</td>
+                                                <td className={`p-5 text-right font-bold text-base ${getColorClass(stat.finalPnl)}`}>{formatMoney(stat.finalPnl)}</td>
+                                                <td className="p-5 text-right font-bold text-emerald-500/80">{formatMoney(stat.generatedCommissionNet)}</td>
+                                                <td className="p-5 text-right font-black text-lg text-emerald-400 bg-emerald-900/5">{formatMoney(stat.calculatedCommission)}</td>
                                             </tr>
+                                            {/* Drill-down View using the shared component */}
                                             {expandedRow === stat.id && (
-                                                <tr className="bg-slate-900/50"><td colSpan="6" className="p-0 border-b border-slate-800">
+                                                <tr className="bg-slate-900"><td colSpan="6" className="p-0 border-b border-slate-800">
                                                     <PlayerDetailsDrilldown player={stat} record={stat} finalPnl={stat.finalPnl} showToast={showToast} />
                                                 </td></tr>
                                             )}
                                         </Fragment>
                                     ))}
                                 </tbody>
-                                <tfoot className="bg-slate-900/80 border-t-2 border-slate-700">
+                                <tfoot className="bg-slate-800/90 border-t-2 border-slate-600">
                                     <tr>
-                                        <td colSpan="2" className="p-4 text-right font-bold text-slate-300">סיכום סוכן (סה"כ):</td>
-                                        <td className="p-4 text-right font-bold text-white">{totalHands.toLocaleString()}</td>
-                                        <td className={`p-4 text-right font-bold ${getColorClass(totalPnl)}`}>{formatMoney(totalPnl)}</td>
-                                        <td className="p-4 text-right font-bold text-emerald-500/80">{formatMoney(totalNetCommission)}</td>
-                                        <td className="p-4 text-right font-black text-emerald-400">{formatMoney(totalAgentCommission)}</td>
+                                        <td colSpan="2" className="p-5 text-right font-black text-slate-300">סיכום סוכן (סה"כ):</td>
+                                        <td className="p-5 text-center font-bold text-white">{totalHands.toLocaleString()}</td>
+                                        <td className={`p-5 text-right font-bold text-lg ${getColorClass(totalPnl)}`}>{formatMoney(totalPnl)}</td>
+                                        <td className="p-5 text-right font-bold text-emerald-500/80">{formatMoney(totalNetCommission)}</td>
+                                        <td className="p-5 text-right font-black text-xl text-emerald-400 bg-emerald-900/20">{formatMoney(totalAgentCommission)}</td>
                                     </tr>
-                                    <tr className="bg-slate-800/80 border-t border-slate-700">
-                                        <td colSpan="4" className="p-4 text-right font-black text-slate-200">התחשבנות סופית מול מועדון (תוצאה + עמלה):</td>
-                                        <td colSpan="2" className={`p-4 text-right text-xl font-black ${getColorClass(totalAgainstClub)}`}>{formatMoney(totalAgainstClub)}</td>
+                                    <tr className="bg-slate-900 border-t border-slate-700">
+                                        <td colSpan="4" className="p-6 text-right font-black text-slate-200 text-lg flex items-center gap-3">
+                                            <div className="w-2 h-8 bg-cyan-500 rounded-full"></div>
+                                            התחשבנות סופית מול מועדון (תוצאה + עמלה):
+                                        </td>
+                                        <td colSpan="2" className={`p-6 text-right text-3xl font-black tracking-tight ${getColorClass(totalAgainstClub)}`}>{formatMoney(totalAgainstClub)}</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -918,6 +1168,9 @@
             );
         };
 
+        // ==========================================
+        // PLAYER DASHBOARD (BANK VIP STYLE)
+        // ==========================================
         const PlayerDashboard = ({ user, records, messages, currentCycle }) => {
             const cycleRecord = records.find(r => r.cycleId === currentCycle && r.playerId === user.id) || { pnl: 0, hands: 0, bonus: 0, tables: [] };
             const finalResult = (cycleRecord.pnl || 0) + (cycleRecord.bonus || 0);
@@ -932,73 +1185,105 @@
             const rank = getRank(cycleRecord.hands || 0);
 
             return (
-                <div className="max-w-3xl mx-auto space-y-8 mt-4">
-                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-800 to-[#0b1120] border border-slate-700 shadow-2xl p-8 sm:p-12">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none"></div>
-                        <div className="relative z-10 flex flex-col gap-8">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h2 className="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase mb-2">יתרת מחזור עדכנית (נטו)</h2>
-                                    <div className={`text-6xl font-black tracking-tight ${getColorClass(finalResult)} drop-shadow-lg`}>{formatMoney(finalResult)}</div>
-                                    {cycleRecord.bonus > 0 && (
-                                        <div className="mt-3 text-sm text-emerald-400 flex items-center gap-1.5 bg-emerald-900/40 inline-flex px-3 py-1.5 rounded-md font-medium border border-emerald-500/20">
-                                            <Icon name="gift" size={16}/> כולל בונוס ע"ס {formatMoney(cycleRecord.bonus)} מהמועדון!
-                                        </div>
-                                    )}
+                <div className="max-w-4xl mx-auto space-y-8 mt-4">
+                    {/* The "Credit Card" */}
+                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-2xl p-8 sm:p-12 group">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none transition-transform duration-700 group-hover:scale-110"></div>
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[60px] pointer-events-none transition-transform duration-700 group-hover:scale-110"></div>
+                        
+                        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+                            <div>
+                                <h2 className="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase mb-3 flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> יתרת מחזור מעודכנת
+                                </h2>
+                                <div className={`text-6xl md:text-7xl font-black tracking-tight ${getColorClass(finalResult)} drop-shadow-lg`}>
+                                    {formatMoney(finalResult)}
                                 </div>
-                                <div className="text-left hidden sm:block opacity-30"><Icon name="dashboard" size={64} /></div>
+                                {cycleRecord.bonus > 0 && (
+                                    <div className="mt-4 text-sm text-emerald-400 flex items-center gap-2 bg-emerald-900/40 inline-flex px-4 py-2 rounded-lg font-bold border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                                        <Icon name="gift" size={16}/> 
+                                        בונוס מועדון מצורף: {formatMoney(cycleRecord.bonus)}
+                                    </div>
+                                )}
                             </div>
-                            <div className={`mt-4 rounded-2xl p-5 border ${rank.border} ${rank.bg} backdrop-blur flex justify-between items-center`}>
-                                <div><div className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">סטטוס מועדון</div><div className={`text-2xl font-black ${rank.color} tracking-wide`}>{rank.name} VIP</div></div>
-                                <div className="text-left"><div className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">ידיים שוחקו</div><div className="text-2xl font-bold text-white">{cycleRecord.hands.toLocaleString()}</div></div>
+                            
+                            <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl p-6 border border-slate-700 w-full md:w-64 shadow-xl">
+                                <div className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">סטטוס משתמש</div>
+                                <div className={`text-3xl font-black ${rank.color} tracking-wide mb-4`}>{rank.name} <span className="text-sm">VIP</span></div>
+                                <div className="flex justify-between items-center border-t border-slate-700/50 pt-3">
+                                    <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">ידיים שוחקו</span>
+                                    <span className="font-bold text-white text-lg">{cycleRecord.hands.toLocaleString()}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-slate-900/60 rounded-2xl p-6 border border-slate-800 shadow-lg">
-                        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">פירוט משחקים ושולחנות</h3>
-                        {cycleRecord.tables && cycleRecord.tables.length > 0 ? (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm text-right text-slate-300">
-                                    <thead className="border-b border-slate-700 bg-slate-800/50">
-                                        <tr><th className="p-3 text-slate-400 font-semibold rounded-tr-lg">שם שולחן / טורניר</th><th className="p-3 text-slate-400 font-semibold">סוג משחק</th><th className="p-3 text-slate-400 font-semibold">ידיים</th><th className="p-3 text-slate-400 font-semibold rounded-tl-lg">תוצאה (P&L)</th></tr>
+                    {/* Table Details */}
+                    {cycleRecord.tables && cycleRecord.tables.length > 0 && (
+                        <div className="bg-slate-900/60 rounded-3xl p-6 md:p-8 border border-slate-800 shadow-xl relative overflow-hidden">
+                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                                <Icon name="dashboard" size={24} className="text-emerald-400"/> פירוט שולחנות וטורנירים
+                            </h3>
+                            <div className="overflow-x-auto rounded-xl border border-slate-700/50">
+                                <table className="w-full text-right text-sm">
+                                    <thead className="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
+                                        <tr>
+                                            <th className="p-4 font-bold border-b border-slate-700">שם שולחן / סוג משחק</th>
+                                            <th className="p-4 font-bold text-center border-b border-slate-700">ידיים</th>
+                                            <th className="p-4 font-bold border-b border-slate-700">תוצאה (P&L)</th>
+                                        </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-800">
+                                    <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
                                         {cycleRecord.tables.map((t, idx) => (
-                                            <tr key={idx} className="hover:bg-slate-800/50 transition-colors">
-                                                <td className="p-3">{t.name}</td>
-                                                <td className="p-3 text-slate-500">{t.gameType || '-'}</td>
-                                                <td className="p-3">{t.hands}</td>
-                                                <td className={`p-3 font-bold ${getColorClass(t.pnl)}`}>{formatMoney(t.pnl)}</td>
+                                            <tr key={idx} className="hover:bg-slate-800/60 transition-colors">
+                                                <td className="p-4 font-medium text-slate-200 text-base">{t.name}</td>
+                                                <td className="p-4 text-center text-slate-300 font-medium">{t.hands}</td>
+                                                <td className={`p-4 font-bold text-lg ${getColorClass(t.pnl)}`}>{formatMoney(t.pnl)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
-                                    <tfoot className="border-t-2 border-slate-700">
+                                    <tfoot className="bg-slate-800/90 border-t-2 border-slate-600">
                                         <tr>
-                                            <td colSpan="2" className="p-3 font-bold text-slate-400 text-left">סה"כ:</td>
-                                            <td className="p-3 font-bold text-white">{cycleRecord.hands}</td>
-                                            <td className={`p-3 font-bold ${getColorClass(cycleRecord.pnl)}`}>{formatMoney(cycleRecord.pnl)}</td>
+                                            <td className="p-5 font-black text-slate-300 text-base">סה"כ משחקים:</td>
+                                            <td className="p-5 font-bold text-white text-center text-base">{cycleRecord.hands}</td>
+                                            <td className={`p-5 font-black text-xl ${getColorClass(cycleRecord.pnl)}`}>{formatMoney(cycleRecord.pnl)}</td>
                                         </tr>
                                     </tfoot>
                                 </table>
                             </div>
-                        ) : (<div className="text-center py-6 text-slate-500 bg-slate-800/30 rounded-xl border border-slate-800/50">אין נתוני משחקים להצגה במחזור זה.</div>)}
-                    </div>
+                        </div>
+                    )}
 
-                    <div className="bg-slate-900/60 rounded-2xl p-6 border border-slate-800 shadow-lg">
-                        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3"><Icon name="message" size={24} className="text-emerald-400"/> הודעות אישיות מהמועדון</h3>
+                    {/* Inbox */}
+                    <div className="bg-slate-900/60 rounded-3xl p-6 md:p-8 border border-slate-800 shadow-xl">
+                        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                            <Icon name="message" size={24} className="text-cyan-400"/> 
+                            הודעות ממועדון NETABEL
+                        </h3>
                         {myMessages.length === 0 ? (
-                            <div className="text-center py-12 text-slate-500 bg-slate-800/30 rounded-xl border border-slate-800/50">תיבת ההודעות שלך ריקה.</div>
+                            <div className="text-center py-16 text-slate-500 bg-slate-800/20 rounded-2xl border-2 border-dashed border-slate-700/50">
+                                <Icon name="message" size={48} className="mx-auto mb-4 opacity-50"/>
+                                <p className="font-medium text-lg">תיבת ההודעות שלך ריקה.</p>
+                            </div>
                         ) : (
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                                 {myMessages.map(msg => (
-                                    <div key={msg.id} className="bg-slate-800/80 rounded-xl p-5 border border-slate-700/50 hover:border-emerald-500/30 transition-colors">
-                                        <div className="flex justify-between items-center mb-3 border-b border-slate-700/50 pb-2">
-                                            <div className="flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/50"><span className="text-emerald-400 text-xs">♠</span></div><span className="font-bold text-slate-200 text-sm">הנהלת המועדון</span></div>
-                                            <span className="text-[10px] text-slate-500 font-medium tracking-wider">{msg.date}</span>
+                                    <div key={msg.id} className="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 shadow-md hover:border-cyan-500/30 transition-colors">
+                                        <div className="flex justify-between items-center mb-4 border-b border-slate-700/50 pb-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]">
+                                                    <span className="text-cyan-400 text-sm font-black">N</span>
+                                                </div>
+                                                <span className="font-bold text-slate-100 text-base">הנהלת המועדון</span>
+                                            </div>
+                                            <span className="text-xs text-slate-500 font-bold tracking-widest bg-slate-900 px-3 py-1 rounded-full">{msg.date}</span>
                                         </div>
-                                        <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                                        {msg.image && <img src={msg.image} alt="Club" className="mt-4 rounded-lg border border-slate-700 shadow-md max-h-48 object-cover" />}
+                                        <p className="text-slate-300 text-base leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                                        {msg.image && (
+                                            <div className="mt-5 rounded-xl overflow-hidden border border-slate-600 inline-block shadow-lg">
+                                                <img src={msg.image} alt="Club" className="max-w-full h-auto max-h-64 object-cover" />
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
