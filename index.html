@@ -9,8 +9,8 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- PapaParse for Excel/CSV Handling -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- SheetJS for Excel/CSV Handling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -673,9 +673,15 @@
 
                 setIsParsing(true);
 
-                Papa.parse(file, {
-                    complete: (results) => {
-                        const rows = results.data;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = new Uint8Array(event.target.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
+
                         let newPlayersCount = 0;
                         let newRecordsCount = 0;
                         let tablesAdded = 0;
@@ -687,7 +693,7 @@
                         for (let i = 0; i < Math.min(20, rows.length); i++) {
                             if (!rows[i]) continue;
                             rows[i].forEach((cell, colIdx) => {
-                                if (!cell) return;
+                                if (cell === undefined || cell === null) return;
                                 const t = cell.toString().toLowerCase().trim();
                                 if (t === 'nickname' || t === 'player') nicknameIndex = colIdx;
                                 if (t === 'p&l' || t === 'player p&l') pnlIndex = colIdx;
@@ -711,7 +717,7 @@
                         let newRecordsList = [...records];
 
                         const cleanNum = (str) => {
-                            if (!str) return 0;
+                            if (str === undefined || str === null || str === '') return 0;
                             const cleaned = str.toString().replace(/["',]/g, '').trim();
                             const num = parseFloat(cleaned);
                             return isNaN(num) ? 0 : num;
@@ -725,10 +731,12 @@
                             if(!row || row.length < nicknameIndex) continue; 
                             
                             const nicknameRaw = row[nicknameIndex];
-                            if(!nicknameRaw) continue;
+                            if(nicknameRaw === undefined || nicknameRaw === null) continue;
                             
                             const nickname = nicknameRaw.toString().replace(/["']/g, '').trim();
-                            if(!nickname || nickname === '-' || nickname.toLowerCase() === 'nickname' || nickname.toLowerCase() === 'player') continue;
+                            
+                            // Ignore empty rows, separator rows, repeated headers, or "Total" rows
+                            if(!nickname || nickname === '-' || nickname.toLowerCase() === 'nickname' || nickname.toLowerCase() === 'player' || nickname.toLowerCase().includes('total')) continue;
 
                             // Create User if not exists
                             let player = newUsers.find(u => u.username === nickname);
@@ -790,13 +798,14 @@
                         
                         showToast(`הקובץ פוענח בהצלחה! ${newPlayersCount} שחקנים חדשים נוספו.`);
                         e.target.value = ''; // Reset input
-                    },
-                    error: (err) => {
+                    } catch (err) {
+                        console.error("Excel Parsing Error:", err);
                         setIsParsing(false);
-                        showToast('שגיאה בקריאת הקובץ', 'error');
-                    },
-                    skipEmptyLines: true
-                });
+                        showToast('שגיאה בקריאת הקובץ - ודא שזהו אקסל או CSV תקין', 'error');
+                        e.target.value = '';
+                    }
+                };
+                reader.readAsArrayBuffer(file); // This reads binary files correctly
             };
 
             const addCycle = () => {
