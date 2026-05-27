@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -497,24 +498,57 @@
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const text = event.target.result;
+                    // Split rows, but respect commas inside quotes (basic regex replacement)
+                    // For a basic split we'll just split by comma, but we'll clean quotes later.
                     const rows = text.split(/\r?\n/).map(row => row.split(','));
                     
                     let newPlayersCount = 0;
                     let newRecordsCount = 0;
                     
-                    // We look for a "Nickname" column
-                    const nicknameIndex = rows[0]?.findIndex(h => h && h.toLowerCase().includes('nickname')) || 3;
-                    const pnlIndex = rows[0]?.findIndex(h => h && h.toLowerCase().includes('p&l')) || -1;
-                    const rakeIndex = rows[0]?.findIndex(h => h && h.toLowerCase().includes('rake')) || -1;
-                    const handsIndex = rows[0]?.findIndex(h => h && h.toLowerCase().includes('hands')) || -1;
+                    let nicknameIndex = -1, pnlIndex = -1, rakeIndex = -1, handsIndex = -1;
+                    let dataStartRow = 1;
+
+                    // Scan up to the first 20 rows to find headers correctly (handles multi-line headers)
+                    for (let i = 0; i < Math.min(20, rows.length); i++) {
+                        if (!rows[i]) continue;
+                        rows[i].forEach((cell, colIdx) => {
+                            if (!cell) return;
+                            const t = cell.toLowerCase().replace(/['"]/g, '').trim();
+                            if (t === 'nickname' || t === 'player') nicknameIndex = colIdx;
+                            if (t === 'p&l' || t === 'player p&l') pnlIndex = colIdx;
+                            if (t === 'rake' || t === 'contribution fee' || t.includes('rake&fee')) rakeIndex = colIdx;
+                            if (t === 'hands' || t === 'played hands') handsIndex = colIdx;
+                        });
+                        if (nicknameIndex !== -1 && dataStartRow === 1) dataStartRow = i + 1;
+                    }
+
+                    // Fallbacks if headers not found strictly
+                    if (nicknameIndex === -1) nicknameIndex = 3;
+                    if (pnlIndex === -1) pnlIndex = 13;
+                    if (rakeIndex === -1) rakeIndex = 12;
+                    if (handsIndex === -1) handsIndex = 6;
                     
                     let newUsers = [...users];
                     let newRecordsList = [...records];
 
-                    rows.forEach((row, idx) => {
-                        if(idx < 5 || !row[nicknameIndex]) return; 
-                        const nickname = row[nicknameIndex].trim();
-                        if(!nickname || nickname === '-') return;
+                    // Helper to clean formatted numbers (like "1,500.50" or quotes)
+                    const cleanNum = (str) => {
+                        if (!str) return 0;
+                        const cleaned = str.replace(/["',]/g, '').trim();
+                        const num = parseFloat(cleaned);
+                        return isNaN(num) ? 0 : num;
+                    };
+
+                    for (let idx = dataStartRow; idx < rows.length; idx++) {
+                        const row = rows[idx];
+                        if(!row || row.length < nicknameIndex) continue; 
+                        
+                        const nicknameRaw = row[nicknameIndex];
+                        if(!nicknameRaw) continue;
+                        
+                        const nickname = nicknameRaw.replace(/["']/g, '').trim();
+                        // Ignore empty rows, separator rows, or repeated headers
+                        if(!nickname || nickname === '-' || nickname.toLowerCase() === 'nickname' || nickname.toLowerCase() === 'player') continue;
 
                         // 1. Create User if doesn't exist
                         let player = newUsers.find(u => u.username === nickname);
@@ -532,38 +566,39 @@
                             newPlayersCount++;
                         }
 
-                        // 2. Parse Records if columns exist (like in Ring Game Details)
-                        if(pnlIndex > -1 && rakeIndex > -1) {
-                            const pnl = parseFloat(row[pnlIndex]) || 0;
-                            const rake = parseFloat(row[rakeIndex]) || 0;
-                            const hands = handsIndex > -1 ? parseInt(row[handsIndex]) || 0 : 0;
+                        // 2. Parse Records
+                        const pnl = cleanNum(row[pnlIndex]);
+                        const rake = cleanNum(row[rakeIndex]);
+                        const hands = handsIndex > -1 ? Math.round(cleanNum(row[handsIndex])) : 0;
 
-                            // Update or push record for current cycle
-                            const existingRecord = newRecordsList.find(r => r.cycleId === currentCycle && r.playerId === player.id);
-                            if(existingRecord) {
-                                existingRecord.pnl += pnl;
-                                existingRecord.rake += rake;
-                                existingRecord.hands += hands;
-                            } else {
-                                newRecordsList.push({
-                                    id: Date.now() + Math.random(),
-                                    cycleId: currentCycle,
-                                    playerId: player.id,
-                                    pnl: pnl,
-                                    rake: rake,
-                                    hands: hands,
-                                    bonus: 0,
-                                    tables: [] // In a more complex parser we'd push table data here
-                                });
-                                newRecordsCount++;
-                            }
+                        // Don't add completely empty stat rows
+                        if (pnl === 0 && rake === 0 && hands === 0) continue;
+
+                        // Update or push record for current cycle
+                        const existingRecord = newRecordsList.find(r => r.cycleId === currentCycle && r.playerId === player.id);
+                        if(existingRecord) {
+                            existingRecord.pnl += pnl;
+                            existingRecord.rake += rake;
+                            existingRecord.hands += hands;
+                        } else {
+                            newRecordsList.push({
+                                id: Date.now() + Math.random(),
+                                cycleId: currentCycle,
+                                playerId: player.id,
+                                pnl: pnl,
+                                rake: rake,
+                                hands: hands,
+                                bonus: 0,
+                                tables: [] // Can be expanded in the future
+                            });
+                            newRecordsCount++;
                         }
-                    });
+                    }
 
                     setUsers(newUsers);
                     setRecords(newRecordsList);
                     
-                    alert(`הקובץ נטען ונותח בהצלחה!\nנוצרו ${newPlayersCount} שחקנים חדשים.\nעודכנו ${newRecordsCount} רשומות תוצאה למחזור הנוכחי.`);
+                    alert(`הקובץ נטען ונותח בהצלחה!\nנוצרו ${newPlayersCount} שחקנים חדשים.\nעודכנו/נוספו ${newRecordsCount} רשומות תוצאה למחזור הנוכחי.`);
                 };
                 reader.readAsText(file);
             };
@@ -588,7 +623,7 @@
                         </p>
                         <label className="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all border border-slate-600">
                             בחר קובץ לחלץ נתונים
-                            <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} />
+                            <input type="file" className="hidden" accept=".csv, text/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .xlsx" onChange={handleFileUpload} />
                         </label>
                     </div>
 
