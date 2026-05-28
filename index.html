@@ -1,18 +1,16 @@
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מועדון NETABEL - מערכת ניהול והתחשבנות</title>
     
-    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- PapaParse for robust CSV Handling (Google Sheets compatible) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -84,7 +82,7 @@
                 chevronUp: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="18 15 12 9 6 15"></polyline></svg>,
                 sort: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="14" y2="12"></line><line x1="4" y1="18" x2="8" y2="18"></line></svg>,
                 search: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>,
-                settings: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
+                settings: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
                 trash: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
                 eye: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>,
                 eyeOff: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>,
@@ -137,11 +135,11 @@
             const [isPrivacyMode, setIsPrivacyMode] = useState(false);
 
             useEffect(() => {
-                const storedUsers = JSON.parse(localStorage.getItem('netabel_sys_v2_users'));
-                const storedRecords = JSON.parse(localStorage.getItem('netabel_sys_v2_records'));
-                const storedMessages = JSON.parse(localStorage.getItem('netabel_sys_v2_messages'));
-                const storedCycles = JSON.parse(localStorage.getItem('netabel_sys_v2_cycles'));
-                const storedUploads = JSON.parse(localStorage.getItem('netabel_sys_v2_uploads'));
+                const storedUsers = JSON.parse(localStorage.getItem('netabel_sys_v3_users'));
+                const storedRecords = JSON.parse(localStorage.getItem('netabel_sys_v3_records'));
+                const storedMessages = JSON.parse(localStorage.getItem('netabel_sys_v3_messages'));
+                const storedCycles = JSON.parse(localStorage.getItem('netabel_sys_v3_cycles'));
+                const storedUploads = JSON.parse(localStorage.getItem('netabel_sys_v3_uploads'));
                 
                 if (storedUsers) setUsers(storedUsers); else setUsers(initialUsers);
                 if (storedRecords) setRecords(storedRecords); else setRecords([]);
@@ -152,11 +150,11 @@
 
             useEffect(() => {
                 if(users.length > 0) {
-                    localStorage.setItem('netabel_sys_v2_users', JSON.stringify(users));
-                    localStorage.setItem('netabel_sys_v2_records', JSON.stringify(records));
-                    localStorage.setItem('netabel_sys_v2_messages', JSON.stringify(messages));
-                    localStorage.setItem('netabel_sys_v2_cycles', JSON.stringify(cyclesList));
-                    localStorage.setItem('netabel_sys_v2_uploads', JSON.stringify(uploadBatches));
+                    localStorage.setItem('netabel_sys_v3_users', JSON.stringify(users));
+                    localStorage.setItem('netabel_sys_v3_records', JSON.stringify(records));
+                    localStorage.setItem('netabel_sys_v3_messages', JSON.stringify(messages));
+                    localStorage.setItem('netabel_sys_v3_cycles', JSON.stringify(cyclesList));
+                    localStorage.setItem('netabel_sys_v3_uploads', JSON.stringify(uploadBatches));
                 }
             }, [users, records, messages, cyclesList, uploadBatches]);
 
@@ -388,7 +386,7 @@
             );
         };
 
-        // --- Admin: Import View ---
+        // --- Admin: Import View (Super Robust CSV specific to Google Sheets) ---
         const AdminImportView = ({ setRecords, setUsers, users, currentCycle, cyclesList, setCyclesList, records, showToast, uploadBatches, setUploadBatches }) => {
             const [newCycleName, setNewCycleName] = useState('');
             const [isParsing, setIsParsing] = useState(false);
@@ -404,7 +402,7 @@
                 reader.onload = (event) => {
                     try {
                         const text = event.target.result;
-                        // Use PapaParse which handles quoted values and newlines in CSV better than manual splitting
+                        // Use PapaParse to safely handle commas inside numbers and complex CSVs
                         Papa.parse(text, {
                             complete: (results) => {
                                 const rows = results.data;
@@ -421,7 +419,7 @@
                                 const batchId = 'batch_' + Date.now();
                                 const currentBatchDeltas = [];
 
-                                // Helper function to clean and parse numbers
+                                // Helper function to clean and parse accounting numbers
                                 const extractNum = (val) => {
                                     if (val === undefined || val === null || val === '') return 0;
                                     let str = String(val).trim();
@@ -434,65 +432,49 @@
                                 let dataStartRow = -1;
                                 let colMap = { nickname: -1, agent: -1, pnl: -1, fee: -1, hands: -1 };
 
-                                // 1. Scan for headers
-                                // We scan the first few rows to find where the actual data table starts.
-                                for (let i = 0; i < Math.min(10, rows.length); i++) {
-                                    const row = rows[i];
-                                    if (!row) continue;
+                                // 1. Scan for headers flexibly (supports Member Statistics and Ring Game Detail)
+                                for (let i = 0; i < Math.min(15, rows.length); i++) {
+                                    const rowStr = rows[i].join('|').toLowerCase();
                                     
-                                    // Check if this row contains 'nickname' (case insensitive)
-                                    const rowStr = row.join('|').toLowerCase();
-                                    if (rowStr.includes('nickname')) {
-                                        dataStartRow = i + 1; // Data usually starts on the next row
-
-                                        // Now map the columns based on this header row
-                                        row.forEach((cell, colIdx) => {
-                                            if (cell === undefined || cell === null) return;
-                                            const cellText = String(cell).toLowerCase().trim();
+                                    if (rowStr.includes('player p&l') || rowStr.includes('rake&fee') || rowStr.includes('nickname') || rowStr.includes('member')) {
+                                        const mainHeaders = rows[i];
+                                        const subHeaders = rows[i+1] || [];
+                                        
+                                        let currentMain = "";
+                                        for (let c = 0; c < mainHeaders.length; c++) {
+                                            const h1 = String(mainHeaders[c] || '').trim();
+                                            if (h1 !== '') currentMain = h1.toLowerCase();
                                             
-                                            if (cellText === 'nickname' || cellText === 'player') colMap.nickname = colIdx;
-                                            if (cellText === 'agent') colMap.agent = colIdx;
+                                            const h2 = String(subHeaders[c] || '').trim().toLowerCase();
                                             
-                                            // The Google Sheet has complex multi-level headers.
-                                            // Often, P&L is just called 'Total' under the 'Player P&L' group.
-                                            // Same for 'Fee'.
-                                            // We will try to find exact matches first, then fall back.
-                                        });
-
-                                        // If we are dealing with the Google Sheets format you provided:
-                                        // P&L Total is usually col 12 or 13, Fee Total is usually around col 33.
-                                        // Let's try to be smart if exact headers weren't found in a single row.
-                                        if (colMap.pnl === -1) {
-                                            // Try to find the 'Total' column that is likely P&L
-                                            // Look in the previous row for 'Player P&L' to confirm
-                                            if (i > 0) {
-                                                 const prevRow = rows[i-1];
-                                                 for(let c=0; c<row.length; c++) {
-                                                     const thisCell = String(row[c]).toLowerCase().trim();
-                                                     const prevCell = String(prevRow[c]).toLowerCase().trim();
-                                                     if (thisCell === 'total' && prevCell.includes('p&l')) {
-                                                         colMap.pnl = c;
-                                                     }
-                                                     if (thisCell === 'total' && (prevCell.includes('fee') || prevCell.includes('rake'))) {
-                                                         colMap.fee = c;
-                                                     }
-                                                 }
-                                            }
+                                            if (currentMain === 'player p&l' && h2 === 'total') colMap.pnl = c;
+                                            if ((currentMain === 'rake&fee' || currentMain === 'fee') && h2 === 'total') colMap.fee = c;
+                                            if (currentMain.includes('played hands') && (h2 === 'total' || h2 === '')) colMap.hands = c;
                                         }
+                                        
+                                        // Usually Agent Name is at 5, Nickname at 9 in the specific file provided
+                                        // Let's verify by peeking at a data row.
+                                        colMap.agent = 5;
+                                        colMap.nickname = 9;
 
-                                        // Fallbacks based on common GG / PokerBROS CSV formats
-                                        if (colMap.pnl === -1) colMap.pnl = row.findIndex(c => String(c).toLowerCase().includes('p&l'));
-                                        if (colMap.fee === -1) colMap.fee = row.findIndex(c => String(c).toLowerCase().includes('fee') || String(c).toLowerCase().includes('rake'));
-                                        if (colMap.hands === -1) colMap.hands = row.findIndex(c => String(c).toLowerCase().includes('hands'));
+                                        // Fallbacks just in case it's a different format
+                                        if (colMap.pnl === -1) colMap.pnl = rows[i].findIndex(c => String(c).toLowerCase().includes('p&l'));
+                                        if (colMap.fee === -1) colMap.fee = rows[i].findIndex(c => String(c).toLowerCase().includes('fee') || String(c).toLowerCase().includes('rake'));
+                                        if (colMap.hands === -1) colMap.hands = rows[i].findIndex(c => String(c).toLowerCase().includes('hands'));
 
-                                        break; // Found the header row, stop scanning
+                                        dataStartRow = i + 2; // Data usually starts 2 rows after main header in Member Stats
+                                        
+                                        // Skip empty rows or duplicate headers
+                                        while(dataStartRow < rows.length && (!rows[dataStartRow] || String(rows[dataStartRow][0]).includes('Total') || String(rows[dataStartRow][colMap.nickname]).includes('Nickname'))) {
+                                            dataStartRow++;
+                                        }
+                                        break;
                                     }
                                 }
 
-                                // If we still couldn't map the nickname, the file is unrecognized.
                                 if (dataStartRow === -1 || colMap.nickname === -1) {
                                      setIsParsing(false);
-                                     showToast('לא נמצאו נתונים רלוונטיים להעלאה בקובץ זה. ודא שקיימת עמודת Nickname.', 'error');
+                                     showToast('לא נמצאו נתונים. ודא שקיימת עמודת Nickname והורדת מ-Google Sheets כ-CSV.', 'error');
                                      e.target.value = '';
                                      return;
                                 }
@@ -508,9 +490,8 @@
                                     const nickname = String(nicknameRaw).replace(/["']/g, '').trim();
                                     
                                     // Skip empty or summary rows
-                                    if (!nickname || nickname === '-' || nickname.toLowerCase().includes('total')) continue;
+                                    if (!nickname || nickname === '-' || nickname.toLowerCase().includes('total') || nickname.toLowerCase() === 'nickname') continue;
 
-                                    // Extract data using the mapped column indices
                                     const pnl = colMap.pnl !== -1 ? extractNum(row[colMap.pnl]) : 0;
                                     const rake = colMap.fee !== -1 ? extractNum(row[colMap.fee]) : 0;
                                     const hands = colMap.hands !== -1 ? Math.round(extractNum(row[colMap.hands])) : 0;
@@ -519,14 +500,12 @@
                                     let assignedAgentId = 'agent_default';
                                     if (colMap.agent !== -1 && row[colMap.agent]) {
                                         const rawAgentName = String(row[colMap.agent]).toLowerCase().trim();
-                                        // Match against known agents
                                         const matchedAgent = newUsers.find(u => u.role === 'agent' && u.name.toLowerCase() === rawAgentName);
                                         if (matchedAgent) {
                                             assignedAgentId = matchedAgent.id;
                                         }
                                     }
 
-                                    // If no financial or hands data, skip creating records, but we might still create the user
                                     if (pnl === 0 && rake === 0 && hands === 0) continue;
 
                                     // Create or Find User
@@ -544,11 +523,10 @@
                                         newUsers.push(player);
                                         newPlayersCount++;
                                     } else if (player.agentId === 'agent_default' && assignedAgentId !== 'agent_default') {
-                                        // Update agent if previously unassigned
                                         player.agentId = assignedAgentId;
                                     }
 
-                                    const tableName = "סיכום משחקים כללי"; // Default for Member Statistics
+                                    const tableName = "סיכום משחקים כללי"; 
                                     const tableObj = { name: tableName, hands: hands, pnl: pnl, rake: rake, batchId: batchId };
 
                                     // Update or Create Record
@@ -571,7 +549,6 @@
                                         });
                                     }
 
-                                    // Record the delta for rollback functionality
                                     currentBatchDeltas.push({ playerId: player.id, pnl, rake, hands });
                                 }
 
@@ -611,7 +588,6 @@
                     }
                 };
                 
-                // Read as text for PapaParse
                 reader.readAsText(file);
             };
 
@@ -708,6 +684,10 @@
                     </div>
                 </div>
             );
+        };
+
+        const generateWhatsAppLink = (phone, text) => {
+            return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
         };
 
         const AdminSettingsView = ({ users, setUsers, records, setRecords, currentCycle, cyclesList, setCyclesList, showToast, setUploadBatches, uploadBatches }) => {
@@ -932,7 +912,7 @@
                         <div className="p-12 text-center border-2 border-dashed border-slate-700 rounded-2xl bg-slate-800/20">
                             <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-slate-500 mx-auto mb-4"><Icon name="users" size={32}/></div>
                             <h4 className="text-lg font-bold text-white mb-2">אין שחקנים במערכת</h4>
-                            <p className="text-slate-400">יש לגשת ללשונית "ייבוא דוחות" ולהעלות קובץ כדי לאכלס את המערכת.</p>
+                            <p className="text-slate-400">יש לגשת ללשונית "ייבוא קבצים" ולהעלות קובץ כדי לאכלס את המערכת.</p>
                         </div>
                     ) : (
                     <div className="overflow-x-auto rounded-xl border border-slate-700/50 shadow-xl">
@@ -1008,35 +988,6 @@
                         </table>
                     </div>
                     )}
-                </div>
-            );
-        };
-
-        const AdminMessagesView = ({ users, messages, setMessages, showToast }) => {
-            const [text, setText] = useState(''); const [imgUrl, setImgUrl] = useState(''); const [targetId, setTargetId] = useState('all');
-            const sendMsg = () => {
-                if(!text) return;
-                setMessages([{ id: Date.now(), senderId: 'admin1', receiverId: targetId, text, image: imgUrl, date: new Date().toLocaleDateString('he-IL') }, ...messages]);
-                setText(''); setImgUrl(''); showToast('ההודעה נשלחה לנמענים!');
-            };
-            return (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="space-y-5 bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50">
-                        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-3"><Icon name="message" size={24} className="text-emerald-400"/> שליחת הודעת מערכת</h3>
-                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">נמען</label><select value={targetId} onChange={(e)=>setTargetId(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner font-medium"><option value="all">שידור לכולם (גלובלי)</option><optgroup label="סוכנים">{users.filter(u=>u.role==='agent').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup><optgroup label="שחקנים">{users.filter(u=>u.role==='player').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup></select></div>
-                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תוכן ההודעה (קופץ באינבוקס)</label><textarea value={text} onChange={(e)=>setText(e.target.value)} rows="4" className="w-full bg-slate-800 border border-slate-600 rounded-xl p-4 text-white outline-none focus:border-emerald-500 shadow-inner resize-none" placeholder="הקלד את ההודעה שתקפוץ למשתמשים..."></textarea></div>
-                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תמונה מצורפת (אופציונלי)</label><input type="text" value={imgUrl} onChange={(e)=>setImgUrl(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner" placeholder="הדבק URL של תמונה (https://...)" /></div>
-                        <button onClick={sendMsg} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg py-4 rounded-xl shadow-lg transition-transform active:scale-95 w-full mt-2">שגר הודעה</button>
-                    </div>
-                    <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-700/50 flex flex-col h-[600px] shadow-inner">
-                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 pb-3 border-b border-slate-700 flex items-center gap-2"><Icon name="dashboard" size={16}/> היסטוריית שידורים</h4>
-                        <div className="space-y-4 overflow-y-auto flex-1 pr-2">
-                            {messages.filter(m => m.senderId === 'admin1').map(m => (
-                                <div key={m.id} className="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-sm relative"><div className="flex justify-between items-start mb-3 border-b border-slate-700/50 pb-2"><span className="font-bold text-emerald-400 text-sm">נמען: {m.receiverId === 'all' ? 'כולם' : users.find(u=>u.id===m.receiverId)?.name || 'לא ידוע'}</span><span className="text-[10px] text-slate-500 font-medium">{m.date}</span></div><p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{m.text}</p>{m.image && <img src={m.image} alt="Attachment" className="mt-3 rounded-lg border border-slate-600 max-h-40 object-cover shadow-md" />}</div>
-                            ))}
-                            {messages.length === 0 && (<div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50"><Icon name="message" size={48} className="mb-4" /><p>טרם נשלחו הודעות.</p></div>)}
-                        </div>
-                    </div>
                 </div>
             );
         };
