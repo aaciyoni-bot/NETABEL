@@ -1,15 +1,16 @@
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מועדון NETABEL - מערכת בנקאות והתחשבנות</title>
+    <title>מועדון NETABEL - מערכת ניהול והתחשבנות</title>
     
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- SheetJS for Ultimate Excel Parsing -->
+    <!-- SheetJS for Excel/CSV Parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <!-- Tailwind CSS -->
@@ -47,6 +48,7 @@
             { id: 'agent_amirgu', username: 'amirgu', password: '123', role: 'agent', name: 'AMIRGU', commissionRate: 70 },
             { id: 'agent_naki', username: 'naki', password: '123', role: 'agent', name: 'NAKI', commissionRate: 70 },
             { id: 'agent_oz', username: 'oz', password: '123', role: 'agent', name: 'OZ', commissionRate: 70 },
+            { id: 'agent_dopdop', username: 'dopdop', password: '123', role: 'agent', name: 'dop dop', commissionRate: 70 }, // הסוכן החדש
         ];
 
         // --- Utils ---
@@ -346,7 +348,7 @@
                 <div className="space-y-6">
                     <div className="flex flex-wrap bg-slate-900/80 rounded-xl p-1.5 border border-slate-700/50 shadow-sm">
                         {[
-                            {id: 'import', name: 'ייבוא דוחות פוקר (Excel)'},
+                            {id: 'import', name: 'ייבוא דוחות (CSV/Excel)'},
                             {id: 'agents', name: 'סיכום סוכנים'},
                             {id: 'players', name: 'ניהול שחקנים ועמלות'},
                             {id: 'messages', name: 'מרכז הודעות'},
@@ -579,7 +581,7 @@
                             </div>
                         ) : (
                             <div className="flex-1 flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-lg p-6 bg-slate-900/30">
-                                אין פירוט שולחנות. ייתכן שהקובץ המיובא היה דוח סיכום כללי ולא דוח מפורט (Ring Game Detail).
+                                אין פירוט שולחנות. ייתכן שהקובץ המיובא היה דוח סיכום כללי ולא דוח מפורט.
                             </div>
                         )}
                     </div>
@@ -726,7 +728,7 @@
                                                     )}
                                                 </td>
                                             </tr>
-                                            {/* Drill-down uses the shared component */}
+                                            {/* Drill-down View */}
                                             {expandedRow === player.id && (
                                                 <tr className="bg-slate-900"><td colSpan="5" className="p-0 border-b border-slate-800">
                                                     <PlayerDetailsDrilldown player={player} record={record} finalPnl={finalPnl} showToast={showToast} />
@@ -743,7 +745,7 @@
             );
         };
 
-        // --- THE ULTIMATE EXCEL PARSER ---
+        // --- THE ULTIMATE CSV/EXCEL PARSER ---
         const AdminImportView = ({ setRecords, setUsers, users, currentCycle, cyclesList, setCyclesList, records, showToast }) => {
             const [newCycleName, setNewCycleName] = useState('');
             const [isParsing, setIsParsing] = useState(false);
@@ -765,79 +767,88 @@
                         let newUsers = [...users];
                         let newRecordsList = [...records];
 
-                        // Helper to meticulously clean dirty numbers
-                        const cleanNum = (val) => {
+                        // Helper to strictly extract numbers (handles "(1,500)" as -1500)
+                        const extractNum = (val) => {
                             if (val === undefined || val === null || val === '') return 0;
                             let str = String(val).trim();
-                            // Handle accounting negative format (1,500.00)
-                            if (str.startsWith('(') && str.endsWith(')')) {
-                                str = '-' + str.slice(1, -1);
-                            }
-                            // Strip everything except digits, minus, and dot
+                            if (str.startsWith('(') && str.endsWith(')')) str = '-' + str.slice(1, -1);
                             const cleaned = str.replace(/[^\d.-]/g, '');
                             const num = parseFloat(cleaned);
                             return isNaN(num) ? 0 : num;
                         };
 
-                        // 1. Iterate over EVERY sheet in the workbook
+                        // Process ONLY the "Member Statistics" sheet or all sheets if we don't know the name
                         workbook.SheetNames.forEach(sheetName => {
                             const worksheet = workbook.Sheets[sheetName];
                             const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
-                            if (!rows || rows.length === 0) return; // Empty sheet
+                            if (!rows || rows.length === 0) return;
 
-                            let nicknameIdx = -1, pnlIdx = -1, rakeIdx = -1, handsIdx = -1;
                             let dataStartRow = -1;
-                            let tableName = sheetName; // Default table name to sheet name
+                            let colMap = { nickname: -1, agent: -1, pnl: -1, fee: -1, hands: -1 };
 
-                            // 2. Scan up to first 30 rows to find headers and metadata
-                            for (let i = 0; i < Math.min(30, rows.length); i++) {
-                                const row = rows[i];
-                                if (!row) continue;
-
-                                // Try to find explicit Table Name in metadata rows
-                                const rowStr = row.join(" ").toLowerCase();
-                                if (rowStr.includes("table name") || rowStr.includes("tournament title") || rowStr.includes("שולחן")) {
-                                    // Extract from the cell that contains it, or the cell next to it
-                                    const cellWithTitle = row.find(c => String(c).toLowerCase().includes("table name") || String(c).toLowerCase().includes("tournament"));
-                                    if(cellWithTitle) {
-                                        tableName = cellWithTitle.toString().split(':')[1]?.trim() || sheetName;
-                                    }
-                                }
-
-                                // Hunt for the actual table headers
-                                row.forEach((cell, colIdx) => {
-                                    if (cell === undefined || cell === null) return;
-                                    const t = cell.toString().toLowerCase().trim();
+                            // 1. Find where the real table starts by looking for "Nickname" or "ID"
+                            for (let i = 0; i < Math.min(15, rows.length); i++) {
+                                const rowStr = rows[i].map(c => String(c).toLowerCase().trim()).join('|');
+                                if (rowStr.includes('nickname') || rowStr.includes('player')) {
+                                    dataStartRow = i + 1; // Data starts below the main header
                                     
-                                    // Broad matching for different CSV variations
-                                    if (t === 'nickname' || t === 'player' || t.includes('שם שחקן')) nicknameIdx = colIdx;
-                                    if (t === 'p&l' || t === 'net' || t.includes('profit') || t.includes('תוצאה') || t === 'payouts') pnlIdx = colIdx;
-                                    if (t === 'rake' || t === 'fee' || t.includes('contribution') || t.includes('רייק')) rakeIdx = colIdx;
-                                    if (t === 'hands' || t.includes('played') || t.includes('ידיים')) handsIdx = colIdx;
-                                });
+                                    // 2. Identify the exact columns based on the complex multi-row headers
+                                    for (let col = 0; col < rows[i].length; col++) {
+                                        const h1 = String(rows[i > 0 ? i - 1 : i][col] || '').toLowerCase(); // Main category (e.g. Player P&L)
+                                        const h2 = String(rows[i][col] || '').toLowerCase();       // Current row (e.g. Total)
+                                        const h3 = String(rows[i + 1] ? rows[i + 1][col] : '').toLowerCase(); // Sub category
+                                        
+                                        const combinedHeader = `${h1} ${h2} ${h3}`;
 
-                                // If we found the Nickname column, this is the header row. Data starts next row.
-                                if (nicknameIdx !== -1) {
-                                    dataStartRow = i + 1;
-                                    break; 
+                                        if (combinedHeader.includes('nickname') || h2 === 'player') colMap.nickname = col;
+                                        if (combinedHeader.includes('agent')) colMap.agent = col;
+                                        
+                                        // The magical formulas to find the correct "Total" columns for GG Reports
+                                        if (combinedHeader.includes('p&l') && combinedHeader.includes('total') && !combinedHeader.includes('insurance')) {
+                                            colMap.pnl = col;
+                                        }
+                                        if ((combinedHeader.includes('fee') || combinedHeader.includes('rake')) && combinedHeader.includes('total')) {
+                                            colMap.fee = col;
+                                        }
+                                        if (combinedHeader.includes('hands') && combinedHeader.includes('total')) {
+                                            colMap.hands = col;
+                                        }
+                                    }
+                                    break; // Stop looking for headers
                                 }
                             }
 
-                            // If we never found a Nickname column, skip this sheet completely.
-                            if (nicknameIdx === -1 || dataStartRow === -1) return;
+                            if (dataStartRow === -1 || colMap.nickname === -1) return; // Skip sheet if not valid
 
-                            // 3. Process the actual data rows for this sheet
+                            // Fallback for simple flat CSVs
+                            if (colMap.pnl === -1) colMap.pnl = rows[dataStartRow-1].findIndex(c => String(c).toLowerCase().includes('p&l'));
+                            if (colMap.fee === -1) colMap.fee = rows[dataStartRow-1].findIndex(c => String(c).toLowerCase().includes('fee') || String(c).toLowerCase().includes('rake'));
+
+                            // 3. Process the actual data rows
                             for (let idx = dataStartRow; idx < rows.length; idx++) {
                                 const row = rows[idx];
-                                if (!row || row.length <= nicknameIdx) continue;
+                                if (!row || row.length <= colMap.nickname) continue;
                                 
-                                const nicknameRaw = row[nicknameIdx];
+                                const nicknameRaw = row[colMap.nickname];
                                 if (!nicknameRaw) continue;
                                 
-                                const nickname = nicknameRaw.toString().trim();
+                                const nickname = String(nicknameRaw).trim();
+                                if (!nickname || nickname === '-' || nickname.toLowerCase().includes('total')) continue;
+
+                                // Extract the values
+                                const pnl = colMap.pnl !== -1 ? extractNum(row[colMap.pnl]) : 0;
+                                const rake = colMap.fee !== -1 ? extractNum(row[colMap.fee]) : 0;
+                                const hands = colMap.hands !== -1 ? Math.round(extractNum(row[colMap.hands])) : 0;
                                 
-                                // Ignore empty, formatting, or total rows
-                                if (!nickname || nickname === '-' || nickname.toLowerCase().includes('total') || nickname.toLowerCase().includes('סה"כ')) continue;
+                                // Auto-Assign Agent Logic
+                                let assignedAgentId = 'agent_default';
+                                if (colMap.agent !== -1 && row[colMap.agent]) {
+                                    const rawAgent = String(row[colMap.agent]).toLowerCase().trim();
+                                    const matchedAgent = newUsers.find(u => u.role === 'agent' && u.name.toLowerCase() === rawAgent);
+                                    if (matchedAgent) assignedAgentId = matchedAgent.id;
+                                }
+
+                                if (pnl === 0 && rake === 0 && hands === 0) continue;
 
                                 // Create User if not exists
                                 let player = newUsers.find(u => u.username === nickname);
@@ -848,36 +859,23 @@
                                         password: '123',
                                         role: 'player',
                                         name: nickname,
-                                        agentId: 'agent_default',
+                                        agentId: assignedAgentId, // Auto assigned!
                                         customCommission: null
                                     };
                                     newUsers.push(player);
                                     newPlayersCount++;
+                                } else if (player.agentId === 'agent_default' && assignedAgentId !== 'agent_default') {
+                                    // Update existing unassigned player to their agent if found in new report
+                                    player.agentId = assignedAgentId;
                                 }
 
-                                // Extract values safely
-                                const pnl = pnlIdx !== -1 ? cleanNum(row[pnlIdx]) : 0;
-                                const rake = rakeIdx !== -1 ? cleanNum(row[rakeIdx]) : 0;
-                                const hands = handsIdx !== -1 ? Math.round(cleanNum(row[handsIdx])) : 0;
-
-                                // Skip purely empty stat rows
-                                if (pnl === 0 && rake === 0 && hands === 0) continue;
-
-                                // Update or create record for current cycle
+                                // Update or create record
                                 const existingRecordIndex = newRecordsList.findIndex(r => r.cycleId === currentCycle && r.playerId === player.id);
-                                
                                 if (existingRecordIndex >= 0) {
-                                    // Add aggregates
                                     newRecordsList[existingRecordIndex].pnl += pnl;
                                     newRecordsList[existingRecordIndex].rake += rake;
                                     newRecordsList[existingRecordIndex].hands += hands;
-                                    
-                                    // Append table details
-                                    newRecordsList[existingRecordIndex].tables.push({ 
-                                        name: tableName, hands: hands, pnl: pnl, rake: rake 
-                                    });
                                 } else {
-                                    // New record
                                     newRecordsList.push({
                                         id: Date.now() + Math.random(),
                                         cycleId: currentCycle,
@@ -886,27 +884,23 @@
                                         rake: rake,
                                         hands: hands,
                                         bonus: 0,
-                                        tables: [{ name: tableName, hands: hands, pnl: pnl, rake: rake }]
+                                        tables: [{ name: sheetName === 'Member Statistics' ? 'סיכום משחקים כללי' : sheetName, hands: hands, pnl: pnl, rake: rake }]
                                     });
                                     newRecordsCount++;
                                 }
                             }
-                        }); // End of Sheets loop
+                        }); // End sheet loop
 
                         setUsers(newUsers);
                         setRecords(newRecordsList);
                         setIsParsing(false);
                         
-                        if (newPlayersCount === 0 && newRecordsCount === 0) {
-                            showToast('לא נמצאו נתונים תקינים באף לשונית בקובץ.', 'error');
-                        } else {
-                            showToast(`הקובץ פוענח מושלם! נוצרו ${newPlayersCount} שחקנים. נסרקו ${newRecordsCount} שולחנות/רשומות.`);
-                        }
-                        e.target.value = ''; // Reset input
+                        showToast(`מעולה! ${newPlayersCount} שחקנים חדשים נוספו וקושרו. נתוני התחשבנות עודכנו בהצלחה.`);
+                        e.target.value = '';
                     } catch (err) {
-                        console.error("Excel Parsing Error:", err);
+                        console.error("Parsing Error:", err);
                         setIsParsing(false);
-                        showToast('שגיאה קריטית בקריאת הקובץ - ודא שזה קובץ אקסל תקין.', 'error');
+                        showToast('שגיאה. ודא שזהו קובץ אקסל או CSV תקין.', 'error');
                         e.target.value = '';
                     }
                 };
@@ -917,7 +911,7 @@
                 if(newCycleName && !cyclesList.includes(newCycleName)) {
                     setCyclesList([newCycleName, ...cyclesList]);
                     setNewCycleName('');
-                    showToast('מחזור חדש נוצר ונוסף לרשימה!');
+                    showToast('מחזור חדש נוצר לרשימה!');
                 }
             };
 
@@ -929,9 +923,9 @@
                             ${isParsing ? 'bg-emerald-900/50 border-emerald-500 animate-pulse text-emerald-300' : 'bg-slate-800 border-slate-600 text-emerald-400'}`}>
                             <Icon name="upload" size={40} />
                         </div>
-                        <h3 className="text-2xl font-black mb-3 text-white relative z-10">{isParsing ? 'הקסם קורה עכשיו...' : 'ייבוא דוחות אקסל'}</h3>
+                        <h3 className="text-2xl font-black mb-3 text-white relative z-10">{isParsing ? 'הקסם קורה עכשיו...' : 'ייבוא Member Statistics (Excel)'}</h3>
                         <p className="text-slate-400 text-sm mb-8 max-w-sm relative z-10 leading-relaxed">
-                            העלה את דוח ה-Excel. המערכת תסרוק אוטומטית <strong className="text-slate-200">את כל הלשוניות בקובץ</strong>, תאתר שולחנות ותשייך נתונים מדויקים.
+                            העלה את דוח ה-Excel שהורדת מהמערכת או מגוגל שיטס. המערכת תסרוק אוטומטית שחקנים, סוכנים (כמו dop dop), עמלות ותוצאות.
                         </p>
                         <label className={`cursor-pointer text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all relative z-10 border 
                             ${isParsing ? 'bg-slate-700 border-slate-600 opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 border-transparent hover:-translate-y-1'}`}>
@@ -1067,7 +1061,6 @@
             const totalNetCommission = playerStats.reduce((sum, p) => sum + p.generatedCommissionNet, 0);
             const totalAgentCommission = playerStats.reduce((sum, p) => sum + p.calculatedCommission, 0);
             
-            // The Agent's final settlement with the club
             const totalAgainstClub = totalPnl + totalAgentCommission;
 
             const toggleRow = (id) => setExpandedRow(expandedRow === id ? null : id);
@@ -1227,7 +1220,7 @@
                                 <table className="w-full text-right text-sm">
                                     <thead className="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
                                         <tr>
-                                            <th className="p-4 font-bold border-b border-slate-700">שם שולחן / סוג משחק</th>
+                                            <th className="p-4 font-bold border-b border-slate-700">שם שולחן / טורניר</th>
                                             <th className="p-4 font-bold text-center border-b border-slate-700">ידיים</th>
                                             <th className="p-4 font-bold border-b border-slate-700">תוצאה (P&L)</th>
                                         </tr>
