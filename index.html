@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -29,6 +30,10 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .toast-animate { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .modal-animate { animation: fadeIn 0.2s ease-out forwards; }
+
+        /* Privacy Mode Classes */
+        .privacy-on .money-value { filter: blur(5px); transition: filter 0.3s ease; user-select: none; }
+        .privacy-on .money-value:hover { filter: blur(0); cursor: pointer; }
     </style>
 </head>
 <body>
@@ -47,14 +52,13 @@
             { id: 'agent_amirgu', username: 'amirgu', password: '123', role: 'agent', name: 'AMIRGU', commissionRate: 70 },
             { id: 'agent_naki', username: 'naki', password: '123', role: 'agent', name: 'NAKI', commissionRate: 70 },
             { id: 'agent_oz', username: 'oz', password: '123', role: 'agent', name: 'OZ', commissionRate: 70 },
-            { id: 'agent_dopdop', username: 'dopdop', password: '123', role: 'agent', name: 'dop dop', commissionRate: 70 }, // הסוכן החדש
+            { id: 'agent_dopdop', username: 'dopdop', password: '123', role: 'agent', name: 'dop dop', commissionRate: 70 },
         ];
 
         // --- Utils ---
         const formatMoney = (amount) => {
             if (!amount && amount !== 0) return '₪0.00';
             const num = parseFloat(amount);
-            // Handling negatives cleanly for display
             const isNegative = num < 0;
             const absoluteValue = Math.abs(num);
             const formatted = absoluteValue.toLocaleString('he-IL', { style: 'currency', currency: 'ILS' });
@@ -83,8 +87,11 @@
                 settings: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
                 trash: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
                 eye: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>,
+                eyeOff: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>,
                 check: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"></polyline></svg>,
-                alert: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                alert: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>,
+                whatsapp: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>,
+                history: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             };
             return icons[name] || null;
         };
@@ -125,28 +132,33 @@
             const [messages, setMessages] = useState([]);
             const [currentCycle, setCurrentCycle] = useState(DEFAULT_CYCLE);
             const [cyclesList, setCyclesList] = useState([DEFAULT_CYCLE]);
+            const [uploadBatches, setUploadBatches] = useState([]); // Array to store upload history for Rollback
             const [toast, setToast] = useState(null);
+            const [isPrivacyMode, setIsPrivacyMode] = useState(false); // Ghost Mode
 
             useEffect(() => {
-                const storedUsers = JSON.parse(localStorage.getItem('netabel_db_users'));
-                const storedRecords = JSON.parse(localStorage.getItem('netabel_db_records'));
-                const storedMessages = JSON.parse(localStorage.getItem('netabel_db_messages'));
-                const storedCycles = JSON.parse(localStorage.getItem('netabel_db_cycles'));
+                const storedUsers = JSON.parse(localStorage.getItem('netabel_sys_users'));
+                const storedRecords = JSON.parse(localStorage.getItem('netabel_sys_records'));
+                const storedMessages = JSON.parse(localStorage.getItem('netabel_sys_messages'));
+                const storedCycles = JSON.parse(localStorage.getItem('netabel_sys_cycles'));
+                const storedUploads = JSON.parse(localStorage.getItem('netabel_sys_uploads'));
                 
                 if (storedUsers) setUsers(storedUsers); else setUsers(initialUsers);
                 if (storedRecords) setRecords(storedRecords); else setRecords([]);
                 if (storedMessages) setMessages(storedMessages); else setMessages([]);
                 if (storedCycles) setCyclesList(storedCycles); else setCyclesList([DEFAULT_CYCLE]);
+                if (storedUploads) setUploadBatches(storedUploads); else setUploadBatches([]);
             }, []);
 
             useEffect(() => {
                 if(users.length > 0) {
-                    localStorage.setItem('netabel_db_users', JSON.stringify(users));
-                    localStorage.setItem('netabel_db_records', JSON.stringify(records));
-                    localStorage.setItem('netabel_db_messages', JSON.stringify(messages));
-                    localStorage.setItem('netabel_db_cycles', JSON.stringify(cyclesList));
+                    localStorage.setItem('netabel_sys_users', JSON.stringify(users));
+                    localStorage.setItem('netabel_sys_records', JSON.stringify(records));
+                    localStorage.setItem('netabel_sys_messages', JSON.stringify(messages));
+                    localStorage.setItem('netabel_sys_cycles', JSON.stringify(cyclesList));
+                    localStorage.setItem('netabel_sys_uploads', JSON.stringify(uploadBatches));
                 }
-            }, [users, records, messages, cyclesList]);
+            }, [users, records, messages, cyclesList, uploadBatches]);
 
             const showToast = (message, type = 'success') => {
                 setToast({ message, type });
@@ -173,8 +185,8 @@
             }
 
             return (
-                <div className="min-h-screen flex flex-col text-slate-100 bg-[#0b1120] relative overflow-x-hidden">
-                    <TopNavBar user={currentUser} logout={() => setCurrentUser(null)} currentCycle={currentCycle} setCurrentCycle={setCurrentCycle} cyclesList={cyclesList} />
+                <div className={`min-h-screen flex flex-col text-slate-100 bg-[#0b1120] relative overflow-x-hidden ${isPrivacyMode ? 'privacy-on' : ''}`}>
+                    <TopNavBar user={currentUser} logout={() => setCurrentUser(null)} currentCycle={currentCycle} setCurrentCycle={setCurrentCycle} cyclesList={cyclesList} isPrivacyMode={isPrivacyMode} setIsPrivacyMode={setIsPrivacyMode} />
                     <GlobalStatsHeader user={currentUser} users={users} records={records.filter(r => r.cycleId === currentCycle)} />
                     
                     <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -183,6 +195,7 @@
                                 users={users} setUsers={setUsers} records={records} setRecords={setRecords}
                                 messages={messages} setMessages={setMessages} currentCycle={currentCycle} 
                                 cyclesList={cyclesList} setCyclesList={setCyclesList} showToast={showToast}
+                                uploadBatches={uploadBatches} setUploadBatches={setUploadBatches}
                             />
                         )}
                         {currentUser.role === 'agent' && (
@@ -197,7 +210,7 @@
             );
         };
 
-        const TopNavBar = ({ user, logout, currentCycle, setCurrentCycle, cyclesList }) => (
+        const TopNavBar = ({ user, logout, currentCycle, setCurrentCycle, cyclesList, isPrivacyMode, setIsPrivacyMode }) => (
             <nav className="glass-panel sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
                     <div className="flex items-center gap-4">
@@ -214,7 +227,10 @@
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="text-right hidden sm:block leading-tight">
+                        <button onClick={() => setIsPrivacyMode(!isPrivacyMode)} className={`p-2 rounded-lg transition-colors ${isPrivacyMode ? 'bg-cyan-900/50 text-cyan-400 border border-cyan-500/30' : 'hover:bg-slate-800 text-slate-400 hover:text-white'}`} title="מצב פרטיות (הסתרת כספים)">
+                            <Icon name={isPrivacyMode ? 'eyeOff' : 'eye'} size={20} />
+                        </button>
+                        <div className="text-right hidden sm:block leading-tight border-r border-slate-700 pr-4">
                             <div className="text-sm font-bold text-slate-200">{user.name || user.username}</div>
                             <div className="text-[10px] text-emerald-400 uppercase tracking-wider font-semibold">
                                 {user.role === 'admin' ? 'מנהל מערכת' : user.role === 'agent' ? 'סוכן' : 'שחקן'}
@@ -282,16 +298,16 @@
                         <div className="flex flex-wrap gap-4 sm:gap-8">
                             <div className="text-right bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700/50">
                                 <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">תוצאת שחקנים כללית</div>
-                                <div className={`text-xl font-black ${getColorClass(displayPnL)}`}>{formatMoney(displayPnL)}</div>
+                                <div className={`text-xl font-black money-value ${getColorClass(displayPnL)}`}>{formatMoney(displayPnL)}</div>
                             </div>
                             <div className="text-right bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700/50">
                                 <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">{user.role === 'admin' ? "סה\"כ עמלות ששולמו" : "העמלה שלי (נטו)"}</div>
-                                <div className="text-xl font-black text-emerald-400">{formatMoney(displayCommission)}</div>
+                                <div className="text-xl font-black text-emerald-400 money-value">{formatMoney(displayCommission)}</div>
                             </div>
                             {user.role === 'agent' && (
                                 <div className="text-right bg-slate-800/80 px-5 py-2 rounded-lg border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
                                     <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-1">התחשבנות סופית (מול המועדון)</div>
-                                    <div className={`text-xl font-black ${getColorClass(totalAgainstClub)}`}>{formatMoney(totalAgainstClub)}</div>
+                                    <div className={`text-xl font-black money-value ${getColorClass(totalAgainstClub)}`}>{formatMoney(totalAgainstClub)}</div>
                                 </div>
                             )}
                         </div>
@@ -340,16 +356,16 @@
         // ==========================================
         // ADMIN DASHBOARD
         // ==========================================
-        const AdminDashboard = ({ users, setUsers, records, setRecords, messages, setMessages, currentCycle, cyclesList, setCyclesList, showToast }) => {
+        const AdminDashboard = ({ users, setUsers, records, setRecords, messages, setMessages, currentCycle, cyclesList, setCyclesList, showToast, uploadBatches, setUploadBatches }) => {
             const [activeTab, setActiveTab] = useState('import'); 
 
             return (
                 <div className="space-y-6">
                     <div className="flex flex-wrap bg-slate-900/80 rounded-xl p-1.5 border border-slate-700/50 shadow-sm">
                         {[
-                            {id: 'import', name: 'ייבוא דוחות (CSV/Excel)'},
+                            {id: 'import', name: 'ייבוא דוחות (Excel)'},
                             {id: 'agents', name: 'סיכום סוכנים'},
-                            {id: 'players', name: 'ניהול שחקנים ועמלות'},
+                            {id: 'players', name: 'ניהול שחקנים'},
                             {id: 'messages', name: 'מרכז הודעות'},
                             {id: 'settings', name: 'הגדרות מתקדמות'}
                         ].map(tab => (
@@ -364,16 +380,16 @@
                     <div className="card-gradient rounded-2xl p-4 sm:p-8 border border-slate-700/50 shadow-2xl">
                         {activeTab === 'agents' && <AdminAgentsView users={users} records={records} currentCycle={currentCycle} />}
                         {activeTab === 'players' && <AdminPlayersView users={users} setUsers={setUsers} records={records} setRecords={setRecords} currentCycle={currentCycle} showToast={showToast} />}
-                        {activeTab === 'import' && <AdminImportView setRecords={setRecords} setUsers={setUsers} users={users} currentCycle={currentCycle} setCyclesList={setCyclesList} cyclesList={cyclesList} records={records} showToast={showToast} />}
+                        {activeTab === 'import' && <AdminImportView setRecords={setRecords} setUsers={setUsers} users={users} currentCycle={currentCycle} setCyclesList={setCyclesList} cyclesList={cyclesList} records={records} showToast={showToast} uploadBatches={uploadBatches} setUploadBatches={setUploadBatches} />}
                         {activeTab === 'messages' && <AdminMessagesView users={users} messages={messages} setMessages={setMessages} showToast={showToast} />}
-                        {activeTab === 'settings' && <AdminSettingsView users={users} setUsers={setUsers} records={records} setRecords={setRecords} currentCycle={currentCycle} cyclesList={cyclesList} setCyclesList={setCyclesList} showToast={showToast} />}
+                        {activeTab === 'settings' && <AdminSettingsView users={users} setUsers={setUsers} records={records} setRecords={setRecords} currentCycle={currentCycle} cyclesList={cyclesList} setCyclesList={setCyclesList} showToast={showToast} setUploadBatches={setUploadBatches} />}
                     </div>
                 </div>
             );
         };
 
-        const AdminSettingsView = ({ users, setUsers, records, setRecords, currentCycle, cyclesList, setCyclesList, showToast }) => {
-            const [modal, setModal] = useState({ isOpen: false, type: null }); // type: 'cycle' or 'all'
+        const AdminSettingsView = ({ users, setUsers, records, setRecords, currentCycle, cyclesList, setCyclesList, showToast, setUploadBatches }) => {
+            const [modal, setModal] = useState({ isOpen: false, type: null });
 
             const executeDelete = () => {
                 if (modal.type === 'cycle') {
@@ -382,7 +398,7 @@
                     setCyclesList(newCycles.length > 0 ? newCycles : [DEFAULT_CYCLE]);
                     showToast('הנתונים של המחזור הנוכחי נמחקו בהצלחה', 'success');
                 } else if (modal.type === 'all') {
-                    setUsers(initialUsers); setRecords([]); setCyclesList([DEFAULT_CYCLE]); 
+                    setUsers(initialUsers); setRecords([]); setCyclesList([DEFAULT_CYCLE]); setUploadBatches([]);
                     showToast('המערכת אופסה לחלוטין. נתוני בסיס נטענו.', 'success');
                 }
                 setModal({ isOpen: false, type: null });
@@ -391,43 +407,26 @@
             return (
                 <div className="space-y-6 max-w-2xl mx-auto md:mx-0">
                     <h3 className="text-xl font-bold text-white flex items-center gap-3"><Icon name="settings" size={24}/> הגדרות מערכת מתקדמות</h3>
-                    
                     <div className="bg-red-900/10 p-6 rounded-xl border border-red-900/30">
-                        <h4 className="text-red-400 font-bold mb-4 flex items-center gap-2">
-                            <Icon name="trash" size={18} /> אזור סכנה (מחיקת נתונים)
-                        </h4>
+                        <h4 className="text-red-400 font-bold mb-4 flex items-center gap-2"><Icon name="trash" size={18} /> אזור סכנה (מחיקת נתונים)</h4>
                         <div className="space-y-6">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div>
-                                    <div className="text-white font-medium text-lg">מחיקת המחזור הנוכחי</div>
-                                    <div className="text-sm text-slate-400 mt-1">מוחק את כל רשומות המשחק והשולחנות ששויכו למחזור "{currentCycle}". השחקנים והסוכנים יישארו.</div>
-                                </div>
-                                <button onClick={() => setModal({isOpen: true, type: 'cycle'})} className="bg-red-900/40 text-red-400 border border-red-800 hover:bg-red-600 hover:text-white px-5 py-2.5 rounded-lg font-semibold transition-colors whitespace-nowrap">
-                                    מחק מחזור זה
-                                </button>
+                                <div><div className="text-white font-medium text-lg">מחיקת המחזור הנוכחי</div><div className="text-sm text-slate-400 mt-1">מוחק את כל רשומות המשחק והשולחנות ששויכו למחזור "{currentCycle}". השחקנים והסוכנים יישארו.</div></div>
+                                <button onClick={() => setModal({isOpen: true, type: 'cycle'})} className="bg-red-900/40 text-red-400 border border-red-800 hover:bg-red-600 hover:text-white px-5 py-2.5 rounded-lg font-semibold transition-colors whitespace-nowrap">מחק מחזור זה</button>
                             </div>
                             <div className="border-t border-red-900/30 pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div>
-                                    <div className="text-white font-medium text-lg">איפוס מערכת כללי (Factory Reset)</div>
-                                    <div className="text-sm text-slate-400 mt-1">מוחק לחלוטין את כל השחקנים, כל הדוחות, וכל המחזורים. המערכת תחזור למצב ריק עם אדמין וסוכנים בסיסיים בלבד.</div>
-                                </div>
-                                <button onClick={() => setModal({isOpen: true, type: 'all'})} className="bg-red-600 text-white hover:bg-red-700 px-5 py-2.5 rounded-lg font-bold shadow-lg transition-colors whitespace-nowrap">
-                                    איפוס כולל למערכת
-                                </button>
+                                <div><div className="text-white font-medium text-lg">איפוס מערכת כללי (Factory Reset)</div><div className="text-sm text-slate-400 mt-1">מוחק לחלוטין את כל השחקנים, הדוחות והמחזורים. המערכת תחזור למצב ריק.</div></div>
+                                <button onClick={() => setModal({isOpen: true, type: 'all'})} className="bg-red-600 text-white hover:bg-red-700 px-5 py-2.5 rounded-lg font-bold shadow-lg transition-colors whitespace-nowrap">איפוס כולל למערכת</button>
                             </div>
                         </div>
                     </div>
-
-                    <ConfirmModal 
-                        isOpen={modal.isOpen} 
-                        title={modal.type === 'all' ? "איפוס מערכת כולל!" : "מחיקת מחזור"} 
-                        message={modal.type === 'all' ? "האם אתה בטוח לחלוטין שברצונך לאפס את המערכת? פעולה זו תמחק עשרות שחקנים ונתונים ואינה הפיכה לעולם." : `האם למחוק את כל הנתונים של "${currentCycle}"?`}
-                        confirmText={modal.type === 'all' ? "כן, מחק הכל" : "מחק מחזור"}
-                        onConfirm={executeDelete} 
-                        onCancel={() => setModal({isOpen: false, type: null})} 
-                    />
+                    <ConfirmModal isOpen={modal.isOpen} title={modal.type === 'all' ? "איפוס מערכת כולל!" : "מחיקת מחזור"} message={modal.type === 'all' ? "האם אתה בטוח לחלוטין שברצונך לאפס את המערכת? פעולה זו תמחק עשרות שחקנים ונתונים ואינה הפיכה לעולם." : `האם למחוק את כל הנתונים של "${currentCycle}"?`} confirmText={modal.type === 'all' ? "כן, מחק הכל" : "מחק מחזור"} onConfirm={executeDelete} onCancel={() => setModal({isOpen: false, type: null})} />
                 </div>
             );
+        };
+
+        const generateWhatsAppLink = (phone, text) => {
+            return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
         };
 
         const AdminAgentsView = ({ users, records, currentCycle }) => {
@@ -440,17 +439,14 @@
                 return agents.map(agent => {
                     const agentPlayers = players.filter(p => p.agentId === agent.id).map(p => p.id);
                     const agentRecords = cycleRecords.filter(r => agentPlayers.includes(r.playerId));
-                    
                     const pnl = agentRecords.reduce((sum, r) => sum + (r.pnl + (r.bonus||0)), 0);
                     const hands = agentRecords.reduce((sum, r) => sum + (r.hands || 0), 0);
                     let commission = 0;
-                    
                     agentRecords.forEach(r => {
                         const player = players.find(p => p.id === r.playerId);
                         const rate = player?.customCommission !== null ? player.customCommission : agent.commissionRate;
                         commission += (r.rake * (1 - SYSTEM_EXPENSES_RATE)) * (rate / 100);
                     });
-
                     return { ...agent, pnl, hands, commission, playerCount: agentPlayers.length };
                 }).sort((a, b) => {
                     if (sortBy === 'pnl') return a.pnl - b.pnl;
@@ -468,7 +464,7 @@
                             <Icon name="sort" size={16} className="text-slate-400"/>
                             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm font-medium text-white outline-none cursor-pointer">
                                 <option value="pnl">מיון לפי רווח/הפסד (P&L)</option>
-                                <option value="commission">מיון לפי גובה עמלה</option>
+                                <option value="commission">מיון לפי עמלה</option>
                                 <option value="hands">מיון לפי כמות ידיים</option>
                             </select>
                         </div>
@@ -487,7 +483,9 @@
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
-                                {agentStats.map(agent => (
+                                {agentStats.map(agent => {
+                                    const totalAgainst = agent.pnl + agent.commission;
+                                    return (
                                     <tr key={agent.id} className="hover:bg-slate-800/60 transition-colors">
                                         <td className="p-5 text-right">
                                             <div className="font-bold text-white text-base">{agent.name}</div>
@@ -496,11 +494,18 @@
                                         <td className="p-5 text-right font-medium text-slate-300">{agent.playerCount}</td>
                                         <td className="p-5 text-right font-medium text-slate-300">{agent.commissionRate}%</td>
                                         <td className="p-5 text-right font-medium text-slate-300">{agent.hands.toLocaleString()}</td>
-                                        <td className={`p-5 text-right font-bold text-lg ${getColorClass(agent.pnl)}`}>{formatMoney(agent.pnl)}</td>
-                                        <td className="p-5 text-right font-black text-lg text-emerald-400">{formatMoney(agent.commission)}</td>
-                                        <td className={`p-5 text-right font-black text-lg ${getColorClass(agent.pnl + agent.commission)}`}>{formatMoney(agent.pnl + agent.commission)}</td>
+                                        <td className={`p-5 text-right font-bold text-lg money-value ${getColorClass(agent.pnl)}`}>{formatMoney(agent.pnl)}</td>
+                                        <td className="p-5 text-right font-black text-lg text-emerald-400 money-value">{formatMoney(agent.commission)}</td>
+                                        <td className="p-5 text-right flex items-center justify-end gap-3">
+                                            <span className={`font-black text-lg money-value ${getColorClass(totalAgainst)}`}>{formatMoney(totalAgainst)}</span>
+                                            {agent.id !== 'agent_default' && (
+                                                <a href={generateWhatsAppLink('', `שלום ${agent.name},\nסיכום התחשבנות למחזור: ${currentCycle}\nתוצאת שחקנים: ${formatMoney(agent.pnl)}\nעמלה שייצרת: ${formatMoney(agent.commission)}\n*סה"כ התחשבנות מול המועדון: ${formatMoney(totalAgainst)}*`)} target="_blank" className="p-2 bg-emerald-900/30 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-full transition-colors" title="שלח דוח בוואטסאפ">
+                                                    <Icon name="whatsapp" size={16} />
+                                                </a>
+                                            )}
+                                        </td>
                                     </tr>
-                                ))}
+                                )})}
                             </tbody>
                         </table>
                     </div>
@@ -508,64 +513,39 @@
             );
         };
 
-        // --- Shared Drill-down Table (Used in Admin & Agent) ---
         const PlayerDetailsDrilldown = ({ player, record, finalPnl, showToast }) => {
             return (
                 <div className="px-6 sm:px-10 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 bg-slate-900/80 shadow-inner border-t-2 border-slate-700">
-                    {/* Left Column: Details & Result */}
                     <div className="space-y-6">
                         <div className="bg-slate-800/80 p-5 rounded-xl border border-slate-700 shadow-md">
-                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <Icon name="eye" size={16} className="text-cyan-400"/> פרטי התחברות
-                            </h4>
+                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icon name="eye" size={16} className="text-cyan-400"/> פרטי התחברות</h4>
                             <div className="space-y-3 text-sm">
-                                <div className="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg">
-                                    <span className="text-slate-500">משתמש:</span> 
-                                    <span className="font-mono font-bold text-emerald-400">{player.username}</span>
-                                </div>
-                                <div className="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg">
-                                    <span className="text-slate-500">סיסמה:</span> 
-                                    <span className="font-mono font-bold text-emerald-400">{player.password}</span>
-                                </div>
+                                <div className="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg"><span className="text-slate-500">משתמש:</span> <span className="font-mono font-bold text-emerald-400">{player.username}</span></div>
+                                <div className="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg"><span className="text-slate-500">סיסמה:</span> <span className="font-mono font-bold text-emerald-400">{player.password}</span></div>
                             </div>
-                            <button onClick={() => { navigator.clipboard.writeText(`משתמש: ${player.username}\nסיסמה: ${player.password}`); showToast('פרטים הועתקו ללוח!'); }} 
-                                    className="mt-4 w-full bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium py-2 rounded-lg transition-colors">
-                                העתק הודעה לשחקן
-                            </button>
+                            <div className="mt-4 flex gap-2">
+                                <button onClick={() => { navigator.clipboard.writeText(`משתמש: ${player.username}\nסיסמה: ${player.password}`); showToast('פרטים הועתקו ללוח!'); }} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium py-2 rounded-lg transition-colors">העתק פרטים</button>
+                                <a href={generateWhatsAppLink('', `היי, פרטי ההתחברות שלך למועדון NETABEL:\nלינק: [הכנס לינק כאן]\nמשתמש: ${player.username}\nסיסמה: ${player.password}`)} target="_blank" className="bg-emerald-700 hover:bg-emerald-600 text-white px-3 flex items-center justify-center rounded-lg transition-colors" title="שליחה בוואטסאפ"><Icon name="whatsapp" size={16}/></a>
+                            </div>
                         </div>
-
                         <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-xl border border-slate-700 shadow-md">
                             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תוצאה סופית לשחקן (נטו)</h4>
-                            <div className={`text-4xl font-black tracking-tight ${getColorClass(finalPnl)}`}>{formatMoney(finalPnl)}</div>
-                            {record.bonus > 0 && (
-                                <div className="mt-3 text-sm text-emerald-400 flex items-center gap-1.5 bg-emerald-900/30 inline-flex px-3 py-1 rounded-md font-medium border border-emerald-500/20">
-                                    <Icon name="gift" size={14}/> כולל בונוס ע"ס {formatMoney(record.bonus)}
-                                </div>
-                            )}
+                            <div className={`text-4xl font-black tracking-tight money-value ${getColorClass(finalPnl)}`}>{formatMoney(finalPnl)}</div>
+                            {record.bonus > 0 && <div className="mt-3 text-sm text-emerald-400 flex items-center gap-1.5 bg-emerald-900/30 inline-flex px-3 py-1 rounded-md font-medium border border-emerald-500/20"><Icon name="gift" size={14}/> כולל בונוס ע"ס {formatMoney(record.bonus)}</div>}
                         </div>
                     </div>
-
-                    {/* Right Column: Tables */}
                     <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 shadow-md lg:col-span-2 flex flex-col">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <Icon name="dashboard" size={16} className="text-emerald-400"/> פירוט שולחנות ומשחקים
-                        </h4>
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icon name="dashboard" size={16} className="text-emerald-400"/> פירוט שולחנות ומשחקים</h4>
                         {record.tables && record.tables.length > 0 ? (
                             <div className="overflow-x-auto flex-1">
                                 <table className="w-full text-sm text-right text-slate-300">
                                     <thead className="bg-slate-900 text-slate-400 text-xs">
-                                        <tr>
-                                            <th className="p-3 font-semibold rounded-tr-lg">שם שולחן / טורניר</th>
-                                            <th className="p-3 font-semibold text-center">ידיים</th>
-                                            <th className="p-3 font-semibold rounded-tl-lg">תוצאה (P&L)</th>
-                                        </tr>
+                                        <tr><th className="p-3 font-semibold rounded-tr-lg">שם שולחן / טורניר</th><th className="p-3 font-semibold text-center">ידיים</th><th className="p-3 font-semibold rounded-tl-lg">תוצאה (P&L)</th></tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-700/50">
                                         {record.tables.map((t, idx) => (
                                             <tr key={idx} className="hover:bg-slate-800 transition-colors">
-                                                <td className="p-3 font-medium text-slate-200">{t.name}</td>
-                                                <td className="p-3 text-center">{t.hands}</td>
-                                                <td className={`p-3 font-bold text-base ${getColorClass(t.pnl)}`}>{formatMoney(t.pnl)}</td>
+                                                <td className="p-3 font-medium text-slate-200">{t.name}</td><td className="p-3 text-center">{t.hands}</td><td className={`p-3 font-bold text-base money-value ${getColorClass(t.pnl)}`}>{formatMoney(t.pnl)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -573,16 +553,12 @@
                                         <tr>
                                             <td className="p-3 font-bold text-slate-400">סה"כ משחקים:</td>
                                             <td className="p-3 font-bold text-white text-center">{record.hands}</td>
-                                            <td className={`p-3 font-black text-lg ${getColorClass(record.pnl)}`}>{formatMoney(record.pnl)}</td>
+                                            <td className={`p-3 font-black text-lg money-value ${getColorClass(record.pnl)}`}>{formatMoney(record.pnl)}</td>
                                         </tr>
                                     </tfoot>
                                 </table>
                             </div>
-                        ) : (
-                            <div className="flex-1 flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-lg p-6 bg-slate-900/30">
-                                אין פירוט שולחנות. ייתכן שהקובץ המיובא היה דוח סיכום כללי ולא דוח מפורט.
-                            </div>
-                        )}
+                        ) : (<div className="flex-1 flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-lg p-6 bg-slate-900/30">אין פירוט שולחנות לדיווח זה.</div>)}
                     </div>
                 </div>
             );
@@ -609,7 +585,6 @@
             const handleAddBonus = (playerId) => {
                 if(!bonusInput.amount) return;
                 const amt = parseFloat(bonusInput.amount);
-                
                 const existingRecIdx = records.findIndex(r => r.cycleId === currentCycle && r.playerId === playerId);
                 if (existingRecIdx >= 0) {
                     const newRecords = [...records];
@@ -627,21 +602,10 @@
             return (
                 <div>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
-                        <div>
-                            <h3 className="text-xl font-bold text-white">הגדרות שחקנים</h3>
-                            <p className="text-sm text-slate-400 mt-1">שיוך לסוכנים, הגדרת עמלות חריגות ופירוט שולחנות.</p>
-                        </div>
+                        <div><h3 className="text-xl font-bold text-white">הגדרות שחקנים וזיהוי חריגים</h3><p className="text-sm text-slate-400 mt-1">שיוך לסוכנים, עמלות חריגות, ואיתור "לוויתנים".</p></div>
                         <div className="relative w-full md:w-80">
-                            <input 
-                                type="text" 
-                                placeholder="חפש שחקן (שם או כינוי)..." 
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-slate-900/80 border border-slate-600 rounded-xl pl-4 pr-12 py-3 text-sm text-white outline-none focus:border-emerald-500 shadow-inner transition-colors"
-                            />
-                            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-emerald-500">
-                                <Icon name="search" size={18} />
-                            </div>
+                            <input type="text" placeholder="חפש שחקן (שם או כינוי)..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-900/80 border border-slate-600 rounded-xl pl-4 pr-12 py-3 text-sm text-white outline-none focus:border-emerald-500 shadow-inner transition-colors" />
+                            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-emerald-500"><Icon name="search" size={18} /></div>
                         </div>
                     </div>
 
@@ -665,8 +629,12 @@
                             </thead>
                             <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
                                 {players.map(player => {
-                                    const record = records.find(r => r.cycleId === currentCycle && r.playerId === player.id) || { pnl: 0, bonus: 0, tables: [] };
+                                    const record = records.find(r => r.cycleId === currentCycle && r.playerId === player.id) || { pnl: 0, hands: 0, bonus: 0, tables: [] };
                                     const finalPnl = record.pnl + (record.bonus || 0);
+                                    
+                                    // Whale / Hot streak detection
+                                    const isWhale = Math.abs(finalPnl) >= 5000;
+                                    const isHot = record.hands >= 3000;
 
                                     return (
                                         <Fragment key={player.id}>
@@ -677,57 +645,38 @@
                                                     </div>
                                                 </td>
                                                 <td className="p-4 text-right cursor-pointer" onClick={() => toggleRow(player.id)}>
-                                                    <div className="font-bold text-white text-base">{player.name}</div>
+                                                    <div className="font-bold text-white text-base flex items-center gap-2">
+                                                        {player.name}
+                                                        {isWhale && <span title="לוויתן! מעל 5000 שח רווח/הפסד">🐋</span>}
+                                                        {isHot && <span title="פעיל מאוד! שוחקו המון ידיים">🔥</span>}
+                                                    </div>
                                                     <div className="text-xs text-slate-500">מזהה: {player.id.substring(0,6)}...</div>
                                                 </td>
                                                 <td className="p-4 text-right">
-                                                    <select 
-                                                        value={player.agentId} 
-                                                        onChange={(e) => updatePlayer(player.id, 'agentId', e.target.value)}
-                                                        className={`bg-slate-900 border rounded-lg px-3 py-2 text-sm text-white font-medium outline-none cursor-pointer transition-colors
-                                                            ${player.agentId === 'agent_default' ? 'border-red-500/50 text-red-400 bg-red-900/10' : 'border-slate-600 focus:border-emerald-500'}`}
-                                                    >
+                                                    <select value={player.agentId} onChange={(e) => updatePlayer(player.id, 'agentId', e.target.value)} className={`bg-slate-900 border rounded-lg px-3 py-2 text-sm text-white font-medium outline-none cursor-pointer transition-colors ${player.agentId === 'agent_default' ? 'border-red-500/50 text-red-400 bg-red-900/10' : 'border-slate-600 focus:border-emerald-500'}`}>
                                                         {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                                                     </select>
                                                 </td>
                                                 <td className="p-4 text-center">
                                                     <div className="inline-flex items-center bg-slate-900 border border-slate-600 rounded-lg overflow-hidden focus-within:border-emerald-500 transition-colors">
-                                                        <input 
-                                                            type="number" 
-                                                            placeholder="דיפולט"
-                                                            value={player.customCommission !== null ? player.customCommission : ''}
-                                                            onChange={(e) => updatePlayer(player.id, 'customCommission', e.target.value === '' ? null : Number(e.target.value))}
-                                                            className={`bg-transparent px-3 py-2 text-sm text-center w-20 outline-none
-                                                                ${player.customCommission !== null ? 'text-emerald-400 font-bold' : 'text-white'}`}
-                                                        />
+                                                        <input type="number" placeholder="דיפולט" value={player.customCommission !== null ? player.customCommission : ''} onChange={(e) => updatePlayer(player.id, 'customCommission', e.target.value === '' ? null : Number(e.target.value))} className={`bg-transparent px-3 py-2 text-sm text-center w-20 outline-none ${player.customCommission !== null ? 'text-emerald-400 font-bold' : 'text-white'}`} />
                                                         <span className="bg-slate-800 text-slate-400 px-3 py-2 font-bold">%</span>
                                                     </div>
                                                 </td>
                                                 <td className="p-4 text-right">
                                                     {bonusInput.playerId === player.id ? (
                                                         <div className="flex items-center justify-end gap-2 bg-slate-900 p-1.5 rounded-lg border border-slate-600">
-                                                            <input 
-                                                                type="number" 
-                                                                value={bonusInput.amount} 
-                                                                onChange={(e)=>setBonusInput({...bonusInput, amount: e.target.value})}
-                                                                placeholder="סכום..."
-                                                                className="bg-transparent text-sm w-20 text-white outline-none px-2 text-center"
-                                                                autoFocus
-                                                            />
+                                                            <input type="number" value={bonusInput.amount} onChange={(e)=>setBonusInput({...bonusInput, amount: e.target.value})} placeholder="סכום..." className="bg-transparent text-sm w-20 text-white outline-none px-2 text-center" autoFocus />
                                                             <button onClick={() => handleAddBonus(player.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors">שמור</button>
                                                             <button onClick={() => setBonusInput({playerId: null, amount:''})} className="text-slate-400 hover:text-white px-2 py-1.5 text-xs transition-colors">בטל</button>
                                                         </div>
                                                     ) : (
-                                                        <button onClick={() => setBonusInput({playerId: player.id, amount: ''})} 
-                                                                className={`text-sm flex items-center justify-end gap-2 w-full transition-colors font-medium px-3 py-2 rounded-lg
-                                                                ${record.bonus > 0 ? 'bg-emerald-900/20 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
-                                                            <Icon name="gift" size={16}/> 
-                                                            {record.bonus > 0 ? `עודכן: ${formatMoney(record.bonus)}` : 'הוסף בונוס'}
+                                                        <button onClick={() => setBonusInput({playerId: player.id, amount: ''})} className={`text-sm flex items-center justify-end gap-2 w-full transition-colors font-medium px-3 py-2 rounded-lg ${record.bonus > 0 ? 'bg-emerald-900/20 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                                                            <Icon name="gift" size={16}/> {record.bonus > 0 ? `עודכן: ${formatMoney(record.bonus)}` : 'הוסף בונוס'}
                                                         </button>
                                                     )}
                                                 </td>
                                             </tr>
-                                            {/* Drill-down View */}
                                             {expandedRow === player.id && (
                                                 <tr className="bg-slate-900"><td colSpan="5" className="p-0 border-b border-slate-800">
                                                     <PlayerDetailsDrilldown player={player} record={record} finalPnl={finalPnl} showToast={showToast} />
@@ -744,8 +693,7 @@
             );
         };
 
-        // --- THE ULTIMATE CSV/EXCEL PARSER ---
-        const AdminImportView = ({ setRecords, setUsers, users, currentCycle, cyclesList, setCyclesList, records, showToast }) => {
+        const AdminImportView = ({ setRecords, setUsers, users, currentCycle, cyclesList, setCyclesList, records, showToast, uploadBatches, setUploadBatches }) => {
             const [newCycleName, setNewCycleName] = useState('');
             const [isParsing, setIsParsing] = useState(false);
 
@@ -753,6 +701,7 @@
                 const file = e.target.files[0];
                 if(!file) return;
 
+                const filename = file.name;
                 setIsParsing(true);
 
                 const reader = new FileReader();
@@ -762,11 +711,12 @@
                         const workbook = XLSX.read(data, {type: 'array'});
                         
                         let newPlayersCount = 0;
-                        let newRecordsCount = 0;
                         let newUsers = [...users];
                         let newRecordsList = [...records];
+                        
+                        const batchId = 'batch_' + Date.now();
+                        const currentBatchDeltas = []; // To track changes for rollback
 
-                        // Helper to strictly extract numbers (handles "(1,500)" as -1500)
                         const extractNum = (val) => {
                             if (val === undefined || val === null || val === '') return 0;
                             let str = String(val).trim();
@@ -776,7 +726,6 @@
                             return isNaN(num) ? 0 : num;
                         };
 
-                        // Process ONLY the "Member Statistics" sheet or all sheets if we don't know the name
                         workbook.SheetNames.forEach(sheetName => {
                             const worksheet = workbook.Sheets[sheetName];
                             const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
@@ -785,61 +734,40 @@
                             let dataStartRow = -1;
                             let colMap = { nickname: -1, agent: -1, pnl: -1, fee: -1, hands: -1 };
 
-                            // 1. Find where the real table starts by looking for "Nickname" or "ID"
                             for (let i = 0; i < Math.min(15, rows.length); i++) {
                                 const rowStr = rows[i].map(c => String(c).toLowerCase().trim()).join('|');
                                 if (rowStr.includes('nickname') || rowStr.includes('player')) {
-                                    dataStartRow = i + 1; // Data starts below the main header
-                                    
-                                    // 2. Identify the exact columns based on the complex multi-row headers
+                                    dataStartRow = i + 1;
                                     for (let col = 0; col < rows[i].length; col++) {
-                                        const h1 = String(rows[i > 0 ? i - 1 : i][col] || '').toLowerCase(); // Main category (e.g. Player P&L)
-                                        const h2 = String(rows[i][col] || '').toLowerCase();       // Current row (e.g. Total)
-                                        const h3 = String(rows[i + 1] ? rows[i + 1][col] : '').toLowerCase(); // Sub category
-                                        
+                                        const h1 = String(rows[i > 0 ? i - 1 : i][col] || '').toLowerCase();
+                                        const h2 = String(rows[i][col] || '').toLowerCase();
+                                        const h3 = String(rows[i + 1] ? rows[i + 1][col] : '').toLowerCase();
                                         const combinedHeader = `${h1} ${h2} ${h3}`;
 
                                         if (combinedHeader.includes('nickname') || h2 === 'player') colMap.nickname = col;
                                         if (combinedHeader.includes('agent')) colMap.agent = col;
-                                        
-                                        // The magical formulas to find the correct "Total" columns for GG Reports
-                                        if (combinedHeader.includes('p&l') && combinedHeader.includes('total') && !combinedHeader.includes('insurance')) {
-                                            colMap.pnl = col;
-                                        }
-                                        if ((combinedHeader.includes('fee') || combinedHeader.includes('rake')) && combinedHeader.includes('total')) {
-                                            colMap.fee = col;
-                                        }
-                                        if (combinedHeader.includes('hands') && combinedHeader.includes('total')) {
-                                            colMap.hands = col;
-                                        }
+                                        if (combinedHeader.includes('p&l') && combinedHeader.includes('total') && !combinedHeader.includes('insurance')) colMap.pnl = col;
+                                        if ((combinedHeader.includes('fee') || combinedHeader.includes('rake')) && combinedHeader.includes('total')) colMap.fee = col;
+                                        if (combinedHeader.includes('hands') && combinedHeader.includes('total')) colMap.hands = col;
                                     }
-                                    break; // Stop looking for headers
+                                    break;
                                 }
                             }
 
-                            if (dataStartRow === -1 || colMap.nickname === -1) return; // Skip sheet if not valid
-
-                            // Fallback for simple flat CSVs
+                            if (dataStartRow === -1 || colMap.nickname === -1) return; 
                             if (colMap.pnl === -1) colMap.pnl = rows[dataStartRow-1].findIndex(c => String(c).toLowerCase().includes('p&l'));
                             if (colMap.fee === -1) colMap.fee = rows[dataStartRow-1].findIndex(c => String(c).toLowerCase().includes('fee') || String(c).toLowerCase().includes('rake'));
 
-                            // 3. Process the actual data rows
                             for (let idx = dataStartRow; idx < rows.length; idx++) {
                                 const row = rows[idx];
                                 if (!row || row.length <= colMap.nickname) continue;
-                                
-                                const nicknameRaw = row[colMap.nickname];
-                                if (!nicknameRaw) continue;
-                                
-                                const nickname = String(nicknameRaw).trim();
+                                const nickname = String(row[colMap.nickname]).replace(/["']/g, '').trim();
                                 if (!nickname || nickname === '-' || nickname.toLowerCase().includes('total')) continue;
 
-                                // Extract the values
                                 const pnl = colMap.pnl !== -1 ? extractNum(row[colMap.pnl]) : 0;
                                 const rake = colMap.fee !== -1 ? extractNum(row[colMap.fee]) : 0;
                                 const hands = colMap.hands !== -1 ? Math.round(extractNum(row[colMap.hands])) : 0;
                                 
-                                // Auto-Assign Agent Logic
                                 let assignedAgentId = 'agent_default';
                                 if (colMap.agent !== -1 && row[colMap.agent]) {
                                     const rawAgent = String(row[colMap.agent]).toLowerCase().trim();
@@ -849,52 +777,55 @@
 
                                 if (pnl === 0 && rake === 0 && hands === 0) continue;
 
-                                // Create User if not exists
                                 let player = newUsers.find(u => u.username === nickname);
                                 if (!player) {
-                                    player = {
-                                        id: 'p_' + Date.now() + Math.random().toString(36).substr(2, 9),
-                                        username: nickname,
-                                        password: '123',
-                                        role: 'player',
-                                        name: nickname,
-                                        agentId: assignedAgentId, // Auto assigned!
-                                        customCommission: null
-                                    };
+                                    player = { id: 'p_' + Date.now() + Math.random().toString(36).substr(2, 9), username: nickname, password: '123', role: 'player', name: nickname, agentId: assignedAgentId, customCommission: null };
                                     newUsers.push(player);
                                     newPlayersCount++;
                                 } else if (player.agentId === 'agent_default' && assignedAgentId !== 'agent_default') {
-                                    // Update existing unassigned player to their agent if found in new report
                                     player.agentId = assignedAgentId;
                                 }
 
-                                // Update or create record
+                                const tableName = sheetName === 'Member Statistics' ? 'סיכום משחקים כללי' : sheetName;
+                                const tableObj = { name: tableName, hands: hands, pnl: pnl, rake: rake, batchId: batchId }; // Tag table with batchId for rollback
+
                                 const existingRecordIndex = newRecordsList.findIndex(r => r.cycleId === currentCycle && r.playerId === player.id);
                                 if (existingRecordIndex >= 0) {
                                     newRecordsList[existingRecordIndex].pnl += pnl;
                                     newRecordsList[existingRecordIndex].rake += rake;
                                     newRecordsList[existingRecordIndex].hands += hands;
+                                    newRecordsList[existingRecordIndex].tables.push(tableObj);
                                 } else {
                                     newRecordsList.push({
-                                        id: Date.now() + Math.random(),
-                                        cycleId: currentCycle,
-                                        playerId: player.id,
-                                        pnl: pnl,
-                                        rake: rake,
-                                        hands: hands,
-                                        bonus: 0,
-                                        tables: [{ name: sheetName === 'Member Statistics' ? 'סיכום משחקים כללי' : sheetName, hands: hands, pnl: pnl, rake: rake }]
+                                        id: Date.now() + Math.random(), cycleId: currentCycle, playerId: player.id, pnl: pnl, rake: rake, hands: hands, bonus: 0,
+                                        tables: [tableObj]
                                     });
-                                    newRecordsCount++;
                                 }
-                            }
-                        }); // End sheet loop
 
-                        setUsers(newUsers);
-                        setRecords(newRecordsList);
+                                // Save delta for rollback
+                                currentBatchDeltas.push({ playerId: player.id, pnl, rake, hands });
+                            }
+                        });
+
+                        // Save the upload event to history
+                        if (currentBatchDeltas.length > 0) {
+                            const newBatch = {
+                                id: batchId,
+                                filename: filename,
+                                date: new Date().toLocaleString('he-IL'),
+                                cycleId: currentCycle,
+                                playersAffected: currentBatchDeltas.length,
+                                deltas: currentBatchDeltas
+                            };
+                            setUploadBatches([newBatch, ...uploadBatches]);
+                            setUsers(newUsers);
+                            setRecords(newRecordsList);
+                            showToast(`קובץ ${filename} יובא בהצלחה! ${newPlayersCount} שחקנים חדשים.`);
+                        } else {
+                            showToast('לא נמצאו נתונים רלוונטיים להעלאה בקובץ זה.', 'error');
+                        }
+
                         setIsParsing(false);
-                        
-                        showToast(`מעולה! ${newPlayersCount} שחקנים חדשים נוספו וקושרו. נתוני התחשבנות עודכנו בהצלחה.`);
                         e.target.value = '';
                     } catch (err) {
                         console.error("Parsing Error:", err);
@@ -906,6 +837,34 @@
                 reader.readAsArrayBuffer(file);
             };
 
+            const undoBatch = (batchId) => {
+                if(!window.confirm('האם אתה בטוח שברצונך לבטל העלאה זו? פעולה זו תחסיר במדויק את הנתונים שהועלו מקובץ זה מתוך המחזור.')) return;
+                
+                const batch = uploadBatches.find(b => b.id === batchId);
+                if(!batch) return;
+
+                let updatedRecords = [...records];
+                
+                // Subtract deltas
+                batch.deltas.forEach(delta => {
+                    const recIdx = updatedRecords.findIndex(r => r.cycleId === batch.cycleId && r.playerId === delta.playerId);
+                    if(recIdx > -1) {
+                        updatedRecords[recIdx].pnl -= delta.pnl;
+                        updatedRecords[recIdx].rake -= delta.rake;
+                        updatedRecords[recIdx].hands -= delta.hands;
+                        // Remove tables added by this batch
+                        updatedRecords[recIdx].tables = updatedRecords[recIdx].tables.filter(t => t.batchId !== batchId);
+                    }
+                });
+
+                // Clean up empty records
+                updatedRecords = updatedRecords.filter(r => r.pnl !== 0 || r.rake !== 0 || r.hands !== 0 || r.tables.length > 0 || r.bonus !== 0);
+                
+                setRecords(updatedRecords);
+                setUploadBatches(uploadBatches.filter(b => b.id !== batchId));
+                showToast('ההעלאה בוטלה והנתונים קוזזו בהצלחה', 'success');
+            };
+
             const addCycle = () => {
                 if(newCycleName && !cyclesList.includes(newCycleName)) {
                     setCyclesList([newCycleName, ...cyclesList]);
@@ -915,109 +874,92 @@
             };
 
             return (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed border-slate-700 hover:border-emerald-500/50 rounded-2xl bg-slate-900/40 transition-colors shadow-inner relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-2xl border-2 relative z-10 
-                            ${isParsing ? 'bg-emerald-900/50 border-emerald-500 animate-pulse text-emerald-300' : 'bg-slate-800 border-slate-600 text-emerald-400'}`}>
-                            <Icon name="upload" size={40} />
+                <div className="space-y-8">
+                    {/* Top Row: Import & Cycles */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed border-slate-700 hover:border-emerald-500/50 rounded-2xl bg-slate-900/40 transition-colors shadow-inner relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-2xl border-2 relative z-10 
+                                ${isParsing ? 'bg-emerald-900/50 border-emerald-500 animate-pulse text-emerald-300' : 'bg-slate-800 border-slate-600 text-emerald-400'}`}>
+                                <Icon name="upload" size={40} />
+                            </div>
+                            <h3 className="text-2xl font-black mb-3 text-white relative z-10">{isParsing ? 'מפענח נתונים ומרכיב טבלאות...' : 'ייבוא נתונים יומי / מחזורי'}</h3>
+                            <p className="text-slate-400 text-sm mb-8 max-w-sm relative z-10 leading-relaxed">העלה קובץ Member Statistics או פירוט שולחנות כ-CSV/Excel.</p>
+                            <label className={`cursor-pointer text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all relative z-10 border 
+                                ${isParsing ? 'bg-slate-700 border-slate-600 opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 border-transparent hover:-translate-y-1'}`}>
+                                בחר קובץ להעלאה
+                                <input type="file" className="hidden" accept=".csv, text/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .xlsx" onChange={handleFileUpload} disabled={isParsing} />
+                            </label>
                         </div>
-                        <h3 className="text-2xl font-black mb-3 text-white relative z-10">{isParsing ? 'הקסם קורה עכשיו...' : 'ייבוא Member Statistics (Excel)'}</h3>
-                        <p className="text-slate-400 text-sm mb-8 max-w-sm relative z-10 leading-relaxed">
-                            העלה את דוח ה-Excel שהורדת מהמערכת או מגוגל שיטס. המערכת תסרוק אוטומטית שחקנים, סוכנים (כמו dop dop), עמלות ותוצאות.
-                        </p>
-                        <label className={`cursor-pointer text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all relative z-10 border 
-                            ${isParsing ? 'bg-slate-700 border-slate-600 opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 border-transparent hover:-translate-y-1'}`}>
-                            בחר קובץ Excel / CSV
-                            <input type="file" className="hidden" accept=".csv, text/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .xlsx" onChange={handleFileUpload} disabled={isParsing} />
-                        </label>
+
+                        <div className="bg-slate-900/60 p-8 rounded-2xl border border-slate-700/80 flex flex-col justify-center shadow-xl">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-600 text-cyan-400"><Icon name="dashboard" size={20}/></div>
+                                <h3 className="text-xl font-bold text-white">ניהול מחזורים</h3>
+                            </div>
+                            <p className="text-slate-400 text-sm mb-6 leading-relaxed">הנתונים שתייבא כעת יתווספו אוטומטית למחזור: <strong className="text-emerald-400 bg-emerald-900/20 px-2 py-1 rounded border border-emerald-500/20">{currentCycle}</strong>.</p>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <input type="text" value={newCycleName} onChange={(e)=>setNewCycleName(e.target.value)} placeholder="שם מחזור חדש..." className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white outline-none focus:border-emerald-500 shadow-inner" />
+                                <button onClick={addCycle} className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-xl font-bold transition-colors whitespace-nowrap shadow-md">צור מחזור</button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="bg-slate-900/60 p-8 rounded-2xl border border-slate-700/80 flex flex-col justify-center shadow-xl">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-600 text-cyan-400"><Icon name="dashboard" size={20}/></div>
-                            <h3 className="text-xl font-bold text-white">ניהול מחזורים</h3>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-                            הנתונים שתייבא כעת ישויכו למחזור: <strong className="text-emerald-400 bg-emerald-900/20 px-2 py-1 rounded border border-emerald-500/20">{currentCycle}</strong>.<br/><br/>
-                            אם התחיל שבוע חדש (יום שלישי 06:00), צור מחזור חדש לפני העלאת הדוח.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <input 
-                                type="text" 
-                                value={newCycleName}
-                                onChange={(e)=>setNewCycleName(e.target.value)}
-                                placeholder="שם מחזור (לדוג': 26/05 - 02/06)" 
-                                className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white outline-none focus:border-emerald-500 shadow-inner"
-                            />
-                            <button onClick={addCycle} className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-xl font-bold transition-colors whitespace-nowrap shadow-md">
-                                צור מחזור
-                            </button>
-                        </div>
+                    {/* Bottom Row: Rollback History */}
+                    <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-700/50 shadow-inner">
+                        <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Icon name="history" size={20} className="text-cyan-400"/> היסטוריית העלאות (מנגנון ביטול/Rollback)</h4>
+                        {uploadBatches.length === 0 ? (
+                            <div className="text-center py-6 text-slate-500 bg-slate-800/20 rounded-xl border border-dashed border-slate-700">לא הועלו קבצים.</div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-right text-slate-300">
+                                    <thead className="border-b border-slate-700 bg-slate-800/50">
+                                        <tr><th className="p-3">תאריך העלאה</th><th className="p-3">שם הקובץ</th><th className="p-3">מחזור יעד</th><th className="p-3 text-center">מס' שחקנים שהושפעו</th><th className="p-3 text-left">פעולה</th></tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-800">
+                                        {uploadBatches.map(batch => (
+                                            <tr key={batch.id} className="hover:bg-slate-800 transition-colors">
+                                                <td className="p-3">{batch.date}</td>
+                                                <td className="p-3 font-mono text-xs text-slate-400">{batch.filename}</td>
+                                                <td className="p-3"><span className="bg-slate-700 px-2 py-1 rounded text-xs">{batch.cycleId}</span></td>
+                                                <td className="p-3 text-center font-bold">{batch.playersAffected}</td>
+                                                <td className="p-3 text-left">
+                                                    <button onClick={() => undoBatch(batch.id)} className="bg-red-900/40 text-red-400 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">בטל העלאה זו</button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </div>
                 </div>
             );
         };
 
         const AdminMessagesView = ({ users, messages, setMessages, showToast }) => {
-            const [text, setText] = useState('');
-            const [imgUrl, setImgUrl] = useState('');
-            const [targetId, setTargetId] = useState('all');
-
+            const [text, setText] = useState(''); const [imgUrl, setImgUrl] = useState(''); const [targetId, setTargetId] = useState('all');
             const sendMsg = () => {
                 if(!text) return;
-                const newMsg = { id: Date.now(), senderId: 'admin1', receiverId: targetId, text, image: imgUrl, date: new Date().toLocaleDateString('he-IL') };
-                setMessages([newMsg, ...messages]);
-                setText(''); setImgUrl('');
-                showToast('ההודעה נשלחה לנמענים!');
+                setMessages([{ id: Date.now(), senderId: 'admin1', receiverId: targetId, text, image: imgUrl, date: new Date().toLocaleDateString('he-IL') }, ...messages]);
+                setText(''); setImgUrl(''); showToast('ההודעה נשלחה לנמענים!');
             };
-
             return (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div className="space-y-5 bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50">
                         <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-3"><Icon name="message" size={24} className="text-emerald-400"/> שליחת הודעת מערכת</h3>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">נמען</label>
-                            <select value={targetId} onChange={(e)=>setTargetId(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner font-medium">
-                                <option value="all">שידור לכולם (גלובלי)</option>
-                                <optgroup label="סוכנים">{users.filter(u=>u.role==='agent').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup>
-                                <optgroup label="שחקנים">{users.filter(u=>u.role==='player').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תוכן ההודעה</label>
-                            <textarea value={text} onChange={(e)=>setText(e.target.value)} rows="4" className="w-full bg-slate-800 border border-slate-600 rounded-xl p-4 text-white outline-none focus:border-emerald-500 shadow-inner resize-none" placeholder="הקלד את ההודעה שתקפוץ למשתמשים..."></textarea>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תמונה מצורפת (אופציונלי)</label>
-                            <input type="text" value={imgUrl} onChange={(e)=>setImgUrl(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner" placeholder="הדבק URL של תמונה (https://...)" />
-                        </div>
-                        <button onClick={sendMsg} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg py-4 rounded-xl shadow-lg transition-transform active:scale-95 w-full mt-2">
-                            שגר הודעה
-                        </button>
+                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">נמען</label><select value={targetId} onChange={(e)=>setTargetId(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner font-medium"><option value="all">שידור לכולם (גלובלי)</option><optgroup label="סוכנים">{users.filter(u=>u.role==='agent').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup><optgroup label="שחקנים">{users.filter(u=>u.role==='player').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup></select></div>
+                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תוכן ההודעה (קופץ באינבוקס)</label><textarea value={text} onChange={(e)=>setText(e.target.value)} rows="4" className="w-full bg-slate-800 border border-slate-600 rounded-xl p-4 text-white outline-none focus:border-emerald-500 shadow-inner resize-none" placeholder="הקלד את ההודעה שתקפוץ למשתמשים..."></textarea></div>
+                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תמונה מצורפת (אופציונלי)</label><input type="text" value={imgUrl} onChange={(e)=>setImgUrl(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner" placeholder="הדבק URL של תמונה (https://...)" /></div>
+                        <button onClick={sendMsg} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg py-4 rounded-xl shadow-lg transition-transform active:scale-95 w-full mt-2">שגר הודעה</button>
                     </div>
-
                     <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-700/50 flex flex-col h-[600px] shadow-inner">
-                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 pb-3 border-b border-slate-700 flex items-center gap-2">
-                            <Icon name="dashboard" size={16}/> היסטוריית שידורים
-                        </h4>
+                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 pb-3 border-b border-slate-700 flex items-center gap-2"><Icon name="dashboard" size={16}/> היסטוריית שידורים</h4>
                         <div className="space-y-4 overflow-y-auto flex-1 pr-2">
                             {messages.filter(m => m.senderId === 'admin1').map(m => (
-                                <div key={m.id} className="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-sm relative">
-                                    <div className="flex justify-between items-start mb-3 border-b border-slate-700/50 pb-2">
-                                        <span className="font-bold text-emerald-400 text-sm">נמען: {m.receiverId === 'all' ? 'כולם' : users.find(u=>u.id===m.receiverId)?.name || 'לא ידוע'}</span>
-                                        <span className="text-[10px] text-slate-500 font-medium">{m.date}</span>
-                                    </div>
-                                    <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{m.text}</p>
-                                    {m.image && <img src={m.image} alt="Attachment" className="mt-3 rounded-lg border border-slate-600 max-h-40 object-cover shadow-md" />}
-                                </div>
+                                <div key={m.id} className="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-sm relative"><div className="flex justify-between items-start mb-3 border-b border-slate-700/50 pb-2"><span className="font-bold text-emerald-400 text-sm">נמען: {m.receiverId === 'all' ? 'כולם' : users.find(u=>u.id===m.receiverId)?.name || 'לא ידוע'}</span><span className="text-[10px] text-slate-500 font-medium">{m.date}</span></div><p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{m.text}</p>{m.image && <img src={m.image} alt="Attachment" className="mt-3 rounded-lg border border-slate-600 max-h-40 object-cover shadow-md" />}</div>
                             ))}
-                            {messages.length === 0 && (
-                                <div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50">
-                                    <Icon name="message" size={48} className="mb-4" />
-                                    <p>טרם נשלחו הודעות.</p>
-                                </div>
-                            )}
+                            {messages.length === 0 && (<div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50"><Icon name="message" size={48} className="mb-4" /><p>טרם נשלחו הודעות.</p></div>)}
                         </div>
                     </div>
                 </div>
@@ -1035,17 +977,12 @@
             const myPlayers = users.filter(u => u.agentId === user.id);
             
             const playerStats = useMemo(() => {
-                const filtered = searchQuery 
-                    ? myPlayers.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.username.toLowerCase().includes(searchQuery.toLowerCase()))
-                    : myPlayers;
-
+                const filtered = searchQuery ? myPlayers.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.username.toLowerCase().includes(searchQuery.toLowerCase())) : myPlayers;
                 return filtered.map(player => {
                     const record = records.find(r => r.cycleId === currentCycle && r.playerId === player.id) || { pnl: 0, rake: 0, hands: 0, bonus: 0, tables: [] };
                     const rate = player.customCommission !== null ? player.customCommission : user.commissionRate;
-                    
-                    const generatedCommissionNet = record.rake * (1 - SYSTEM_EXPENSES_RATE); // 100% העמלה לחלוקה (נטו)
+                    const generatedCommissionNet = record.rake * (1 - SYSTEM_EXPENSES_RATE);
                     const agentCommission = generatedCommissionNet * (rate / 100);
-                    
                     return { ...player, ...record, generatedCommissionNet, calculatedCommission: agentCommission, finalPnl: record.pnl + (record.bonus || 0) };
                 }).sort((a, b) => {
                     if (sortBy === 'pnl') return a.pnl - b.pnl;
@@ -1059,7 +996,6 @@
             const totalPnl = playerStats.reduce((sum, p) => sum + p.finalPnl, 0);
             const totalNetCommission = playerStats.reduce((sum, p) => sum + p.generatedCommissionNet, 0);
             const totalAgentCommission = playerStats.reduce((sum, p) => sum + p.calculatedCommission, 0);
-            
             const totalAgainstClub = totalPnl + totalAgentCommission;
 
             const toggleRow = (id) => setExpandedRow(expandedRow === id ? null : id);
@@ -1068,32 +1004,10 @@
                 <div className="space-y-6">
                     <div className="card-gradient rounded-2xl p-4 sm:p-8 border border-slate-700/50 shadow-2xl">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
-                            <div>
-                                <h3 className="text-2xl font-black text-white">רשימת השחקנים שלי</h3>
-                                <p className="text-slate-400 text-sm mt-1">לחץ על שחקן כדי לראות פירוט שולחנות וסיסמה.</p>
-                            </div>
-                            
+                            <div><h3 className="text-2xl font-black text-white">רשימת השחקנים שלי</h3><p className="text-slate-400 text-sm mt-1">לחץ על שחקן כדי לראות פירוט שולחנות וסיסמה.</p></div>
                             <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                                <div className="relative w-full sm:w-64">
-                                    <input 
-                                        type="text" 
-                                        placeholder="חיפוש שחקן..." 
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full bg-slate-900/80 border border-slate-600 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white outline-none focus:border-emerald-500 shadow-inner transition-colors"
-                                    />
-                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500">
-                                        <Icon name="search" size={18} />
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-600 rounded-xl px-4 py-2.5 w-full sm:w-auto shadow-inner">
-                                    <Icon name="sort" size={18} className="text-slate-400"/>
-                                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm font-medium text-white outline-none cursor-pointer w-full">
-                                        <option value="pnl">מיון: תוצאה (P&L)</option>
-                                        <option value="commission">מיון: עמלה</option>
-                                        <option value="hands">מיון: ידיים</option>
-                                    </select>
-                                </div>
+                                <div className="relative w-full sm:w-64"><input type="text" placeholder="חיפוש שחקן..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-900/80 border border-slate-600 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white outline-none focus:border-emerald-500 shadow-inner transition-colors"/><div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500"><Icon name="search" size={18} /></div></div>
+                                <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-600 rounded-xl px-4 py-2.5 w-full sm:w-auto shadow-inner"><Icon name="sort" size={18} className="text-slate-400"/><select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm font-medium text-white outline-none cursor-pointer w-full"><option value="pnl">מיון: תוצאה (P&L)</option><option value="commission">מיון: עמלה</option><option value="hands">מיון: ידיים</option></select></div>
                             </div>
                         </div>
 
@@ -1107,49 +1021,50 @@
                                         <th className="p-5 font-bold text-right border-b border-slate-700">תוצאה (P&L)</th>
                                         <th className="p-5 font-bold text-right text-emerald-500 border-b border-slate-700">עמלה שייצר (נטו)</th>
                                         <th className="p-5 font-bold text-right text-emerald-400 border-b border-slate-700 bg-emerald-900/10">העמלה שלי</th>
+                                        <th className="p-5 font-bold text-center border-b border-slate-700 w-16"></th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
-                                    {playerStats.map(stat => (
+                                    {playerStats.map(stat => {
+                                        const isWhale = Math.abs(stat.finalPnl) >= 5000;
+                                        const isHot = stat.hands >= 3000;
+                                        return (
                                         <Fragment key={stat.id}>
                                             <tr className={`transition-colors cursor-pointer group ${expandedRow === stat.id ? 'bg-slate-800' : 'hover:bg-slate-800/50'}`} onClick={() => toggleRow(stat.id)}>
-                                                <td className="p-5 text-center text-slate-500 group-hover:text-emerald-400">
-                                                    <div className={`p-1.5 rounded-md inline-flex ${expandedRow === stat.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800'}`}>
-                                                        {expandedRow === stat.id ? <Icon name="chevronUp" size={16}/> : <Icon name="chevronDown" size={16}/>}
-                                                    </div>
-                                                </td>
+                                                <td className="p-5 text-center text-slate-500 group-hover:text-emerald-400"><div className={`p-1.5 rounded-md inline-flex ${expandedRow === stat.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800'}`}>{expandedRow === stat.id ? <Icon name="chevronUp" size={16}/> : <Icon name="chevronDown" size={16}/>}</div></td>
                                                 <td className="p-5 text-right">
-                                                    <div className="font-bold text-white text-base">{stat.name}</div>
+                                                    <div className="font-bold text-white text-base flex items-center gap-2">
+                                                        {stat.name}
+                                                        {isWhale && <span title="לוויתן! מעל 5000 שח רווח/הפסד">🐋</span>}
+                                                        {isHot && <span title="פעיל מאוד! שוחקו המון ידיים">🔥</span>}
+                                                    </div>
                                                     <div className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">{stat.username}</div>
                                                 </td>
                                                 <td className="p-5 text-center font-medium text-slate-300">{stat.hands.toLocaleString()}</td>
-                                                <td className={`p-5 text-right font-bold text-base ${getColorClass(stat.finalPnl)}`}>{formatMoney(stat.finalPnl)}</td>
-                                                <td className="p-5 text-right font-bold text-emerald-500/80">{formatMoney(stat.generatedCommissionNet)}</td>
-                                                <td className="p-5 text-right font-black text-lg text-emerald-400 bg-emerald-900/5">{formatMoney(stat.calculatedCommission)}</td>
+                                                <td className={`p-5 text-right font-bold text-base money-value ${getColorClass(stat.finalPnl)}`}>{formatMoney(stat.finalPnl)}</td>
+                                                <td className="p-5 text-right font-bold text-emerald-500/80 money-value">{formatMoney(stat.generatedCommissionNet)}</td>
+                                                <td className="p-5 text-right font-black text-lg text-emerald-400 bg-emerald-900/5 money-value">{formatMoney(stat.calculatedCommission)}</td>
+                                                <td className="p-5 text-center">
+                                                    <a href={generateWhatsAppLink('', `היי ${stat.name},\nסיכום התחשבנות - מועדון NETABEL\nתוצאה סופית: ${formatMoney(stat.finalPnl)}\nסה"כ ידיים שוחקו: ${stat.hands}`)} target="_blank" onClick={(e)=>e.stopPropagation()} className="p-2 inline-block bg-slate-800 text-slate-400 hover:bg-emerald-600 hover:text-white rounded-full transition-colors" title="שלח לשחקן בוואטסאפ"><Icon name="whatsapp" size={16} /></a>
+                                                </td>
                                             </tr>
-                                            {/* Drill-down View using the shared component */}
                                             {expandedRow === stat.id && (
-                                                <tr className="bg-slate-900"><td colSpan="6" className="p-0 border-b border-slate-800">
-                                                    <PlayerDetailsDrilldown player={stat} record={stat} finalPnl={stat.finalPnl} showToast={showToast} />
-                                                </td></tr>
+                                                <tr className="bg-slate-900"><td colSpan="7" className="p-0 border-b border-slate-800"><PlayerDetailsDrilldown player={stat} record={stat} finalPnl={stat.finalPnl} showToast={showToast} /></td></tr>
                                             )}
                                         </Fragment>
-                                    ))}
+                                    )})}
                                 </tbody>
                                 <tfoot className="bg-slate-800/90 border-t-2 border-slate-600">
                                     <tr>
                                         <td colSpan="2" className="p-5 text-right font-black text-slate-300">סיכום סוכן (סה"כ):</td>
                                         <td className="p-5 text-center font-bold text-white">{totalHands.toLocaleString()}</td>
-                                        <td className={`p-5 text-right font-bold text-lg ${getColorClass(totalPnl)}`}>{formatMoney(totalPnl)}</td>
-                                        <td className="p-5 text-right font-bold text-emerald-500/80">{formatMoney(totalNetCommission)}</td>
-                                        <td className="p-5 text-right font-black text-xl text-emerald-400 bg-emerald-900/20">{formatMoney(totalAgentCommission)}</td>
+                                        <td className={`p-5 text-right font-bold text-lg money-value ${getColorClass(totalPnl)}`}>{formatMoney(totalPnl)}</td>
+                                        <td className="p-5 text-right font-bold text-emerald-500/80 money-value">{formatMoney(totalNetCommission)}</td>
+                                        <td colSpan="2" className="p-5 text-right font-black text-xl text-emerald-400 bg-emerald-900/20 money-value">{formatMoney(totalAgentCommission)}</td>
                                     </tr>
                                     <tr className="bg-slate-900 border-t border-slate-700">
-                                        <td colSpan="4" className="p-6 text-right font-black text-slate-200 text-lg flex items-center gap-3">
-                                            <div className="w-2 h-8 bg-cyan-500 rounded-full"></div>
-                                            התחשבנות סופית מול מועדון (תוצאה + עמלה):
-                                        </td>
-                                        <td colSpan="2" className={`p-6 text-right text-3xl font-black tracking-tight ${getColorClass(totalAgainstClub)}`}>{formatMoney(totalAgainstClub)}</td>
+                                        <td colSpan="4" className="p-6 text-right font-black text-slate-200 text-lg flex items-center gap-3"><div className="w-2 h-8 bg-cyan-500 rounded-full"></div>התחשבנות סופית מול מועדון (תוצאה + עמלה):</td>
+                                        <td colSpan="3" className={`p-6 text-right text-3xl font-black tracking-tight money-value ${getColorClass(totalAgainstClub)}`}>{formatMoney(totalAgainstClub)}</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -1177,104 +1092,53 @@
 
             return (
                 <div className="max-w-4xl mx-auto space-y-8 mt-4">
-                    {/* The "Credit Card" */}
                     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-2xl p-8 sm:p-12 group">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none transition-transform duration-700 group-hover:scale-110"></div>
                         <div className="absolute bottom-0 left-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[60px] pointer-events-none transition-transform duration-700 group-hover:scale-110"></div>
-                        
                         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                             <div>
-                                <h2 className="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase mb-3 flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> יתרת מחזור מעודכנת
-                                </h2>
-                                <div className={`text-6xl md:text-7xl font-black tracking-tight ${getColorClass(finalResult)} drop-shadow-lg`}>
-                                    {formatMoney(finalResult)}
-                                </div>
-                                {cycleRecord.bonus > 0 && (
-                                    <div className="mt-4 text-sm text-emerald-400 flex items-center gap-2 bg-emerald-900/40 inline-flex px-4 py-2 rounded-lg font-bold border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
-                                        <Icon name="gift" size={16}/> 
-                                        בונוס מועדון מצורף: {formatMoney(cycleRecord.bonus)}
-                                    </div>
-                                )}
+                                <h2 className="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase mb-3 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> יתרת מחזור מעודכנת</h2>
+                                <div className={`text-6xl md:text-7xl font-black tracking-tight money-value ${getColorClass(finalResult)} drop-shadow-lg`}>{formatMoney(finalResult)}</div>
+                                {cycleRecord.bonus > 0 && <div className="mt-4 text-sm text-emerald-400 flex items-center gap-2 bg-emerald-900/40 inline-flex px-4 py-2 rounded-lg font-bold border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)]"><Icon name="gift" size={16}/> בונוס מועדון מצורף: {formatMoney(cycleRecord.bonus)}</div>}
                             </div>
-                            
                             <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl p-6 border border-slate-700 w-full md:w-64 shadow-xl">
                                 <div className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">סטטוס משתמש</div>
                                 <div className={`text-3xl font-black ${rank.color} tracking-wide mb-4`}>{rank.name} <span className="text-sm">VIP</span></div>
-                                <div className="flex justify-between items-center border-t border-slate-700/50 pt-3">
-                                    <span className="text-xs text-slate-500 uppercase font-bold tracking-widest">ידיים שוחקו</span>
-                                    <span className="font-bold text-white text-lg">{cycleRecord.hands.toLocaleString()}</span>
-                                </div>
+                                <div className="flex justify-between items-center border-t border-slate-700/50 pt-3"><span className="text-xs text-slate-500 uppercase font-bold tracking-widest">ידיים שוחקו</span><span className="font-bold text-white text-lg">{cycleRecord.hands.toLocaleString()}</span></div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Table Details */}
                     {cycleRecord.tables && cycleRecord.tables.length > 0 && (
                         <div className="bg-slate-900/60 rounded-3xl p-6 md:p-8 border border-slate-800 shadow-xl relative overflow-hidden">
-                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                                <Icon name="dashboard" size={24} className="text-emerald-400"/> פירוט שולחנות וטורנירים
-                            </h3>
+                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3"><Icon name="dashboard" size={24} className="text-emerald-400"/> פירוט שולחנות וטורנירים</h3>
                             <div className="overflow-x-auto rounded-xl border border-slate-700/50">
                                 <table className="w-full text-right text-sm">
                                     <thead className="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
-                                        <tr>
-                                            <th className="p-4 font-bold border-b border-slate-700">שם שולחן / טורניר</th>
-                                            <th className="p-4 font-bold text-center border-b border-slate-700">ידיים</th>
-                                            <th className="p-4 font-bold border-b border-slate-700">תוצאה (P&L)</th>
-                                        </tr>
+                                        <tr><th className="p-4 font-bold border-b border-slate-700">שם שולחן / טורניר</th><th className="p-4 font-bold text-center border-b border-slate-700">ידיים</th><th className="p-4 font-bold border-b border-slate-700">תוצאה (P&L)</th></tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
                                         {cycleRecord.tables.map((t, idx) => (
-                                            <tr key={idx} className="hover:bg-slate-800/60 transition-colors">
-                                                <td className="p-4 font-medium text-slate-200 text-base">{t.name}</td>
-                                                <td className="p-4 text-center text-slate-300 font-medium">{t.hands}</td>
-                                                <td className={`p-4 font-bold text-lg ${getColorClass(t.pnl)}`}>{formatMoney(t.pnl)}</td>
-                                            </tr>
+                                            <tr key={idx} className="hover:bg-slate-800/60 transition-colors"><td className="p-4 font-medium text-slate-200 text-base">{t.name}</td><td className="p-4 text-center text-slate-300 font-medium">{t.hands}</td><td className={`p-4 font-bold text-lg money-value ${getColorClass(t.pnl)}`}>{formatMoney(t.pnl)}</td></tr>
                                         ))}
                                     </tbody>
                                     <tfoot className="bg-slate-800/90 border-t-2 border-slate-600">
-                                        <tr>
-                                            <td className="p-5 font-black text-slate-300 text-base">סה"כ משחקים:</td>
-                                            <td className="p-5 font-bold text-white text-center text-base">{cycleRecord.hands}</td>
-                                            <td className={`p-5 font-black text-xl ${getColorClass(cycleRecord.pnl)}`}>{formatMoney(cycleRecord.pnl)}</td>
-                                        </tr>
+                                        <tr><td className="p-5 font-black text-slate-300 text-base">סה"כ משחקים:</td><td className="p-5 font-bold text-white text-center text-base">{cycleRecord.hands}</td><td className={`p-5 font-black text-xl money-value ${getColorClass(cycleRecord.pnl)}`}>{formatMoney(cycleRecord.pnl)}</td></tr>
                                     </tfoot>
                                 </table>
                             </div>
                         </div>
                     )}
-
-                    {/* Inbox */}
                     <div className="bg-slate-900/60 rounded-3xl p-6 md:p-8 border border-slate-800 shadow-xl">
-                        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                            <Icon name="message" size={24} className="text-cyan-400"/> 
-                            הודעות ממועדון NETABEL
-                        </h3>
+                        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3"><Icon name="message" size={24} className="text-cyan-400"/> הודעות ממועדון NETABEL</h3>
                         {myMessages.length === 0 ? (
-                            <div className="text-center py-16 text-slate-500 bg-slate-800/20 rounded-2xl border-2 border-dashed border-slate-700/50">
-                                <Icon name="message" size={48} className="mx-auto mb-4 opacity-50"/>
-                                <p className="font-medium text-lg">תיבת ההודעות שלך ריקה.</p>
-                            </div>
+                            <div className="text-center py-16 text-slate-500 bg-slate-800/20 rounded-2xl border-2 border-dashed border-slate-700/50"><Icon name="message" size={48} className="mx-auto mb-4 opacity-50"/><p className="font-medium text-lg">תיבת ההודעות שלך ריקה.</p></div>
                         ) : (
                             <div className="space-y-5">
                                 {myMessages.map(msg => (
                                     <div key={msg.id} className="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 shadow-md hover:border-cyan-500/30 transition-colors">
-                                        <div className="flex justify-between items-center mb-4 border-b border-slate-700/50 pb-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]">
-                                                    <span className="text-cyan-400 text-sm font-black">N</span>
-                                                </div>
-                                                <span className="font-bold text-slate-100 text-base">הנהלת המועדון</span>
-                                            </div>
-                                            <span className="text-xs text-slate-500 font-bold tracking-widest bg-slate-900 px-3 py-1 rounded-full">{msg.date}</span>
-                                        </div>
+                                        <div className="flex justify-between items-center mb-4 border-b border-slate-700/50 pb-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]"><span className="text-cyan-400 text-sm font-black">N</span></div><span className="font-bold text-slate-100 text-base">הנהלת המועדון</span></div><span className="text-xs text-slate-500 font-bold tracking-widest bg-slate-900 px-3 py-1 rounded-full">{msg.date}</span></div>
                                         <p className="text-slate-300 text-base leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                                        {msg.image && (
-                                            <div className="mt-5 rounded-xl overflow-hidden border border-slate-600 inline-block shadow-lg">
-                                                <img src={msg.image} alt="Club" className="max-w-full h-auto max-h-64 object-cover" />
-                                            </div>
-                                        )}
+                                        {msg.image && <div className="mt-5 rounded-xl overflow-hidden border border-slate-600 inline-block shadow-lg"><img src={msg.image} alt="Club" className="max-w-full h-auto max-h-64 object-cover" /></div>}
                                     </div>
                                 ))}
                             </div>
