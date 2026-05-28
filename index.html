@@ -1,15 +1,19 @@
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מועדון NETABEL - מערכת ניהול והתחשבנות</title>
     
+    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
+    <!-- PapaParse for robust CSV Handling -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -27,7 +31,6 @@
         .toast-animate { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .modal-animate { animation: fadeIn 0.2s ease-out forwards; }
 
-        /* Privacy Mode Classes */
         .privacy-on .money-value { filter: blur(6px); transition: filter 0.3s ease; user-select: none; }
         .privacy-on .money-value:hover { filter: blur(0); cursor: pointer; }
     </style>
@@ -41,7 +44,6 @@
         const DEFAULT_CYCLE = "מחזור נוכחי";
         const SYSTEM_EXPENSES_RATE = 0.10; // 10% הוצאות למועדון
 
-        // רשימת משתמשים וסוכנים התחלתית
         const initialUsers = [
             { id: 'admin1', username: 'admin', password: 'X', role: 'admin', name: 'מנהל ראשי' },
             { id: 'agent_default', username: 'unassigned', password: '123', role: 'agent', name: 'שחקנים ללא סוכן', commissionRate: 0 },
@@ -68,7 +70,7 @@
             return amount > 0 ? 'text-emerald-400' : 'text-red-400';
         };
 
-        // --- Icons (Inline SVGs) ---
+        // --- Icons ---
         const Icon = ({ name, size = 20, className = "" }) => {
             const icons = {
                 users: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>,
@@ -88,12 +90,13 @@
                 check: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"></polyline></svg>,
                 alert: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>,
                 whatsapp: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>,
-                history: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                history: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>,
+                plus: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+                userPlus: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
             };
             return icons[name] || null;
         };
 
-        // --- Custom UI Components ---
         const Toast = ({ message, type }) => (
             <div className={`fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.5)] flex items-center gap-3 toast-animate font-bold ${type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
                 <Icon name={type === 'success' ? 'check' : 'alert'} size={18} />
@@ -109,19 +112,14 @@
                         <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
                         <p className="text-slate-300 mb-6 leading-relaxed">{message}</p>
                         <div className="flex justify-end gap-3">
-                            <button onClick={onCancel} className="px-5 py-2 rounded-lg font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors">
-                                ביטול
-                            </button>
-                            <button onClick={onConfirm} className={`px-5 py-2 rounded-lg font-bold text-white transition-colors shadow-lg ${confirmColor}`}>
-                                {confirmText}
-                            </button>
+                            <button onClick={onCancel} className="px-5 py-2 rounded-lg font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors">ביטול</button>
+                            <button onClick={onConfirm} className={`px-5 py-2 rounded-lg font-bold text-white transition-colors shadow-lg ${confirmColor}`}>{confirmText}</button>
                         </div>
                     </div>
                 </div>
             );
         };
 
-        // --- Main App Component ---
         const App = () => {
             const [currentUser, setCurrentUser] = useState(null);
             const [users, setUsers] = useState([]);
@@ -134,11 +132,11 @@
             const [isPrivacyMode, setIsPrivacyMode] = useState(false);
 
             useEffect(() => {
-                const storedUsers = JSON.parse(localStorage.getItem('netabel_sys_v3_users'));
-                const storedRecords = JSON.parse(localStorage.getItem('netabel_sys_v3_records'));
-                const storedMessages = JSON.parse(localStorage.getItem('netabel_sys_v3_messages'));
-                const storedCycles = JSON.parse(localStorage.getItem('netabel_sys_v3_cycles'));
-                const storedUploads = JSON.parse(localStorage.getItem('netabel_sys_v3_uploads'));
+                const storedUsers = JSON.parse(localStorage.getItem('netabel_sys_v4_users'));
+                const storedRecords = JSON.parse(localStorage.getItem('netabel_sys_v4_records'));
+                const storedMessages = JSON.parse(localStorage.getItem('netabel_sys_v4_messages'));
+                const storedCycles = JSON.parse(localStorage.getItem('netabel_sys_v4_cycles'));
+                const storedUploads = JSON.parse(localStorage.getItem('netabel_sys_v4_uploads'));
                 
                 if (storedUsers) setUsers(storedUsers); else setUsers(initialUsers);
                 if (storedRecords) setRecords(storedRecords); else setRecords([]);
@@ -149,11 +147,11 @@
 
             useEffect(() => {
                 if(users.length > 0) {
-                    localStorage.setItem('netabel_sys_v3_users', JSON.stringify(users));
-                    localStorage.setItem('netabel_sys_v3_records', JSON.stringify(records));
-                    localStorage.setItem('netabel_sys_v3_messages', JSON.stringify(messages));
-                    localStorage.setItem('netabel_sys_v3_cycles', JSON.stringify(cyclesList));
-                    localStorage.setItem('netabel_sys_v3_uploads', JSON.stringify(uploadBatches));
+                    localStorage.setItem('netabel_sys_v4_users', JSON.stringify(users));
+                    localStorage.setItem('netabel_sys_v4_records', JSON.stringify(records));
+                    localStorage.setItem('netabel_sys_v4_messages', JSON.stringify(messages));
+                    localStorage.setItem('netabel_sys_v4_cycles', JSON.stringify(cyclesList));
+                    localStorage.setItem('netabel_sys_v4_uploads', JSON.stringify(uploadBatches));
                 }
             }, [users, records, messages, cyclesList, uploadBatches]);
 
@@ -290,7 +288,7 @@
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="text-slate-400 text-sm font-medium tracking-wide flex items-center gap-2">
                             <Icon name="dashboard" size={16}/>
-                            {headerTitle} <span className="text-slate-600">|</span> פעילים: <span className="text-white">{activePlayers}</span>
+                            {headerTitle} <span className="text-slate-600">|</span> רשומות פעילות: <span className="text-white">{activePlayers}</span>
                         </div>
                         <div className="flex flex-wrap gap-4 sm:gap-8">
                             <div className="text-right bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700/50">
@@ -350,9 +348,6 @@
             );
         };
 
-        // ==========================================
-        // ADMIN DASHBOARD
-        // ==========================================
         const AdminDashboard = ({ users, setUsers, records, setRecords, messages, setMessages, currentCycle, cyclesList, setCyclesList, showToast, uploadBatches, setUploadBatches }) => {
             const [activeTab, setActiveTab] = useState('import'); 
 
@@ -360,9 +355,9 @@
                 <div className="space-y-6">
                     <div className="flex flex-wrap bg-slate-900/80 rounded-xl p-1.5 border border-slate-700/50 shadow-sm">
                         {[
-                            {id: 'import', name: 'ייבוא קבצים וניהול'},
+                            {id: 'import', name: 'ייבוא דוחות (CSV/Excel)'},
                             {id: 'agents', name: 'סיכום סוכנים'},
-                            {id: 'players', name: 'ניהול שחקנים'},
+                            {id: 'players', name: 'ניהול משתמשים ועמלות'},
                             {id: 'messages', name: 'מרכז הודעות'},
                             {id: 'settings', name: 'הגדרות מתקדמות'}
                         ].map(tab => (
@@ -375,7 +370,7 @@
                     </div>
 
                     <div className="card-gradient rounded-2xl p-4 sm:p-8 border border-slate-700/50 shadow-2xl">
-                        {activeTab === 'agents' && <AdminAgentsView users={users} records={records} currentCycle={currentCycle} />}
+                        {activeTab === 'agents' && <AdminAgentsView users={users} records={records} currentCycle={currentCycle} showToast={showToast} />}
                         {activeTab === 'players' && <AdminPlayersView users={users} setUsers={setUsers} records={records} setRecords={setRecords} currentCycle={currentCycle} showToast={showToast} />}
                         {activeTab === 'import' && <AdminImportView setRecords={setRecords} setUsers={setUsers} users={users} currentCycle={currentCycle} setCyclesList={setCyclesList} cyclesList={cyclesList} records={records} showToast={showToast} uploadBatches={uploadBatches} setUploadBatches={setUploadBatches} />}
                         {activeTab === 'messages' && <AdminMessagesView users={users} messages={messages} setMessages={setMessages} showToast={showToast} />}
@@ -385,7 +380,6 @@
             );
         };
 
-        // --- Admin: Import View (Super Robust CSV specific to Google Sheets) ---
         const AdminImportView = ({ setRecords, setUsers, users, currentCycle, cyclesList, setCyclesList, records, showToast, uploadBatches, setUploadBatches }) => {
             const [newCycleName, setNewCycleName] = useState('');
             const [isParsing, setIsParsing] = useState(false);
@@ -401,7 +395,6 @@
                 reader.onload = (event) => {
                     try {
                         const text = event.target.result;
-                        // Use PapaParse to safely handle commas inside numbers and complex CSVs
                         Papa.parse(text, {
                             complete: (results) => {
                                 const rows = results.data;
@@ -418,7 +411,6 @@
                                 const batchId = 'batch_' + Date.now();
                                 const currentBatchDeltas = [];
 
-                                // Helper function to clean and parse accounting numbers
                                 const extractNum = (val) => {
                                     if (val === undefined || val === null || val === '') return 0;
                                     let str = String(val).trim();
@@ -431,7 +423,6 @@
                                 let dataStartRow = -1;
                                 let colMap = { nickname: -1, agent: -1, pnl: -1, fee: -1, hands: -1 };
 
-                                // 1. Scan for headers flexibly (supports Member Statistics and Ring Game Detail)
                                 for (let i = 0; i < Math.min(15, rows.length); i++) {
                                     const rowStr = rows[i].join('|').toLowerCase();
                                     
@@ -447,23 +438,19 @@
                                             const h2 = String(subHeaders[c] || '').trim().toLowerCase();
                                             
                                             if (currentMain === 'player p&l' && h2 === 'total') colMap.pnl = c;
-                                            if ((currentMain === 'rake&fee' || currentMain === 'fee') && h2 === 'total') colMap.fee = c;
+                                            if ((currentMain === 'rake&fee' || currentMain === 'fee' || currentMain === 'contribution fee') && h2 === 'total') colMap.fee = c;
                                             if (currentMain.includes('played hands') && (h2 === 'total' || h2 === '')) colMap.hands = c;
                                         }
                                         
-                                        // Usually Agent Name is at 5, Nickname at 9 in the specific file provided
-                                        // Let's verify by peeking at a data row.
                                         colMap.agent = 5;
                                         colMap.nickname = 9;
 
-                                        // Fallbacks just in case it's a different format
                                         if (colMap.pnl === -1) colMap.pnl = rows[i].findIndex(c => String(c).toLowerCase().includes('p&l'));
                                         if (colMap.fee === -1) colMap.fee = rows[i].findIndex(c => String(c).toLowerCase().includes('fee') || String(c).toLowerCase().includes('rake'));
                                         if (colMap.hands === -1) colMap.hands = rows[i].findIndex(c => String(c).toLowerCase().includes('hands'));
 
-                                        dataStartRow = i + 2; // Data usually starts 2 rows after main header in Member Stats
+                                        dataStartRow = i + 2; 
                                         
-                                        // Skip empty rows or duplicate headers
                                         while(dataStartRow < rows.length && (!rows[dataStartRow] || String(rows[dataStartRow][0]).includes('Total') || String(rows[dataStartRow][colMap.nickname]).includes('Nickname'))) {
                                             dataStartRow++;
                                         }
@@ -478,7 +465,6 @@
                                      return;
                                 }
 
-                                // 2. Process the data rows
                                 for (let idx = dataStartRow; idx < rows.length; idx++) {
                                     const row = rows[idx];
                                     if (!row || row.length <= colMap.nickname) continue;
@@ -488,14 +474,12 @@
                                     
                                     const nickname = String(nicknameRaw).replace(/["']/g, '').trim();
                                     
-                                    // Skip empty or summary rows
                                     if (!nickname || nickname === '-' || nickname.toLowerCase().includes('total') || nickname.toLowerCase() === 'nickname') continue;
 
                                     const pnl = colMap.pnl !== -1 ? extractNum(row[colMap.pnl]) : 0;
                                     const rake = colMap.fee !== -1 ? extractNum(row[colMap.fee]) : 0;
                                     const hands = colMap.hands !== -1 ? Math.round(extractNum(row[colMap.hands])) : 0;
                                     
-                                    // Identify Agent
                                     let assignedAgentId = 'agent_default';
                                     if (colMap.agent !== -1 && row[colMap.agent]) {
                                         const rawAgentName = String(row[colMap.agent]).toLowerCase().trim();
@@ -505,9 +489,9 @@
                                         }
                                     }
 
+                                    // ! הסינון פה מונע הכנסת אפסים למערכת
                                     if (pnl === 0 && rake === 0 && hands === 0) continue;
 
-                                    // Create or Find User
                                     let player = newUsers.find(u => u.username === nickname);
                                     if (!player) {
                                         player = { 
@@ -528,7 +512,6 @@
                                     const tableName = "סיכום משחקים כללי"; 
                                     const tableObj = { name: tableName, hands: hands, pnl: pnl, rake: rake, batchId: batchId };
 
-                                    // Update or Create Record
                                     const existingRecordIndex = newRecordsList.findIndex(r => r.cycleId === currentCycle && r.playerId === player.id);
                                     if (existingRecordIndex >= 0) {
                                         newRecordsList[existingRecordIndex].pnl += pnl;
@@ -551,7 +534,6 @@
                                     currentBatchDeltas.push({ playerId: player.id, pnl, rake, hands });
                                 }
 
-                                // 3. Finalize Batch
                                 if (currentBatchDeltas.length > 0) {
                                     const newBatch = {
                                         id: batchId,
@@ -685,8 +667,204 @@
             );
         };
 
-        const generateWhatsAppLink = (phone, text) => {
-            return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+        const AdminPlayersView = ({ users, setUsers, records, setRecords, currentCycle, showToast }) => {
+            const [searchQuery, setSearchQuery] = useState('');
+            const [expandedRow, setExpandedRow] = useState(null);
+            const [bonusInput, setBonusInput] = useState({ playerId: null, amount: '' });
+            
+            // New User Form State
+            const [isCreatingUser, setIsCreatingUser] = useState(false);
+            const [newUser, setNewUser] = useState({ username: '', password: '123', role: 'player', name: '', commissionRate: 70 });
+
+            // Display all users, not just players, to allow admin to see agents or change roles
+            const displayUsers = useMemo(() => {
+                const filtered = users.filter(u => u.role !== 'admin'); // Hide admins from the list
+                if (!searchQuery) return filtered;
+                return filtered.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase()) || u.username.toLowerCase().includes(searchQuery.toLowerCase()));
+            }, [users, searchQuery]);
+
+            const agents = users.filter(u => u.role === 'agent');
+
+            const updateUser = (id, field, value) => {
+                setUsers(users.map(u => u.id === id ? { ...u, [field]: value } : u));
+                if(field === 'agentId') showToast('השיוך עודכן בהצלחה!');
+                if(field === 'customCommission') showToast('עמלה חריגה עודכנה בהצלחה!');
+                if(field === 'role') showToast(value === 'agent' ? 'המשתמש הוגדר כסוכן!' : 'המשתמש הוגדר כשחקן');
+            };
+
+            const handleCreateUser = (e) => {
+                e.preventDefault();
+                if(users.find(u => u.username === newUser.username)) {
+                    showToast('שם משתמש זה כבר קיים במערכת!', 'error');
+                    return;
+                }
+                const newId = (newUser.role === 'agent' ? 'agent_' : 'p_') + Date.now();
+                setUsers([...users, { ...newUser, id: newId, agentId: newUser.role === 'player' ? 'agent_default' : null, customCommission: null }]);
+                showToast(`המשתמש ${newUser.username} נוצר בהצלחה כ-${newUser.role === 'agent' ? 'סוכן' : 'שחקן'}`);
+                setIsCreatingUser(false);
+                setNewUser({ username: '', password: '123', role: 'player', name: '', commissionRate: 70 });
+            };
+
+            const handleAddBonus = (playerId) => {
+                if(!bonusInput.amount) return;
+                const amt = parseFloat(bonusInput.amount);
+                const existingRecIdx = records.findIndex(r => r.cycleId === currentCycle && r.playerId === playerId);
+                if (existingRecIdx >= 0) {
+                    const newRecords = [...records];
+                    newRecords[existingRecIdx].bonus = (newRecords[existingRecIdx].bonus || 0) + amt;
+                    setRecords(newRecords);
+                } else {
+                    setRecords([...records, { id: Date.now(), cycleId: currentCycle, playerId, pnl: 0, rake: 0, hands: 0, bonus: amt, tables: [] }]);
+                }
+                showToast(`בונוס ע"ס ${amt} נוסף בהצלחה לשחקן!`);
+                setBonusInput({ playerId: null, amount: '' });
+            };
+
+            const toggleRow = (id) => setExpandedRow(expandedRow === id ? null : id);
+
+            return (
+                <div>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-6">
+                        <div><h3 className="text-xl font-bold text-white">ניהול משתמשים במערכת</h3><p className="text-sm text-slate-400 mt-1">שיוך לסוכנים, שינוי הרשאות (סוכן/שחקן) ויצירת יוזרים ידנית.</p></div>
+                        <div className="flex gap-3 w-full md:w-auto">
+                            <button onClick={() => setIsCreatingUser(!isCreatingUser)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold transition-colors whitespace-nowrap flex items-center gap-2">
+                                <Icon name="userPlus" size={16}/> צור משתמש / סוכן
+                            </button>
+                            <div className="relative flex-1 md:w-64">
+                                <input type="text" placeholder="חפש משתמש..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-900/80 border border-slate-600 rounded-lg pl-4 pr-10 py-2 text-sm text-white outline-none focus:border-emerald-500 shadow-inner" />
+                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500"><Icon name="search" size={16} /></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {isCreatingUser && (
+                        <div className="bg-slate-800/80 border border-emerald-500/30 p-5 rounded-xl mb-6 shadow-lg modal-animate">
+                            <h4 className="font-bold text-emerald-400 mb-4">יצירת משתמש חדש ידנית</h4>
+                            <form onSubmit={handleCreateUser} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 items-end">
+                                <div><label className="block text-xs text-slate-400 mb-1">שם משתמש (התחברות)</label><input type="text" required value={newUser.username} onChange={e=>setNewUser({...newUser, username: e.target.value})} className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white outline-none focus:border-emerald-500" /></div>
+                                <div><label className="block text-xs text-slate-400 mb-1">כינוי תצוגה</label><input type="text" required value={newUser.name} onChange={e=>setNewUser({...newUser, name: e.target.value})} className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white outline-none focus:border-emerald-500" /></div>
+                                <div><label className="block text-xs text-slate-400 mb-1">סיסמה</label><input type="text" required value={newUser.password} onChange={e=>setNewUser({...newUser, password: e.target.value})} className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white outline-none focus:border-emerald-500" /></div>
+                                <div>
+                                    <label className="block text-xs text-slate-400 mb-1">סוג המשתמש</label>
+                                    <select value={newUser.role} onChange={e=>setNewUser({...newUser, role: e.target.value})} className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white outline-none focus:border-emerald-500">
+                                        <option value="player">שחקן (Player)</option>
+                                        <option value="agent">סוכן (Agent)</option>
+                                    </select>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded font-bold transition w-full">שמור</button>
+                                    <button type="button" onClick={()=>setIsCreatingUser(false)} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded transition">בטל</button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+
+                    {displayUsers.length === 0 ? (
+                        <div className="p-12 text-center border-2 border-dashed border-slate-700 rounded-2xl bg-slate-800/20">
+                            <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-slate-500 mx-auto mb-4"><Icon name="users" size={32}/></div>
+                            <h4 className="text-lg font-bold text-white mb-2">אין משתמשים במערכת</h4>
+                            <p className="text-slate-400">יש לייבא קובץ CSV כדי לאכלס את המערכת בשחקנים.</p>
+                        </div>
+                    ) : (
+                    <div className="overflow-x-auto rounded-xl border border-slate-700/50 shadow-xl">
+                        <table className="w-full text-left text-sm whitespace-nowrap">
+                            <thead className="bg-slate-800 text-slate-300 uppercase text-[11px] tracking-widest">
+                                <tr>
+                                    <th className="p-4 font-bold text-center border-b border-slate-700 w-12">פירוט</th>
+                                    <th className="p-4 font-bold text-right border-b border-slate-700">משתמש</th>
+                                    <th className="p-4 font-bold text-center border-b border-slate-700">תפקיד</th>
+                                    <th className="p-4 font-bold text-right border-b border-slate-700">סוכן משויך</th>
+                                    <th className="p-4 font-bold text-center border-b border-slate-700">עמלה (%)</th>
+                                    <th className="p-4 font-bold text-right border-b border-slate-700">תוספת בונוס (לשחקנים)</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
+                                {displayUsers.map(u => {
+                                    const record = records.find(r => r.cycleId === currentCycle && r.playerId === u.id) || { pnl: 0, hands: 0, bonus: 0, tables: [] };
+                                    const finalPnl = record.pnl + (record.bonus || 0);
+                                    
+                                    const isWhale = Math.abs(finalPnl) >= 5000 && u.role === 'player';
+                                    const isHot = record.hands >= 3000 && u.role === 'player';
+
+                                    return (
+                                        <Fragment key={u.id}>
+                                            <tr className={`transition-colors ${expandedRow === u.id ? 'bg-slate-800' : 'hover:bg-slate-800/50'}`}>
+                                                <td className="p-4 text-center cursor-pointer text-slate-400 hover:text-emerald-400" onClick={() => toggleRow(u.id)}>
+                                                    <div className={`p-1.5 rounded-md inline-flex ${expandedRow === u.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800'}`}>
+                                                        {expandedRow === u.id ? <Icon name="chevronUp" size={16}/> : <Icon name="chevronDown" size={16}/>}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-right cursor-pointer" onClick={() => toggleRow(u.id)}>
+                                                    <div className="font-bold text-white text-base flex items-center gap-2">
+                                                        {u.name}
+                                                        {isWhale && <span title="לוויתן! מעל 5000 שח רווח/הפסד">🐋</span>}
+                                                        {isHot && <span title="פעיל מאוד! שוחקו המון ידיים">🔥</span>}
+                                                    </div>
+                                                    <div className="text-xs text-slate-500">יוזר: {u.username}</div>
+                                                </td>
+                                                <td className="p-4 text-center">
+                                                    <select value={u.role} onChange={(e) => {
+                                                        const newRole = e.target.value;
+                                                        setUsers(users.map(userItem => {
+                                                            if(userItem.id === u.id) {
+                                                                if(newRole === 'agent') return { ...userItem, role: 'agent', commissionRate: 70, agentId: null };
+                                                                if(newRole === 'player') return { ...userItem, role: 'player', agentId: 'agent_default' };
+                                                            }
+                                                            return userItem;
+                                                        }));
+                                                        showToast(`התפקיד שונה ל-${newRole === 'agent' ? 'סוכן' : 'שחקן'}`);
+                                                    }} className={`bg-transparent font-bold outline-none cursor-pointer ${u.role === 'agent' ? 'text-cyan-400' : 'text-slate-300'}`}>
+                                                        <option value="player" className="bg-slate-900 text-white">שחקן</option>
+                                                        <option value="agent" className="bg-slate-900 text-white">סוכן</option>
+                                                    </select>
+                                                </td>
+                                                <td className="p-4 text-right">
+                                                    {u.role === 'player' ? (
+                                                        <select value={u.agentId} onChange={(e) => updatePlayer(u.id, 'agentId', e.target.value)} className={`bg-slate-900 border rounded-lg px-2 py-1 text-sm text-white font-medium outline-none cursor-pointer transition-colors ${u.agentId === 'agent_default' ? 'border-red-500/50 text-red-400 bg-red-900/10' : 'border-slate-600 focus:border-emerald-500'}`}>
+                                                            {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                                                        </select>
+                                                    ) : <span className="text-slate-600 text-xs">לא רלוונטי לסוכן</span>}
+                                                </td>
+                                                <td className="p-4 text-center">
+                                                    <div className="inline-flex items-center bg-slate-900 border border-slate-600 rounded-lg overflow-hidden focus-within:border-emerald-500 transition-colors">
+                                                        <input type="number" placeholder={u.role === 'agent' ? "בסיס" : "דיפולט"} value={(u.role === 'agent' ? u.commissionRate : u.customCommission) !== null ? (u.role === 'agent' ? u.commissionRate : u.customCommission) : ''} onChange={(e) => {
+                                                            const val = e.target.value === '' ? null : Number(e.target.value);
+                                                            if (u.role === 'agent') updatePlayer(u.id, 'commissionRate', val || 0);
+                                                            else updatePlayer(u.id, 'customCommission', val);
+                                                        }} className={`bg-transparent px-2 py-1 text-sm text-center w-16 outline-none ${u.customCommission !== null || u.role === 'agent' ? 'text-emerald-400 font-bold' : 'text-white'}`} />
+                                                        <span className="bg-slate-800 text-slate-400 px-2 py-1 font-bold text-xs">%</span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-right">
+                                                    {u.role === 'player' ? (
+                                                        bonusInput.playerId === u.id ? (
+                                                            <div className="flex items-center justify-end gap-2 bg-slate-900 p-1 rounded-lg border border-slate-600">
+                                                                <input type="number" value={bonusInput.amount} onChange={(e)=>setBonusInput({...bonusInput, amount: e.target.value})} placeholder="סכום" className="bg-transparent text-xs w-16 text-white outline-none px-1 text-center" autoFocus />
+                                                                <button onClick={() => handleAddBonus(u.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 rounded text-xs font-bold transition-colors">שמור</button>
+                                                                <button onClick={() => setBonusInput({playerId: null, amount:''})} className="text-slate-400 hover:text-white px-1 text-xs transition-colors">בטל</button>
+                                                            </div>
+                                                        ) : (
+                                                            <button onClick={() => setBonusInput({playerId: u.id, amount: ''})} className={`text-xs flex items-center justify-end gap-1 w-full transition-colors font-medium px-2 py-1.5 rounded-lg ${record.bonus > 0 ? 'bg-emerald-900/20 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                                                                <Icon name="gift" size={14}/> {record.bonus > 0 ? `עודכן: ${formatMoney(record.bonus)}` : 'הוסף בונוס'}
+                                                            </button>
+                                                        )
+                                                    ) : null}
+                                                </td>
+                                            </tr>
+                                            {expandedRow === u.id && (
+                                                <tr className="bg-slate-900"><td colSpan="6" className="p-0 border-b border-slate-800">
+                                                    <PlayerDetailsDrilldown player={u} record={record} finalPnl={finalPnl} showToast={showToast} />
+                                                </td></tr>
+                                            )}
+                                        </Fragment>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                    )}
+                </div>
+            );
         };
 
         const AdminSettingsView = ({ users, setUsers, records, setRecords, currentCycle, cyclesList, setCyclesList, showToast, setUploadBatches, uploadBatches }) => {
@@ -727,8 +905,14 @@
             );
         };
 
+        const generateWhatsAppLink = (phone, text) => {
+            return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+        };
+
         const AdminAgentsView = ({ users, records, currentCycle }) => {
             const [sortBy, setSortBy] = useState('pnl');
+            const [expandedAgent, setExpandedAgent] = useState(null);
+
             const cycleRecords = records.filter(r => r.cycleId === currentCycle);
             const players = users.filter(u => u.role === 'player');
             const agents = users.filter(u => u.role === 'agent');
@@ -754,6 +938,8 @@
                 });
             }, [agents, players, cycleRecords, sortBy]);
 
+            const toggleAgentRow = (id) => setExpandedAgent(expandedAgent === id ? null : id);
+
             return (
                 <div>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -771,6 +957,7 @@
                         <table className="w-full text-left text-sm whitespace-nowrap">
                             <thead className="bg-slate-800 text-slate-300 uppercase text-xs tracking-widest">
                                 <tr>
+                                    <th className="p-5 font-bold text-center border-b border-slate-700 w-10">פירוט</th>
                                     <th className="p-5 font-bold text-right border-b border-slate-700">סוכן</th>
                                     <th className="p-5 font-bold text-right border-b border-slate-700">שחקנים פעילים</th>
                                     <th className="p-5 font-bold text-right border-b border-slate-700">% בסיס</th>
@@ -784,26 +971,69 @@
                                 {agentStats.map(agent => {
                                     const totalAgainst = agent.pnl + agent.commission;
                                     return (
-                                    <tr key={agent.id} className="hover:bg-slate-800/60 transition-colors">
-                                        <td className="p-5 text-right">
-                                            <div className="font-bold text-white text-base">{agent.name}</div>
-                                            <div className="text-xs text-slate-500 mt-1">{agent.id === 'agent_default' ? 'מערכת' : `יוזר: ${agent.username}`}</div>
-                                        </td>
-                                        <td className="p-5 text-right font-medium text-slate-300">{agent.playerCount}</td>
-                                        <td className="p-5 text-right font-medium text-slate-300">{agent.commissionRate}%</td>
-                                        <td className="p-5 text-right font-medium text-slate-300">{agent.hands.toLocaleString()}</td>
-                                        <td className={`p-5 text-right font-bold text-lg money-value ${getColorClass(agent.pnl)}`}>{formatMoney(agent.pnl)}</td>
-                                        <td className="p-5 text-right font-black text-lg text-emerald-400 money-value">{formatMoney(agent.commission)}</td>
-                                        <td className="p-5 text-right flex items-center justify-end gap-3">
-                                            <span className={`font-black text-lg money-value ${getColorClass(totalAgainst)}`}>{formatMoney(totalAgainst)}</span>
-                                            {agent.id !== 'agent_default' && (
-                                                <a href={generateWhatsAppLink('', `שלום ${agent.name},\nסיכום התחשבנות למחזור: ${currentCycle}\nתוצאת שחקנים: ${formatMoney(agent.pnl)}\nעמלה שייצרת: ${formatMoney(agent.commission)}\n*סה"כ התחשבנות מול המועדון: ${formatMoney(totalAgainst)}*`)} target="_blank" className="p-2 bg-emerald-900/30 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-full transition-colors" title="שלח דוח בוואטסאפ">
-                                                    <Icon name="whatsapp" size={16} />
-                                                </a>
+                                        <Fragment key={agent.id}>
+                                            <tr className={`transition-colors cursor-pointer ${expandedAgent === agent.id ? 'bg-slate-800' : 'hover:bg-slate-800/60'}`} onClick={() => toggleAgentRow(agent.id)}>
+                                                <td className="p-5 text-center text-slate-500 hover:text-emerald-400">
+                                                    {expandedAgent === agent.id ? <Icon name="chevronUp" size={16}/> : <Icon name="chevronDown" size={16}/>}
+                                                </td>
+                                                <td className="p-5 text-right">
+                                                    <div className="font-bold text-white text-base">{agent.name}</div>
+                                                    <div className="text-xs text-slate-500 mt-1">{agent.id === 'agent_default' ? 'מערכת' : `יוזר: ${agent.username}`}</div>
+                                                </td>
+                                                <td className="p-5 text-right font-medium text-slate-300">{agent.playerCount}</td>
+                                                <td className="p-5 text-right font-medium text-slate-300">{agent.commissionRate}%</td>
+                                                <td className="p-5 text-right font-medium text-slate-300">{agent.hands.toLocaleString()}</td>
+                                                <td className={`p-5 text-right font-bold text-lg money-value ${getColorClass(agent.pnl)}`}>{formatMoney(agent.pnl)}</td>
+                                                <td className="p-5 text-right font-black text-lg text-emerald-400 money-value">{formatMoney(agent.commission)}</td>
+                                                <td className="p-5 text-right flex items-center justify-end gap-3">
+                                                    <span className={`font-black text-lg money-value ${getColorClass(totalAgainst)}`}>{formatMoney(totalAgainst)}</span>
+                                                </td>
+                                            </tr>
+                                            {/* Drill down for Admin viewing an Agent's players */}
+                                            {expandedAgent === agent.id && (
+                                                <tr className="bg-slate-900/80"><td colSpan="8" className="p-6 border-b border-slate-800 shadow-inner">
+                                                    <h4 className="text-emerald-400 font-bold mb-4 text-sm uppercase tracking-widest">תצוגת סוכן (פירוט שחקנים ל-{agent.name})</h4>
+                                                    <div className="overflow-x-auto rounded-lg border border-slate-700 bg-slate-800/30">
+                                                        <table className="w-full text-left text-xs">
+                                                            <thead className="bg-slate-800 text-slate-400">
+                                                                <tr>
+                                                                    <th className="p-3 font-semibold text-right">שם שחקן</th>
+                                                                    <th className="p-3 font-semibold text-right">ידיים</th>
+                                                                    <th className="p-3 font-semibold text-right">P&L (כולל בונוס)</th>
+                                                                    <th className="p-3 font-semibold text-right">עמלה שייצר (נטו)</th>
+                                                                    <th className="p-3 font-semibold text-right text-emerald-400">העמלה לסוכן</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-slate-700/50">
+                                                                {players.filter(p => p.agentId === agent.id).map(player => {
+                                                                    const record = cycleRecords.find(r => r.playerId === player.id);
+                                                                    if(!record) return null;
+                                                                    const finalPnl = record.pnl + (record.bonus || 0);
+                                                                    const rate = player.customCommission !== null ? player.customCommission : agent.commissionRate;
+                                                                    const genComm = record.rake * (1 - SYSTEM_EXPENSES_RATE);
+                                                                    const agentComm = genComm * (rate / 100);
+                                                                    
+                                                                    return (
+                                                                        <tr key={player.id} className="hover:bg-slate-800 transition">
+                                                                            <td className="p-3 font-medium text-slate-200">{player.name}</td>
+                                                                            <td className="p-3 text-slate-300">{record.hands}</td>
+                                                                            <td className={`p-3 font-bold money-value ${getColorClass(finalPnl)}`}>{formatMoney(finalPnl)}</td>
+                                                                            <td className="p-3 text-slate-300 money-value">{formatMoney(genComm)}</td>
+                                                                            <td className="p-3 font-bold text-emerald-400 money-value">{formatMoney(agentComm)}</td>
+                                                                        </tr>
+                                                                    )
+                                                                })}
+                                                                {players.filter(p => p.agentId === agent.id).every(p => !cycleRecords.find(r => r.playerId === p.id)) && (
+                                                                    <tr><td colSpan="5" className="p-4 text-center text-slate-500">לסוכן זה אין שחקנים פעילים במחזור.</td></tr>
+                                                                )}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td></tr>
                                             )}
-                                        </td>
-                                    </tr>
-                                )})}
+                                        </Fragment>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -833,7 +1063,7 @@
                         </div>
                     </div>
                     <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 shadow-md lg:col-span-2 flex flex-col">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icon name="dashboard" size={16} className="text-emerald-400"/> פירוט שולחנות ומשחקים</h4>
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icon name="dashboard" size={16} className="text-emerald-400"/> פירוט שולחנות ומשחקים (תצוגת שחקן)</h4>
                         {record.tables && record.tables.length > 0 ? (
                             <div className="overflow-x-auto flex-1">
                                 <table className="w-full text-sm text-right text-slate-300">
@@ -858,135 +1088,6 @@
                             </div>
                         ) : (<div className="flex-1 flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-lg p-6 bg-slate-900/30">אין פירוט שולחנות לדיווח זה.</div>)}
                     </div>
-                </div>
-            );
-        };
-
-        const AdminPlayersView = ({ users, setUsers, records, setRecords, currentCycle, showToast }) => {
-            const allPlayers = users.filter(u => u.role === 'player');
-            const agents = users.filter(u => u.role === 'agent');
-            const [bonusInput, setBonusInput] = useState({ playerId: null, amount: '' });
-            const [searchQuery, setSearchQuery] = useState('');
-            const [expandedRow, setExpandedRow] = useState(null);
-
-            const players = useMemo(() => {
-                if (!searchQuery) return allPlayers;
-                return allPlayers.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.username.toLowerCase().includes(searchQuery.toLowerCase()));
-            }, [allPlayers, searchQuery]);
-
-            const updatePlayer = (id, field, value) => {
-                setUsers(users.map(u => u.id === id ? { ...u, [field]: value } : u));
-                if(field === 'agentId') showToast('השחקן שויך לסוכן בהצלחה!');
-                if(field === 'customCommission') showToast('עמלה חריגה עודכנה בהצלחה!');
-            };
-
-            const handleAddBonus = (playerId) => {
-                if(!bonusInput.amount) return;
-                const amt = parseFloat(bonusInput.amount);
-                const existingRecIdx = records.findIndex(r => r.cycleId === currentCycle && r.playerId === playerId);
-                if (existingRecIdx >= 0) {
-                    const newRecords = [...records];
-                    newRecords[existingRecIdx].bonus = (newRecords[existingRecIdx].bonus || 0) + amt;
-                    setRecords(newRecords);
-                } else {
-                    setRecords([...records, { id: Date.now(), cycleId: currentCycle, playerId, pnl: 0, rake: 0, hands: 0, bonus: amt, tables: [] }]);
-                }
-                showToast(`בונוס ע"ס ${amt} נוסף בהצלחה לשחקן!`);
-                setBonusInput({ playerId: null, amount: '' });
-            };
-
-            const toggleRow = (id) => setExpandedRow(expandedRow === id ? null : id);
-
-            return (
-                <div>
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
-                        <div><h3 className="text-xl font-bold text-white">הגדרות שחקנים וזיהוי חריגים</h3><p className="text-sm text-slate-400 mt-1">שיוך לסוכנים, עמלות חריגות, ואיתור "לוויתנים".</p></div>
-                        <div className="relative w-full md:w-80">
-                            <input type="text" placeholder="חפש שחקן (שם או כינוי)..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-900/80 border border-slate-600 rounded-xl pl-4 pr-12 py-3 text-sm text-white outline-none focus:border-emerald-500 shadow-inner transition-colors" />
-                            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-emerald-500"><Icon name="search" size={18} /></div>
-                        </div>
-                    </div>
-
-                    {players.length === 0 ? (
-                        <div className="p-12 text-center border-2 border-dashed border-slate-700 rounded-2xl bg-slate-800/20">
-                            <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-slate-500 mx-auto mb-4"><Icon name="users" size={32}/></div>
-                            <h4 className="text-lg font-bold text-white mb-2">אין שחקנים במערכת</h4>
-                            <p className="text-slate-400">יש לגשת ללשונית "ייבוא קבצים" ולהעלות קובץ כדי לאכלס את המערכת.</p>
-                        </div>
-                    ) : (
-                    <div className="overflow-x-auto rounded-xl border border-slate-700/50 shadow-xl">
-                        <table className="w-full text-left text-sm whitespace-nowrap">
-                            <thead className="bg-slate-800 text-slate-300 uppercase text-[11px] tracking-widest">
-                                <tr>
-                                    <th className="p-4 font-bold text-center border-b border-slate-700 w-12">פירוט</th>
-                                    <th className="p-4 font-bold text-right border-b border-slate-700">שחקן</th>
-                                    <th className="p-4 font-bold text-right border-b border-slate-700">סוכן משויך</th>
-                                    <th className="p-4 font-bold text-center border-b border-slate-700">עמלה עקיפה (%)</th>
-                                    <th className="p-4 font-bold text-right border-b border-slate-700">תוספת בונוס</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
-                                {players.map(player => {
-                                    const record = records.find(r => r.cycleId === currentCycle && r.playerId === player.id) || { pnl: 0, hands: 0, bonus: 0, tables: [] };
-                                    const finalPnl = record.pnl + (record.bonus || 0);
-                                    
-                                    // Whale / Hot streak detection
-                                    const isWhale = Math.abs(finalPnl) >= 5000;
-                                    const isHot = record.hands >= 3000;
-
-                                    return (
-                                        <Fragment key={player.id}>
-                                            <tr className={`transition-colors ${expandedRow === player.id ? 'bg-slate-800' : 'hover:bg-slate-800/50'}`}>
-                                                <td className="p-4 text-center cursor-pointer text-slate-400 hover:text-emerald-400" onClick={() => toggleRow(player.id)}>
-                                                    <div className={`p-1.5 rounded-md inline-flex ${expandedRow === player.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800'}`}>
-                                                        {expandedRow === player.id ? <Icon name="chevronUp" size={16}/> : <Icon name="chevronDown" size={16}/>}
-                                                    </div>
-                                                </td>
-                                                <td className="p-4 text-right cursor-pointer" onClick={() => toggleRow(player.id)}>
-                                                    <div className="font-bold text-white text-base flex items-center gap-2">
-                                                        {player.name}
-                                                        {isWhale && <span title="לוויתן! מעל 5000 שח רווח/הפסד">🐋</span>}
-                                                        {isHot && <span title="פעיל מאוד! שוחקו המון ידיים">🔥</span>}
-                                                    </div>
-                                                    <div className="text-xs text-slate-500">מזהה: {player.id.substring(0,6)}...</div>
-                                                </td>
-                                                <td className="p-4 text-right">
-                                                    <select value={player.agentId} onChange={(e) => updatePlayer(player.id, 'agentId', e.target.value)} className={`bg-slate-900 border rounded-lg px-3 py-2 text-sm text-white font-medium outline-none cursor-pointer transition-colors ${player.agentId === 'agent_default' ? 'border-red-500/50 text-red-400 bg-red-900/10' : 'border-slate-600 focus:border-emerald-500'}`}>
-                                                        {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                                                    </select>
-                                                </td>
-                                                <td className="p-4 text-center">
-                                                    <div className="inline-flex items-center bg-slate-900 border border-slate-600 rounded-lg overflow-hidden focus-within:border-emerald-500 transition-colors">
-                                                        <input type="number" placeholder="דיפולט" value={player.customCommission !== null ? player.customCommission : ''} onChange={(e) => updatePlayer(player.id, 'customCommission', e.target.value === '' ? null : Number(e.target.value))} className={`bg-transparent px-3 py-2 text-sm text-center w-20 outline-none ${player.customCommission !== null ? 'text-emerald-400 font-bold' : 'text-white'}`} />
-                                                        <span className="bg-slate-800 text-slate-400 px-3 py-2 font-bold">%</span>
-                                                    </div>
-                                                </td>
-                                                <td className="p-4 text-right">
-                                                    {bonusInput.playerId === player.id ? (
-                                                        <div className="flex items-center justify-end gap-2 bg-slate-900 p-1.5 rounded-lg border border-slate-600">
-                                                            <input type="number" value={bonusInput.amount} onChange={(e)=>setBonusInput({...bonusInput, amount: e.target.value})} placeholder="סכום..." className="bg-transparent text-sm w-20 text-white outline-none px-2 text-center" autoFocus />
-                                                            <button onClick={() => handleAddBonus(player.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-md text-xs font-bold transition-colors">שמור</button>
-                                                            <button onClick={() => setBonusInput({playerId: null, amount:''})} className="text-slate-400 hover:text-white px-2 py-1.5 text-xs transition-colors">בטל</button>
-                                                        </div>
-                                                    ) : (
-                                                        <button onClick={() => setBonusInput({playerId: player.id, amount: ''})} className={`text-sm flex items-center justify-end gap-2 w-full transition-colors font-medium px-3 py-2 rounded-lg ${record.bonus > 0 ? 'bg-emerald-900/20 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
-                                                            <Icon name="gift" size={16}/> {record.bonus > 0 ? `עודכן: ${formatMoney(record.bonus)}` : 'הוסף בונוס'}
-                                                        </button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                            {expandedRow === player.id && (
-                                                <tr className="bg-slate-900"><td colSpan="5" className="p-0 border-b border-slate-800">
-                                                    <PlayerDetailsDrilldown player={player} record={record} finalPnl={finalPnl} showToast={showToast} />
-                                                </td></tr>
-                                            )}
-                                        </Fragment>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                    )}
                 </div>
             );
         };
