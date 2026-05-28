@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -9,8 +10,8 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- SheetJS for Excel/CSV Parsing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- PapaParse for robust CSV Handling (Google Sheets compatible) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -31,7 +32,7 @@
         .modal-animate { animation: fadeIn 0.2s ease-out forwards; }
 
         /* Privacy Mode Classes */
-        .privacy-on .money-value { filter: blur(5px); transition: filter 0.3s ease; user-select: none; }
+        .privacy-on .money-value { filter: blur(6px); transition: filter 0.3s ease; user-select: none; }
         .privacy-on .money-value:hover { filter: blur(0); cursor: pointer; }
     </style>
 </head>
@@ -44,6 +45,7 @@
         const DEFAULT_CYCLE = "מחזור נוכחי";
         const SYSTEM_EXPENSES_RATE = 0.10; // 10% הוצאות למועדון
 
+        // רשימת משתמשים וסוכנים התחלתית
         const initialUsers = [
             { id: 'admin1', username: 'admin', password: 'X', role: 'admin', name: 'מנהל ראשי' },
             { id: 'agent_default', username: 'unassigned', password: '123', role: 'agent', name: 'שחקנים ללא סוכן', commissionRate: 0 },
@@ -83,7 +85,7 @@
                 chevronUp: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="18 15 12 9 6 15"></polyline></svg>,
                 sort: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="14" y2="12"></line><line x1="4" y1="18" x2="8" y2="18"></line></svg>,
                 search: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>,
-                settings: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
+                settings: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
                 trash: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
                 eye: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>,
                 eyeOff: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>,
@@ -131,16 +133,16 @@
             const [messages, setMessages] = useState([]);
             const [currentCycle, setCurrentCycle] = useState(DEFAULT_CYCLE);
             const [cyclesList, setCyclesList] = useState([DEFAULT_CYCLE]);
-            const [uploadBatches, setUploadBatches] = useState([]); // Array to store upload history for Rollback
+            const [uploadBatches, setUploadBatches] = useState([]); 
             const [toast, setToast] = useState(null);
-            const [isPrivacyMode, setIsPrivacyMode] = useState(false); // Ghost Mode
+            const [isPrivacyMode, setIsPrivacyMode] = useState(false);
 
             useEffect(() => {
-                const storedUsers = JSON.parse(localStorage.getItem('netabel_sys_users'));
-                const storedRecords = JSON.parse(localStorage.getItem('netabel_sys_records'));
-                const storedMessages = JSON.parse(localStorage.getItem('netabel_sys_messages'));
-                const storedCycles = JSON.parse(localStorage.getItem('netabel_sys_cycles'));
-                const storedUploads = JSON.parse(localStorage.getItem('netabel_sys_uploads'));
+                const storedUsers = JSON.parse(localStorage.getItem('netabel_sys_v2_users'));
+                const storedRecords = JSON.parse(localStorage.getItem('netabel_sys_v2_records'));
+                const storedMessages = JSON.parse(localStorage.getItem('netabel_sys_v2_messages'));
+                const storedCycles = JSON.parse(localStorage.getItem('netabel_sys_v2_cycles'));
+                const storedUploads = JSON.parse(localStorage.getItem('netabel_sys_v2_uploads'));
                 
                 if (storedUsers) setUsers(storedUsers); else setUsers(initialUsers);
                 if (storedRecords) setRecords(storedRecords); else setRecords([]);
@@ -151,11 +153,11 @@
 
             useEffect(() => {
                 if(users.length > 0) {
-                    localStorage.setItem('netabel_sys_users', JSON.stringify(users));
-                    localStorage.setItem('netabel_sys_records', JSON.stringify(records));
-                    localStorage.setItem('netabel_sys_messages', JSON.stringify(messages));
-                    localStorage.setItem('netabel_sys_cycles', JSON.stringify(cyclesList));
-                    localStorage.setItem('netabel_sys_uploads', JSON.stringify(uploadBatches));
+                    localStorage.setItem('netabel_sys_v2_users', JSON.stringify(users));
+                    localStorage.setItem('netabel_sys_v2_records', JSON.stringify(records));
+                    localStorage.setItem('netabel_sys_v2_messages', JSON.stringify(messages));
+                    localStorage.setItem('netabel_sys_v2_cycles', JSON.stringify(cyclesList));
+                    localStorage.setItem('netabel_sys_v2_uploads', JSON.stringify(uploadBatches));
                 }
             }, [users, records, messages, cyclesList, uploadBatches]);
 
@@ -362,7 +364,7 @@
                 <div className="space-y-6">
                     <div className="flex flex-wrap bg-slate-900/80 rounded-xl p-1.5 border border-slate-700/50 shadow-sm">
                         {[
-                            {id: 'import', name: 'ייבוא דוחות (Excel)'},
+                            {id: 'import', name: 'ייבוא קבצים וניהול'},
                             {id: 'agents', name: 'סיכום סוכנים'},
                             {id: 'players', name: 'ניהול שחקנים'},
                             {id: 'messages', name: 'מרכז הודעות'},
@@ -381,13 +383,335 @@
                         {activeTab === 'players' && <AdminPlayersView users={users} setUsers={setUsers} records={records} setRecords={setRecords} currentCycle={currentCycle} showToast={showToast} />}
                         {activeTab === 'import' && <AdminImportView setRecords={setRecords} setUsers={setUsers} users={users} currentCycle={currentCycle} setCyclesList={setCyclesList} cyclesList={cyclesList} records={records} showToast={showToast} uploadBatches={uploadBatches} setUploadBatches={setUploadBatches} />}
                         {activeTab === 'messages' && <AdminMessagesView users={users} messages={messages} setMessages={setMessages} showToast={showToast} />}
-                        {activeTab === 'settings' && <AdminSettingsView users={users} setUsers={setUsers} records={records} setRecords={setRecords} currentCycle={currentCycle} cyclesList={cyclesList} setCyclesList={setCyclesList} showToast={showToast} setUploadBatches={setUploadBatches} />}
+                        {activeTab === 'settings' && <AdminSettingsView users={users} setUsers={setUsers} records={records} setRecords={setRecords} currentCycle={currentCycle} cyclesList={cyclesList} setCyclesList={setCyclesList} showToast={showToast} setUploadBatches={setUploadBatches} uploadBatches={uploadBatches} />}
                     </div>
                 </div>
             );
         };
 
-        const AdminSettingsView = ({ users, setUsers, records, setRecords, currentCycle, cyclesList, setCyclesList, showToast, setUploadBatches }) => {
+        // --- Admin: Import View ---
+        const AdminImportView = ({ setRecords, setUsers, users, currentCycle, cyclesList, setCyclesList, records, showToast, uploadBatches, setUploadBatches }) => {
+            const [newCycleName, setNewCycleName] = useState('');
+            const [isParsing, setIsParsing] = useState(false);
+
+            const handleFileUpload = (e) => {
+                const file = e.target.files[0];
+                if(!file) return;
+
+                const filename = file.name;
+                setIsParsing(true);
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const text = event.target.result;
+                        // Use PapaParse which handles quoted values and newlines in CSV better than manual splitting
+                        Papa.parse(text, {
+                            complete: (results) => {
+                                const rows = results.data;
+                                if (!rows || rows.length === 0) {
+                                    showToast('הקובץ ריק', 'error');
+                                    setIsParsing(false);
+                                    return;
+                                }
+
+                                let newPlayersCount = 0;
+                                let newUsers = [...users];
+                                let newRecordsList = [...records];
+                                
+                                const batchId = 'batch_' + Date.now();
+                                const currentBatchDeltas = [];
+
+                                // Helper function to clean and parse numbers
+                                const extractNum = (val) => {
+                                    if (val === undefined || val === null || val === '') return 0;
+                                    let str = String(val).trim();
+                                    if (str.startsWith('(') && str.endsWith(')')) str = '-' + str.slice(1, -1);
+                                    const cleaned = str.replace(/[^\d.-]/g, '');
+                                    const num = parseFloat(cleaned);
+                                    return isNaN(num) ? 0 : num;
+                                };
+
+                                let dataStartRow = -1;
+                                let colMap = { nickname: -1, agent: -1, pnl: -1, fee: -1, hands: -1 };
+
+                                // 1. Scan for headers
+                                // We scan the first few rows to find where the actual data table starts.
+                                for (let i = 0; i < Math.min(10, rows.length); i++) {
+                                    const row = rows[i];
+                                    if (!row) continue;
+                                    
+                                    // Check if this row contains 'nickname' (case insensitive)
+                                    const rowStr = row.join('|').toLowerCase();
+                                    if (rowStr.includes('nickname')) {
+                                        dataStartRow = i + 1; // Data usually starts on the next row
+
+                                        // Now map the columns based on this header row
+                                        row.forEach((cell, colIdx) => {
+                                            if (cell === undefined || cell === null) return;
+                                            const cellText = String(cell).toLowerCase().trim();
+                                            
+                                            if (cellText === 'nickname' || cellText === 'player') colMap.nickname = colIdx;
+                                            if (cellText === 'agent') colMap.agent = colIdx;
+                                            
+                                            // The Google Sheet has complex multi-level headers.
+                                            // Often, P&L is just called 'Total' under the 'Player P&L' group.
+                                            // Same for 'Fee'.
+                                            // We will try to find exact matches first, then fall back.
+                                        });
+
+                                        // If we are dealing with the Google Sheets format you provided:
+                                        // P&L Total is usually col 12 or 13, Fee Total is usually around col 33.
+                                        // Let's try to be smart if exact headers weren't found in a single row.
+                                        if (colMap.pnl === -1) {
+                                            // Try to find the 'Total' column that is likely P&L
+                                            // Look in the previous row for 'Player P&L' to confirm
+                                            if (i > 0) {
+                                                 const prevRow = rows[i-1];
+                                                 for(let c=0; c<row.length; c++) {
+                                                     const thisCell = String(row[c]).toLowerCase().trim();
+                                                     const prevCell = String(prevRow[c]).toLowerCase().trim();
+                                                     if (thisCell === 'total' && prevCell.includes('p&l')) {
+                                                         colMap.pnl = c;
+                                                     }
+                                                     if (thisCell === 'total' && (prevCell.includes('fee') || prevCell.includes('rake'))) {
+                                                         colMap.fee = c;
+                                                     }
+                                                 }
+                                            }
+                                        }
+
+                                        // Fallbacks based on common GG / PokerBROS CSV formats
+                                        if (colMap.pnl === -1) colMap.pnl = row.findIndex(c => String(c).toLowerCase().includes('p&l'));
+                                        if (colMap.fee === -1) colMap.fee = row.findIndex(c => String(c).toLowerCase().includes('fee') || String(c).toLowerCase().includes('rake'));
+                                        if (colMap.hands === -1) colMap.hands = row.findIndex(c => String(c).toLowerCase().includes('hands'));
+
+                                        break; // Found the header row, stop scanning
+                                    }
+                                }
+
+                                // If we still couldn't map the nickname, the file is unrecognized.
+                                if (dataStartRow === -1 || colMap.nickname === -1) {
+                                     setIsParsing(false);
+                                     showToast('לא נמצאו נתונים רלוונטיים להעלאה בקובץ זה. ודא שקיימת עמודת Nickname.', 'error');
+                                     e.target.value = '';
+                                     return;
+                                }
+
+                                // 2. Process the data rows
+                                for (let idx = dataStartRow; idx < rows.length; idx++) {
+                                    const row = rows[idx];
+                                    if (!row || row.length <= colMap.nickname) continue;
+                                    
+                                    const nicknameRaw = row[colMap.nickname];
+                                    if(nicknameRaw === undefined || nicknameRaw === null) continue;
+                                    
+                                    const nickname = String(nicknameRaw).replace(/["']/g, '').trim();
+                                    
+                                    // Skip empty or summary rows
+                                    if (!nickname || nickname === '-' || nickname.toLowerCase().includes('total')) continue;
+
+                                    // Extract data using the mapped column indices
+                                    const pnl = colMap.pnl !== -1 ? extractNum(row[colMap.pnl]) : 0;
+                                    const rake = colMap.fee !== -1 ? extractNum(row[colMap.fee]) : 0;
+                                    const hands = colMap.hands !== -1 ? Math.round(extractNum(row[colMap.hands])) : 0;
+                                    
+                                    // Identify Agent
+                                    let assignedAgentId = 'agent_default';
+                                    if (colMap.agent !== -1 && row[colMap.agent]) {
+                                        const rawAgentName = String(row[colMap.agent]).toLowerCase().trim();
+                                        // Match against known agents
+                                        const matchedAgent = newUsers.find(u => u.role === 'agent' && u.name.toLowerCase() === rawAgentName);
+                                        if (matchedAgent) {
+                                            assignedAgentId = matchedAgent.id;
+                                        }
+                                    }
+
+                                    // If no financial or hands data, skip creating records, but we might still create the user
+                                    if (pnl === 0 && rake === 0 && hands === 0) continue;
+
+                                    // Create or Find User
+                                    let player = newUsers.find(u => u.username === nickname);
+                                    if (!player) {
+                                        player = { 
+                                            id: 'p_' + Date.now() + Math.random().toString(36).substr(2, 9), 
+                                            username: nickname, 
+                                            password: '123', 
+                                            role: 'player', 
+                                            name: nickname, 
+                                            agentId: assignedAgentId, 
+                                            customCommission: null 
+                                        };
+                                        newUsers.push(player);
+                                        newPlayersCount++;
+                                    } else if (player.agentId === 'agent_default' && assignedAgentId !== 'agent_default') {
+                                        // Update agent if previously unassigned
+                                        player.agentId = assignedAgentId;
+                                    }
+
+                                    const tableName = "סיכום משחקים כללי"; // Default for Member Statistics
+                                    const tableObj = { name: tableName, hands: hands, pnl: pnl, rake: rake, batchId: batchId };
+
+                                    // Update or Create Record
+                                    const existingRecordIndex = newRecordsList.findIndex(r => r.cycleId === currentCycle && r.playerId === player.id);
+                                    if (existingRecordIndex >= 0) {
+                                        newRecordsList[existingRecordIndex].pnl += pnl;
+                                        newRecordsList[existingRecordIndex].rake += rake;
+                                        newRecordsList[existingRecordIndex].hands += hands;
+                                        newRecordsList[existingRecordIndex].tables.push(tableObj);
+                                    } else {
+                                        newRecordsList.push({
+                                            id: Date.now() + Math.random(), 
+                                            cycleId: currentCycle, 
+                                            playerId: player.id, 
+                                            pnl: pnl, 
+                                            rake: rake, 
+                                            hands: hands, 
+                                            bonus: 0,
+                                            tables: [tableObj]
+                                        });
+                                    }
+
+                                    // Record the delta for rollback functionality
+                                    currentBatchDeltas.push({ playerId: player.id, pnl, rake, hands });
+                                }
+
+                                // 3. Finalize Batch
+                                if (currentBatchDeltas.length > 0) {
+                                    const newBatch = {
+                                        id: batchId,
+                                        filename: filename,
+                                        date: new Date().toLocaleString('he-IL'),
+                                        cycleId: currentCycle,
+                                        playersAffected: currentBatchDeltas.length,
+                                        deltas: currentBatchDeltas
+                                    };
+                                    setUploadBatches([newBatch, ...uploadBatches]);
+                                    setUsers(newUsers);
+                                    setRecords(newRecordsList);
+                                    showToast(`קובץ ${filename} יובא בהצלחה! ${newPlayersCount} שחקנים חדשים.`);
+                                } else {
+                                    showToast('לא נמצאו נתונים רלוונטיים להעלאה בקובץ זה.', 'error');
+                                }
+
+                                setIsParsing(false);
+                                e.target.value = '';
+                            },
+                            error: (err) => {
+                                console.error("PapaParse Error:", err);
+                                setIsParsing(false);
+                                showToast('שגיאה. ודא שזהו קובץ CSV תקין.', 'error');
+                                e.target.value = '';
+                            }
+                        });
+                    } catch (err) {
+                        console.error("FileReader Error:", err);
+                        setIsParsing(false);
+                        showToast('שגיאה בקריאת הקובץ.', 'error');
+                        e.target.value = '';
+                    }
+                };
+                
+                // Read as text for PapaParse
+                reader.readAsText(file);
+            };
+
+            const undoBatch = (batchId) => {
+                if(!window.confirm('האם אתה בטוח שברצונך לבטל העלאה זו? פעולה זו תחסיר במדויק את הנתונים שהועלו מקובץ זה מתוך המחזור.')) return;
+                
+                const batch = uploadBatches.find(b => b.id === batchId);
+                if(!batch) return;
+
+                let updatedRecords = [...records];
+                
+                batch.deltas.forEach(delta => {
+                    const recIdx = updatedRecords.findIndex(r => r.cycleId === batch.cycleId && r.playerId === delta.playerId);
+                    if(recIdx > -1) {
+                        updatedRecords[recIdx].pnl -= delta.pnl;
+                        updatedRecords[recIdx].rake -= delta.rake;
+                        updatedRecords[recIdx].hands -= delta.hands;
+                        updatedRecords[recIdx].tables = updatedRecords[recIdx].tables.filter(t => t.batchId !== batchId);
+                    }
+                });
+
+                updatedRecords = updatedRecords.filter(r => r.pnl !== 0 || r.rake !== 0 || r.hands !== 0 || r.tables.length > 0 || r.bonus !== 0);
+                
+                setRecords(updatedRecords);
+                setUploadBatches(uploadBatches.filter(b => b.id !== batchId));
+                showToast('ההעלאה בוטלה והנתונים קוזזו בהצלחה', 'success');
+            };
+
+            const addCycle = () => {
+                if(newCycleName && !cyclesList.includes(newCycleName)) {
+                    setCyclesList([newCycleName, ...cyclesList]);
+                    setNewCycleName('');
+                    showToast('מחזור חדש נוצר לרשימה!');
+                }
+            };
+
+            return (
+                <div className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed border-slate-700 hover:border-emerald-500/50 rounded-2xl bg-slate-900/40 transition-colors shadow-inner relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-2xl border-2 relative z-10 
+                                ${isParsing ? 'bg-emerald-900/50 border-emerald-500 animate-pulse text-emerald-300' : 'bg-slate-800 border-slate-600 text-emerald-400'}`}>
+                                <Icon name="upload" size={40} />
+                            </div>
+                            <h3 className="text-2xl font-black mb-3 text-white relative z-10">{isParsing ? 'מפענח נתונים מסקריפט...' : 'ייבוא נתונים מקובץ CSV'}</h3>
+                            <p className="text-slate-400 text-sm mb-8 max-w-sm relative z-10 leading-relaxed">הורד את הדו"ח מגוגל שיטס כ-CSV. המערכת תסרוק, תשייך סוכנים ותסכם הכל.</p>
+                            <label className={`cursor-pointer text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all relative z-10 border 
+                                ${isParsing ? 'bg-slate-700 border-slate-600 opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 border-transparent hover:-translate-y-1'}`}>
+                                בחר קובץ CSV להעלאה
+                                <input type="file" className="hidden" accept=".csv, text/csv" onChange={handleFileUpload} disabled={isParsing} />
+                            </label>
+                        </div>
+
+                        <div className="bg-slate-900/60 p-8 rounded-2xl border border-slate-700/80 flex flex-col justify-center shadow-xl">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-600 text-cyan-400"><Icon name="dashboard" size={20}/></div>
+                                <h3 className="text-xl font-bold text-white">ניהול מחזורים</h3>
+                            </div>
+                            <p className="text-slate-400 text-sm mb-6 leading-relaxed">הנתונים שתייבא כעת יתווספו אוטומטית למחזור: <strong className="text-emerald-400 bg-emerald-900/20 px-2 py-1 rounded border border-emerald-500/20">{currentCycle}</strong>.</p>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <input type="text" value={newCycleName} onChange={(e)=>setNewCycleName(e.target.value)} placeholder="שם מחזור חדש..." className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white outline-none focus:border-emerald-500 shadow-inner" />
+                                <button onClick={addCycle} className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-xl font-bold transition-colors whitespace-nowrap shadow-md">צור מחזור</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-700/50 shadow-inner">
+                        <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Icon name="history" size={20} className="text-cyan-400"/> היסטוריית העלאות (מנגנון ביטול / Rollback)</h4>
+                        {uploadBatches.length === 0 ? (
+                            <div className="text-center py-6 text-slate-500 bg-slate-800/20 rounded-xl border border-dashed border-slate-700">לא הועלו קבצים עדיין.</div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-right text-slate-300">
+                                    <thead className="border-b border-slate-700 bg-slate-800/50">
+                                        <tr><th className="p-3">תאריך העלאה</th><th className="p-3">שם הקובץ</th><th className="p-3">מחזור יעד</th><th className="p-3 text-center">מס' שחקנים שהושפעו</th><th className="p-3 text-left">פעולה</th></tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-800">
+                                        {uploadBatches.map(batch => (
+                                            <tr key={batch.id} className="hover:bg-slate-800 transition-colors">
+                                                <td className="p-3 font-medium">{batch.date}</td>
+                                                <td className="p-3 font-mono text-xs text-slate-400 bg-slate-900/50 px-2 py-1 rounded inline-block mt-2 border border-slate-700">{batch.filename}</td>
+                                                <td className="p-3"><span className="bg-slate-700 px-2 py-1 rounded text-xs text-white">{batch.cycleId}</span></td>
+                                                <td className="p-3 text-center font-bold text-emerald-400">{batch.playersAffected}</td>
+                                                <td className="p-3 text-left">
+                                                    <button onClick={() => undoBatch(batch.id)} className="bg-red-900/40 text-red-400 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border border-red-900/50">בטל העלאה זו</button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const AdminSettingsView = ({ users, setUsers, records, setRecords, currentCycle, cyclesList, setCyclesList, showToast, setUploadBatches, uploadBatches }) => {
             const [modal, setModal] = useState({ isOpen: false, type: null });
 
             const executeDelete = () => {
@@ -395,6 +719,7 @@
                     setRecords(records.filter(r => r.cycleId !== currentCycle));
                     const newCycles = cyclesList.filter(c => c !== currentCycle);
                     setCyclesList(newCycles.length > 0 ? newCycles : [DEFAULT_CYCLE]);
+                    setUploadBatches(uploadBatches.filter(b => b.cycleId !== currentCycle));
                     showToast('הנתונים של המחזור הנוכחי נמחקו בהצלחה', 'success');
                 } else if (modal.type === 'all') {
                     setUsers(initialUsers); setRecords([]); setCyclesList([DEFAULT_CYCLE]); setUploadBatches([]);
@@ -422,10 +747,6 @@
                     <ConfirmModal isOpen={modal.isOpen} title={modal.type === 'all' ? "איפוס מערכת כולל!" : "מחיקת מחזור"} message={modal.type === 'all' ? "האם אתה בטוח לחלוטין שברצונך לאפס את המערכת? פעולה זו תמחק עשרות שחקנים ונתונים ואינה הפיכה לעולם." : `האם למחוק את כל הנתונים של "${currentCycle}"?`} confirmText={modal.type === 'all' ? "כן, מחק הכל" : "מחק מחזור"} onConfirm={executeDelete} onCancel={() => setModal({isOpen: false, type: null})} />
                 </div>
             );
-        };
-
-        const generateWhatsAppLink = (phone, text) => {
-            return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
         };
 
         const AdminAgentsView = ({ users, records, currentCycle }) => {
@@ -524,7 +845,7 @@
                             </div>
                             <div className="mt-4 flex gap-2">
                                 <button onClick={() => { navigator.clipboard.writeText(`משתמש: ${player.username}\nסיסמה: ${player.password}`); showToast('פרטים הועתקו ללוח!'); }} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium py-2 rounded-lg transition-colors">העתק פרטים</button>
-                                <a href={generateWhatsAppLink('', `היי, פרטי ההתחברות שלך למועדון NETABEL:\nלינק: [הכנס לינק כאן]\nמשתמש: ${player.username}\nסיסמה: ${player.password}`)} target="_blank" className="bg-emerald-700 hover:bg-emerald-600 text-white px-3 flex items-center justify-center rounded-lg transition-colors" title="שליחה בוואטסאפ"><Icon name="whatsapp" size={16}/></a>
+                                <a href={generateWhatsAppLink('', `היי, פרטי ההתחברות שלך למועדון NETABEL:\nמשתמש: ${player.username}\nסיסמה: ${player.password}`)} target="_blank" className="bg-emerald-700 hover:bg-emerald-600 text-white px-3 flex items-center justify-center rounded-lg transition-colors" title="שליחה בוואטסאפ"><Icon name="whatsapp" size={16}/></a>
                             </div>
                         </div>
                         <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-xl border border-slate-700 shadow-md">
@@ -612,7 +933,7 @@
                         <div className="p-12 text-center border-2 border-dashed border-slate-700 rounded-2xl bg-slate-800/20">
                             <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-slate-500 mx-auto mb-4"><Icon name="users" size={32}/></div>
                             <h4 className="text-lg font-bold text-white mb-2">אין שחקנים במערכת</h4>
-                            <p className="text-slate-400">יש לגשת ללשונית "ייבוא דוחות" ולהעלות קובץ אקסל כדי לאכלס את המערכת.</p>
+                            <p className="text-slate-400">יש לגשת ללשונית "ייבוא דוחות" ולהעלות קובץ כדי לאכלס את המערכת.</p>
                         </div>
                     ) : (
                     <div className="overflow-x-auto rounded-xl border border-slate-700/50 shadow-xl">
@@ -692,250 +1013,6 @@
             );
         };
 
-        const AdminImportView = ({ setRecords, setUsers, users, currentCycle, cyclesList, setCyclesList, records, showToast, uploadBatches, setUploadBatches }) => {
-            const [newCycleName, setNewCycleName] = useState('');
-            const [isParsing, setIsParsing] = useState(false);
-
-            const handleFileUpload = (e) => {
-                const file = e.target.files[0];
-                if(!file) return;
-
-                const filename = file.name;
-                setIsParsing(true);
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    try {
-                        const data = new Uint8Array(event.target.result);
-                        const workbook = XLSX.read(data, {type: 'array'});
-                        
-                        let newPlayersCount = 0;
-                        let newUsers = [...users];
-                        let newRecordsList = [...records];
-                        
-                        const batchId = 'batch_' + Date.now();
-                        const currentBatchDeltas = []; // To track changes for rollback
-
-                        const extractNum = (val) => {
-                            if (val === undefined || val === null || val === '') return 0;
-                            let str = String(val).trim();
-                            if (str.startsWith('(') && str.endsWith(')')) str = '-' + str.slice(1, -1);
-                            const cleaned = str.replace(/[^\d.-]/g, '');
-                            const num = parseFloat(cleaned);
-                            return isNaN(num) ? 0 : num;
-                        };
-
-                        workbook.SheetNames.forEach(sheetName => {
-                            const worksheet = workbook.Sheets[sheetName];
-                            const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
-                            if (!rows || rows.length === 0) return;
-
-                            let dataStartRow = -1;
-                            let colMap = { nickname: -1, agent: -1, pnl: -1, fee: -1, hands: -1 };
-
-                            for (let i = 0; i < Math.min(15, rows.length); i++) {
-                                const rowStr = rows[i].map(c => String(c).toLowerCase().trim()).join('|');
-                                if (rowStr.includes('nickname') || rowStr.includes('player')) {
-                                    dataStartRow = i + 1;
-                                    for (let col = 0; col < rows[i].length; col++) {
-                                        const h1 = String(rows[i > 0 ? i - 1 : i][col] || '').toLowerCase();
-                                        const h2 = String(rows[i][col] || '').toLowerCase();
-                                        const h3 = String(rows[i + 1] ? rows[i + 1][col] : '').toLowerCase();
-                                        const combinedHeader = `${h1} ${h2} ${h3}`;
-
-                                        if (combinedHeader.includes('nickname') || h2 === 'player') colMap.nickname = col;
-                                        if (combinedHeader.includes('agent')) colMap.agent = col;
-                                        if (combinedHeader.includes('p&l') && combinedHeader.includes('total') && !combinedHeader.includes('insurance')) colMap.pnl = col;
-                                        if ((combinedHeader.includes('fee') || combinedHeader.includes('rake')) && combinedHeader.includes('total')) colMap.fee = col;
-                                        if (combinedHeader.includes('hands') && combinedHeader.includes('total')) colMap.hands = col;
-                                    }
-                                    break;
-                                }
-                            }
-
-                            if (dataStartRow === -1 || colMap.nickname === -1) return; 
-                            if (colMap.pnl === -1) colMap.pnl = rows[dataStartRow-1].findIndex(c => String(c).toLowerCase().includes('p&l'));
-                            if (colMap.fee === -1) colMap.fee = rows[dataStartRow-1].findIndex(c => String(c).toLowerCase().includes('fee') || String(c).toLowerCase().includes('rake'));
-
-                            for (let idx = dataStartRow; idx < rows.length; idx++) {
-                                const row = rows[idx];
-                                if (!row || row.length <= colMap.nickname) continue;
-                                const nickname = String(row[colMap.nickname]).replace(/["']/g, '').trim();
-                                if (!nickname || nickname === '-' || nickname.toLowerCase().includes('total')) continue;
-
-                                const pnl = colMap.pnl !== -1 ? extractNum(row[colMap.pnl]) : 0;
-                                const rake = colMap.fee !== -1 ? extractNum(row[colMap.fee]) : 0;
-                                const hands = colMap.hands !== -1 ? Math.round(extractNum(row[colMap.hands])) : 0;
-                                
-                                let assignedAgentId = 'agent_default';
-                                if (colMap.agent !== -1 && row[colMap.agent]) {
-                                    const rawAgent = String(row[colMap.agent]).toLowerCase().trim();
-                                    const matchedAgent = newUsers.find(u => u.role === 'agent' && u.name.toLowerCase() === rawAgent);
-                                    if (matchedAgent) assignedAgentId = matchedAgent.id;
-                                }
-
-                                if (pnl === 0 && rake === 0 && hands === 0) continue;
-
-                                let player = newUsers.find(u => u.username === nickname);
-                                if (!player) {
-                                    player = { id: 'p_' + Date.now() + Math.random().toString(36).substr(2, 9), username: nickname, password: '123', role: 'player', name: nickname, agentId: assignedAgentId, customCommission: null };
-                                    newUsers.push(player);
-                                    newPlayersCount++;
-                                } else if (player.agentId === 'agent_default' && assignedAgentId !== 'agent_default') {
-                                    player.agentId = assignedAgentId;
-                                }
-
-                                const tableName = sheetName === 'Member Statistics' ? 'סיכום משחקים כללי' : sheetName;
-                                const tableObj = { name: tableName, hands: hands, pnl: pnl, rake: rake, batchId: batchId }; // Tag table with batchId for rollback
-
-                                const existingRecordIndex = newRecordsList.findIndex(r => r.cycleId === currentCycle && r.playerId === player.id);
-                                if (existingRecordIndex >= 0) {
-                                    newRecordsList[existingRecordIndex].pnl += pnl;
-                                    newRecordsList[existingRecordIndex].rake += rake;
-                                    newRecordsList[existingRecordIndex].hands += hands;
-                                    newRecordsList[existingRecordIndex].tables.push(tableObj);
-                                } else {
-                                    newRecordsList.push({
-                                        id: Date.now() + Math.random(), cycleId: currentCycle, playerId: player.id, pnl: pnl, rake: rake, hands: hands, bonus: 0,
-                                        tables: [tableObj]
-                                    });
-                                }
-
-                                // Save delta for rollback
-                                currentBatchDeltas.push({ playerId: player.id, pnl, rake, hands });
-                            }
-                        });
-
-                        // Save the upload event to history
-                        if (currentBatchDeltas.length > 0) {
-                            const newBatch = {
-                                id: batchId,
-                                filename: filename,
-                                date: new Date().toLocaleString('he-IL'),
-                                cycleId: currentCycle,
-                                playersAffected: currentBatchDeltas.length,
-                                deltas: currentBatchDeltas
-                            };
-                            setUploadBatches([newBatch, ...uploadBatches]);
-                            setUsers(newUsers);
-                            setRecords(newRecordsList);
-                            showToast(`קובץ ${filename} יובא בהצלחה! ${newPlayersCount} שחקנים חדשים.`);
-                        } else {
-                            showToast('לא נמצאו נתונים רלוונטיים להעלאה בקובץ זה.', 'error');
-                        }
-
-                        setIsParsing(false);
-                        e.target.value = '';
-                    } catch (err) {
-                        console.error("Parsing Error:", err);
-                        setIsParsing(false);
-                        showToast('שגיאה. ודא שזהו קובץ אקסל או CSV תקין.', 'error');
-                        e.target.value = '';
-                    }
-                };
-                reader.readAsArrayBuffer(file);
-            };
-
-            const undoBatch = (batchId) => {
-                if(!window.confirm('האם אתה בטוח שברצונך לבטל העלאה זו? פעולה זו תחסיר במדויק את הנתונים שהועלו מקובץ זה מתוך המחזור.')) return;
-                
-                const batch = uploadBatches.find(b => b.id === batchId);
-                if(!batch) return;
-
-                let updatedRecords = [...records];
-                
-                // Subtract deltas
-                batch.deltas.forEach(delta => {
-                    const recIdx = updatedRecords.findIndex(r => r.cycleId === batch.cycleId && r.playerId === delta.playerId);
-                    if(recIdx > -1) {
-                        updatedRecords[recIdx].pnl -= delta.pnl;
-                        updatedRecords[recIdx].rake -= delta.rake;
-                        updatedRecords[recIdx].hands -= delta.hands;
-                        // Remove tables added by this batch
-                        updatedRecords[recIdx].tables = updatedRecords[recIdx].tables.filter(t => t.batchId !== batchId);
-                    }
-                });
-
-                // Clean up empty records
-                updatedRecords = updatedRecords.filter(r => r.pnl !== 0 || r.rake !== 0 || r.hands !== 0 || r.tables.length > 0 || r.bonus !== 0);
-                
-                setRecords(updatedRecords);
-                setUploadBatches(uploadBatches.filter(b => b.id !== batchId));
-                showToast('ההעלאה בוטלה והנתונים קוזזו בהצלחה', 'success');
-            };
-
-            const addCycle = () => {
-                if(newCycleName && !cyclesList.includes(newCycleName)) {
-                    setCyclesList([newCycleName, ...cyclesList]);
-                    setNewCycleName('');
-                    showToast('מחזור חדש נוצר לרשימה!');
-                }
-            };
-
-            return (
-                <div className="space-y-8">
-                    {/* Top Row: Import & Cycles */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed border-slate-700 hover:border-emerald-500/50 rounded-2xl bg-slate-900/40 transition-colors shadow-inner relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-2xl border-2 relative z-10 
-                                ${isParsing ? 'bg-emerald-900/50 border-emerald-500 animate-pulse text-emerald-300' : 'bg-slate-800 border-slate-600 text-emerald-400'}`}>
-                                <Icon name="upload" size={40} />
-                            </div>
-                            <h3 className="text-2xl font-black mb-3 text-white relative z-10">{isParsing ? 'מפענח נתונים ומרכיב טבלאות...' : 'ייבוא נתונים יומי / מחזורי'}</h3>
-                            <p className="text-slate-400 text-sm mb-8 max-w-sm relative z-10 leading-relaxed">העלה קובץ Member Statistics או פירוט שולחנות כ-CSV/Excel.</p>
-                            <label className={`cursor-pointer text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all relative z-10 border 
-                                ${isParsing ? 'bg-slate-700 border-slate-600 opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 border-transparent hover:-translate-y-1'}`}>
-                                בחר קובץ להעלאה
-                                <input type="file" className="hidden" accept=".csv, text/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, .xlsx" onChange={handleFileUpload} disabled={isParsing} />
-                            </label>
-                        </div>
-
-                        <div className="bg-slate-900/60 p-8 rounded-2xl border border-slate-700/80 flex flex-col justify-center shadow-xl">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-600 text-cyan-400"><Icon name="dashboard" size={20}/></div>
-                                <h3 className="text-xl font-bold text-white">ניהול מחזורים</h3>
-                            </div>
-                            <p className="text-slate-400 text-sm mb-6 leading-relaxed">הנתונים שתייבא כעת יתווספו אוטומטית למחזור: <strong className="text-emerald-400 bg-emerald-900/20 px-2 py-1 rounded border border-emerald-500/20">{currentCycle}</strong>.</p>
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                <input type="text" value={newCycleName} onChange={(e)=>setNewCycleName(e.target.value)} placeholder="שם מחזור חדש..." className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 text-white outline-none focus:border-emerald-500 shadow-inner" />
-                                <button onClick={addCycle} className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-xl font-bold transition-colors whitespace-nowrap shadow-md">צור מחזור</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Bottom Row: Rollback History */}
-                    <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-700/50 shadow-inner">
-                        <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Icon name="history" size={20} className="text-cyan-400"/> היסטוריית העלאות (מנגנון ביטול/Rollback)</h4>
-                        {uploadBatches.length === 0 ? (
-                            <div className="text-center py-6 text-slate-500 bg-slate-800/20 rounded-xl border border-dashed border-slate-700">לא הועלו קבצים.</div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm text-right text-slate-300">
-                                    <thead className="border-b border-slate-700 bg-slate-800/50">
-                                        <tr><th className="p-3">תאריך העלאה</th><th className="p-3">שם הקובץ</th><th className="p-3">מחזור יעד</th><th className="p-3 text-center">מס' שחקנים שהושפעו</th><th className="p-3 text-left">פעולה</th></tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-800">
-                                        {uploadBatches.map(batch => (
-                                            <tr key={batch.id} className="hover:bg-slate-800 transition-colors">
-                                                <td className="p-3">{batch.date}</td>
-                                                <td className="p-3 font-mono text-xs text-slate-400">{batch.filename}</td>
-                                                <td className="p-3"><span className="bg-slate-700 px-2 py-1 rounded text-xs">{batch.cycleId}</span></td>
-                                                <td className="p-3 text-center font-bold">{batch.playersAffected}</td>
-                                                <td className="p-3 text-left">
-                                                    <button onClick={() => undoBatch(batch.id)} className="bg-red-900/40 text-red-400 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">בטל העלאה זו</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
-        };
-
         const AdminMessagesView = ({ users, messages, setMessages, showToast }) => {
             const [text, setText] = useState(''); const [imgUrl, setImgUrl] = useState(''); const [targetId, setTargetId] = useState('all');
             const sendMsg = () => {
@@ -965,9 +1042,6 @@
             );
         };
 
-        // ==========================================
-        // AGENT DASHBOARD
-        // ==========================================
         const AgentDashboard = ({ user, users, records, currentCycle, showToast }) => {
             const [sortBy, setSortBy] = useState('pnl');
             const [expandedRow, setExpandedRow] = useState(null);
@@ -1073,9 +1147,6 @@
             );
         };
 
-        // ==========================================
-        // PLAYER DASHBOARD (BANK VIP STYLE)
-        // ==========================================
         const PlayerDashboard = ({ user, records, messages, currentCycle }) => {
             const cycleRecord = records.find(r => r.cycleId === currentCycle && r.playerId === user.id) || { pnl: 0, hands: 0, bonus: 0, tables: [] };
             const finalResult = (cycleRecord.pnl || 0) + (cycleRecord.bonus || 0);
