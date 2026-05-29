@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -135,11 +136,11 @@
             const [isPrivacyMode, setIsPrivacyMode] = useState(false);
 
             useEffect(() => {
-                const storedUsers = JSON.parse(localStorage.getItem('netabel_sys_v8_users'));
-                const storedRecords = JSON.parse(localStorage.getItem('netabel_sys_v8_records'));
-                const storedMessages = JSON.parse(localStorage.getItem('netabel_sys_v8_messages'));
-                const storedCycles = JSON.parse(localStorage.getItem('netabel_sys_v8_cycles'));
-                const storedUploads = JSON.parse(localStorage.getItem('netabel_sys_v8_uploads'));
+                const storedUsers = JSON.parse(localStorage.getItem('netabel_sys_v9_users'));
+                const storedRecords = JSON.parse(localStorage.getItem('netabel_sys_v9_records'));
+                const storedMessages = JSON.parse(localStorage.getItem('netabel_sys_v9_messages'));
+                const storedCycles = JSON.parse(localStorage.getItem('netabel_sys_v9_cycles'));
+                const storedUploads = JSON.parse(localStorage.getItem('netabel_sys_v9_uploads'));
                 
                 if (storedUsers) setUsers(storedUsers); else setUsers(initialUsers);
                 if (storedRecords) setRecords(storedRecords); else setRecords([]);
@@ -150,17 +151,17 @@
 
             useEffect(() => {
                 if(users.length > 0) {
-                    localStorage.setItem('netabel_sys_v8_users', JSON.stringify(users));
-                    localStorage.setItem('netabel_sys_v8_records', JSON.stringify(records));
-                    localStorage.setItem('netabel_sys_v8_messages', JSON.stringify(messages));
-                    localStorage.setItem('netabel_sys_v8_cycles', JSON.stringify(cyclesList));
-                    localStorage.setItem('netabel_sys_v8_uploads', JSON.stringify(uploadBatches));
+                    localStorage.setItem('netabel_sys_v9_users', JSON.stringify(users));
+                    localStorage.setItem('netabel_sys_v9_records', JSON.stringify(records));
+                    localStorage.setItem('netabel_sys_v9_messages', JSON.stringify(messages));
+                    localStorage.setItem('netabel_sys_v9_cycles', JSON.stringify(cyclesList));
+                    localStorage.setItem('netabel_sys_v9_uploads', JSON.stringify(uploadBatches));
                 }
             }, [users, records, messages, cyclesList, uploadBatches]);
 
             const showToast = (message, type = 'success') => {
                 setToast({ message, type });
-                setTimeout(() => setToast(null), 3500);
+                setTimeout(() => setToast(null), 4000);
             };
 
             const login = (username, password) => {
@@ -396,7 +397,6 @@
 
                 const filename = file.name;
                 
-                // מניעת כפילויות בהעלאה
                 if (uploadBatches.some(b => b.filename === filename && b.cycleId === currentCycle)) {
                     if (!window.confirm(`שימו לב: הקובץ "${filename}" כבר הועלה למחזור "${currentCycle}".\nהעלאה נוספת תכפיל את הנתונים!\nהאם להמשיך בכל זאת?`)) {
                         e.target.value = '';
@@ -435,7 +435,6 @@
                                     return isNaN(num) ? 0 : num;
                                 };
 
-                                // פונקציה חכמה לאיתור עמודות (מזהה גם Detail וגם Member Stats)
                                 let dataStartRow = -1;
                                 let colMap = { nickname: -1, agent: -1, pnl: -1, fee: -1, hands: -1 };
                                 
@@ -446,9 +445,7 @@
                                 for (let i = 0; i < Math.min(20, rows.length); i++) {
                                     const row = rows[i];
                                     if (!row) continue;
-                                    const rowStrLower = row.map(c => String(c).toLowerCase().trim());
                                     
-                                    // חילוץ נתוני טבלה מקבצי Detail
                                     row.forEach(cell => {
                                         const c = String(cell).trim();
                                         const cl = c.toLowerCase();
@@ -465,56 +462,58 @@
                                         }
                                     });
 
-                                    const nickIdx = rowStrLower.indexOf('nickname') > -1 ? rowStrLower.indexOf('nickname') : rowStrLower.indexOf('player');
-                                    
-                                    if (nickIdx !== -1) {
-                                        colMap.nickname = nickIdx;
-                                        
-                                        const r0 = rowStrLower;
-                                        const r1 = i > 0 ? rows[i-1].map(c => String(c).toLowerCase().trim()) : [];
-                                        const r2 = i > 1 ? rows[i-2].map(c => String(c).toLowerCase().trim()) : [];
-                                        
-                                        const getGroupHeader = (r, idx) => {
-                                            for(let k = idx; k >= 0; k--) {
-                                                if (r[k] && r[k] !== '') return r[k];
+                                    const rowStrLower = row.join('|').toLowerCase();
+
+                                    // מנוע סריקה משולב וגמיש
+                                    if (rowStrLower.includes('player p&l') || rowStrLower.includes('member')) {
+                                        const getParentHeader = (r, idx) => {
+                                            for (let k = idx; k >= 0; k--) {
+                                                if (r[k] && String(r[k]).trim() !== '') return String(r[k]).toLowerCase().trim();
                                             }
                                             return '';
                                         };
 
-                                        const isMemberStats = r2.includes('super agent') || r1.includes('super agent') || r0.includes('super agent');
+                                        const r1 = rows[i];
+                                        const r2 = rows[i+1] || [];
+                                        
+                                        colMap.agent = 5;
+                                        colMap.nickname = 9;
 
-                                        for (let c = 0; c < row.length; c++) {
-                                            const h0 = r0[c] || '';
-                                            const h1 = getGroupHeader(r1, c);
-                                            const h2 = getGroupHeader(r2, c);
-
-                                            if (h0 === 'agent' || h1 === 'agent' || h2 === 'agent') colMap.agent = c;
-
-                                            if (isMemberStats) {
-                                                if (h2 === 'player p&l' && h0 === 'total') colMap.pnl = c;
-                                                if ((h2 === 'rake&fee' || h2 === 'fee') && h0 === 'total') colMap.fee = c;
-                                                if (h2.includes('played hands') && (h0 === 'total' || h0 === '')) colMap.hands = c;
-                                            } else {
-                                                if (h0 === 'p&l' || h1 === 'p&l' || h2 === 'p&l') colMap.pnl = c;
-                                                if (h0 === 'rake' || h1 === 'rake' || h2 === 'rake' || h1 === 'contribution fee' || h0 === 'contribution fee') colMap.fee = c;
-                                                if (h0 === 'hands' || h1 === 'hands' || h2 === 'hands') colMap.hands = c;
-                                            }
-                                        }
-
-                                        dataStartRow = i + 1;
-                                        while(dataStartRow < rows.length) {
-                                            const testRow = rows[dataStartRow];
-                                            if (!testRow || testRow.length === 0) { dataStartRow++; continue; }
-                                            const firstCell = String(testRow[0] || '').toLowerCase().trim();
-                                            const nicknameCell = String(testRow[colMap.nickname] || '').toLowerCase().trim();
+                                        for (let c = 0; c < r1.length; c++) {
+                                            const hMain = getParentHeader(r1, c);
+                                            const hSub = String(r2[c] || '').toLowerCase().trim();
                                             
-                                            if (nicknameCell === 'nickname' || nicknameCell === 'player' || firstCell.includes('total') || nicknameCell.includes('total')) {
-                                                dataStartRow++;
-                                            } else {
-                                                break;
-                                            }
+                                            if (hMain === 'player p&l' && hSub === 'total') colMap.pnl = c;
+                                            if ((hMain === 'rake&fee' || hMain === 'fee') && hSub === 'total') colMap.fee = c;
+                                            if (hMain.includes('played hands') && hSub === 'total') colMap.hands = c;
                                         }
-                                        break;
+                                        
+                                        dataStartRow = i + 2;
+                                        while(dataStartRow < rows.length && (!rows[dataStartRow] || !rows[dataStartRow][colMap.nickname] || String(rows[dataStartRow][0]).toLowerCase().includes('total') || String(rows[dataStartRow][colMap.nickname]).toLowerCase().includes('nickname'))) {
+                                            dataStartRow++;
+                                        }
+                                        if (colMap.pnl !== -1) break;
+                                    } 
+                                    else if (rowStrLower.includes('nickname') || rowStrLower.includes('player')) {
+                                        const r1 = rows[i].map(c => String(c).toLowerCase().trim());
+                                        const r2 = (rows[i+1] || []).map(c => String(c).toLowerCase().trim());
+                                        
+                                        for (let c = 0; c < Math.max(r1.length, r2.length); c++) {
+                                            const text1 = r1[c] || '';
+                                            const text2 = r2[c] || '';
+                                            
+                                            if (text1 === 'nickname' || text2 === 'nickname' || text1 === 'member' || text1 === 'player') colMap.nickname = c;
+                                            if (text1 === 'agent' || text2 === 'agent') colMap.agent = c;
+                                            if (text1 === 'p&l' || text2 === 'p&l') colMap.pnl = c;
+                                            if (text1 === 'rake' || text2 === 'rake' || text1 === 'fee' || text2 === 'fee' || text1 === 'contribution fee' || text2 === 'contribution fee') colMap.fee = c;
+                                            if (text1 === 'hands' || text2 === 'hands') colMap.hands = c;
+                                        }
+                                        
+                                        dataStartRow = i + 1;
+                                        while(dataStartRow < rows.length && (!rows[dataStartRow] || !rows[dataStartRow][colMap.nickname] || String(rows[dataStartRow][0]).toLowerCase().includes('total') || String(rows[dataStartRow][colMap.nickname]).toLowerCase().includes('nickname') || String(rows[dataStartRow][colMap.nickname]).toLowerCase() === 'player')) {
+                                            dataStartRow++;
+                                        }
+                                        if (colMap.pnl !== -1) break;
                                     }
                                 }
 
@@ -540,7 +539,6 @@
                                     const rake = colMap.fee !== -1 ? extractNum(row[colMap.fee]) : 0;
                                     const hands = colMap.hands !== -1 ? Math.round(extractNum(row[colMap.hands])) : 0;
                                     
-                                    // זיהוי סוכן מהקובץ
                                     let assignedAgentId = 'agent_default';
                                     if (colMap.agent !== -1 && row[colMap.agent]) {
                                         const rawAgentName = String(row[colMap.agent]).toLowerCase().trim();
@@ -566,7 +564,6 @@
                                         newUsers.push(player);
                                         newPlayersCount++;
                                     } else if (player.agentId === 'agent_default' && assignedAgentId !== 'agent_default') {
-                                        // השחקן היה "ללא סוכן", מעדכן לפי הקובץ. אם כבר יש לו סוכן, לא נוגעים!
                                         player.agentId = assignedAgentId;
                                     }
 
@@ -675,7 +672,7 @@
                                 <Icon name="upload" size={40} />
                             </div>
                             <h3 className="text-2xl font-black mb-3 text-white relative z-10">{isParsing ? 'מפענח נתונים מסקריפט...' : 'ייבוא נתונים מקובץ CSV'}</h3>
-                            <p className="text-slate-400 text-sm mb-8 max-w-sm relative z-10 leading-relaxed">הורד את הדו"ח מגוגל שיטס כ-CSV. המערכת תסרוק, תשייך סוכנים ותסכם הכל.</p>
+                            <p className="text-slate-400 text-sm mb-8 max-w-sm relative z-10 leading-relaxed">הורד את הדו"ח מ-Google Sheets או העלה Ring Game Detail לקבלת פירוט שולחנות.</p>
                             <label className={`cursor-pointer text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all relative z-10 border 
                                 ${isParsing ? 'bg-slate-700 border-slate-600 opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 border-transparent hover:-translate-y-1'}`}>
                                 בחר קובץ CSV להעלאה
@@ -904,7 +901,7 @@
                                                         {expandedRow === u.id ? <Icon name="chevronUp" size={16}/> : <Icon name="chevronDown" size={16}/>}
                                                     </div>
                                                 </td>
-                                                <td className="p-4 text-right cursor-pointer" onClick={() => toggleRow(u.id)}>
+                                                <td className="p-4 cursor-pointer" onClick={() => toggleRow(u.id)}>
                                                     <div className="font-bold text-white text-base flex items-center justify-start gap-2">
                                                         {isHot && <span title="פעיל מאוד! שוחקו המון ידיים">🔥</span>}
                                                         {isWhale && <span title="לוויתן! מעל 5000 שח רווח/הפסד">🐋</span>}
