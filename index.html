@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -135,11 +136,11 @@
             const [isPrivacyMode, setIsPrivacyMode] = useState(false);
 
             useEffect(() => {
-                const storedUsers = JSON.parse(localStorage.getItem('netabel_sys_v6_users'));
-                const storedRecords = JSON.parse(localStorage.getItem('netabel_sys_v6_records'));
-                const storedMessages = JSON.parse(localStorage.getItem('netabel_sys_v6_messages'));
-                const storedCycles = JSON.parse(localStorage.getItem('netabel_sys_v6_cycles'));
-                const storedUploads = JSON.parse(localStorage.getItem('netabel_sys_v6_uploads'));
+                const storedUsers = JSON.parse(localStorage.getItem('netabel_sys_v8_users'));
+                const storedRecords = JSON.parse(localStorage.getItem('netabel_sys_v8_records'));
+                const storedMessages = JSON.parse(localStorage.getItem('netabel_sys_v8_messages'));
+                const storedCycles = JSON.parse(localStorage.getItem('netabel_sys_v8_cycles'));
+                const storedUploads = JSON.parse(localStorage.getItem('netabel_sys_v8_uploads'));
                 
                 if (storedUsers) setUsers(storedUsers); else setUsers(initialUsers);
                 if (storedRecords) setRecords(storedRecords); else setRecords([]);
@@ -150,11 +151,11 @@
 
             useEffect(() => {
                 if(users.length > 0) {
-                    localStorage.setItem('netabel_sys_v6_users', JSON.stringify(users));
-                    localStorage.setItem('netabel_sys_v6_records', JSON.stringify(records));
-                    localStorage.setItem('netabel_sys_v6_messages', JSON.stringify(messages));
-                    localStorage.setItem('netabel_sys_v6_cycles', JSON.stringify(cyclesList));
-                    localStorage.setItem('netabel_sys_v6_uploads', JSON.stringify(uploadBatches));
+                    localStorage.setItem('netabel_sys_v8_users', JSON.stringify(users));
+                    localStorage.setItem('netabel_sys_v8_records', JSON.stringify(records));
+                    localStorage.setItem('netabel_sys_v8_messages', JSON.stringify(messages));
+                    localStorage.setItem('netabel_sys_v8_cycles', JSON.stringify(cyclesList));
+                    localStorage.setItem('netabel_sys_v8_uploads', JSON.stringify(uploadBatches));
                 }
             }, [users, records, messages, cyclesList, uploadBatches]);
 
@@ -435,39 +436,84 @@
                                     return isNaN(num) ? 0 : num;
                                 };
 
+                                // פונקציה חכמה לאיתור עמודות (מזהה גם Detail וגם Member Stats)
                                 let dataStartRow = -1;
                                 let colMap = { nickname: -1, agent: -1, pnl: -1, fee: -1, hands: -1 };
+                                
+                                let currentTableName = "סיכום משחקים כללי";
+                                let currentGameType = "-";
+                                let currentDates = "-";
 
-                                for (let i = 0; i < Math.min(15, rows.length); i++) {
-                                    const rowStr = rows[i].join('|').toLowerCase();
+                                for (let i = 0; i < Math.min(20, rows.length); i++) {
+                                    const row = rows[i];
+                                    if (!row) continue;
+                                    const rowStrLower = row.map(c => String(c).toLowerCase().trim());
                                     
-                                    if (rowStr.includes('player p&l') || rowStr.includes('rake&fee') || rowStr.includes('nickname') || rowStr.includes('member')) {
-                                        const mainHeaders = rows[i];
-                                        const subHeaders = rows[i+1] || [];
-                                        
-                                        let currentMain = "";
-                                        for (let c = 0; c < mainHeaders.length; c++) {
-                                            const h1 = String(mainHeaders[c] || '').trim();
-                                            if (h1 !== '') currentMain = h1.toLowerCase();
-                                            
-                                            const h2 = String(subHeaders[c] || '').trim().toLowerCase();
-                                            
-                                            if (currentMain === 'player p&l' && h2 === 'total') colMap.pnl = c;
-                                            if ((currentMain === 'rake&fee' || currentMain === 'fee' || currentMain === 'contribution fee') && h2 === 'total') colMap.fee = c;
-                                            if (currentMain.includes('played hands') && (h2 === 'total' || h2 === '')) colMap.hands = c;
+                                    // חילוץ נתוני טבלה מקבצי Detail
+                                    row.forEach(cell => {
+                                        const c = String(cell).trim();
+                                        const cl = c.toLowerCase();
+                                        if (cl.includes('table name :') || cl.includes('tournament title :')) {
+                                            currentTableName = c.split(',')[0].replace(/table name\s*:/i, '').replace(/tournament title\s*:/i, '').replace(/["']/g, '').trim();
                                         }
-                                        
-                                        colMap.agent = 5;
-                                        colMap.nickname = 9;
+                                        if (cl.includes('game :')) {
+                                            const match = c.match(/game\s*:\s*([^,]+)/i);
+                                            if (match && match[1]) currentGameType = match[1].trim();
+                                        }
+                                        if (cl.includes('start/end time :') || cl.includes('period :')) {
+                                            const match = c.match(/(?:start\/end time|period)\s*:\s*([^(]+)/i);
+                                            if (match && match[1]) currentDates = match[1].replace('~', '-').trim();
+                                        }
+                                    });
 
-                                        if (colMap.pnl === -1) colMap.pnl = rows[i].findIndex(c => String(c).toLowerCase().includes('p&l'));
-                                        if (colMap.fee === -1) colMap.fee = rows[i].findIndex(c => String(c).toLowerCase().includes('fee') || String(c).toLowerCase().includes('rake'));
-                                        if (colMap.hands === -1) colMap.hands = rows[i].findIndex(c => String(c).toLowerCase().includes('hands'));
-
-                                        dataStartRow = i + 2; 
+                                    const nickIdx = rowStrLower.indexOf('nickname') > -1 ? rowStrLower.indexOf('nickname') : rowStrLower.indexOf('player');
+                                    
+                                    if (nickIdx !== -1) {
+                                        colMap.nickname = nickIdx;
                                         
-                                        while(dataStartRow < rows.length && (!rows[dataStartRow] || String(rows[dataStartRow][0]).includes('Total') || String(rows[dataStartRow][colMap.nickname]).includes('Nickname'))) {
-                                            dataStartRow++;
+                                        const r0 = rowStrLower;
+                                        const r1 = i > 0 ? rows[i-1].map(c => String(c).toLowerCase().trim()) : [];
+                                        const r2 = i > 1 ? rows[i-2].map(c => String(c).toLowerCase().trim()) : [];
+                                        
+                                        const getGroupHeader = (r, idx) => {
+                                            for(let k = idx; k >= 0; k--) {
+                                                if (r[k] && r[k] !== '') return r[k];
+                                            }
+                                            return '';
+                                        };
+
+                                        const isMemberStats = r2.includes('super agent') || r1.includes('super agent') || r0.includes('super agent');
+
+                                        for (let c = 0; c < row.length; c++) {
+                                            const h0 = r0[c] || '';
+                                            const h1 = getGroupHeader(r1, c);
+                                            const h2 = getGroupHeader(r2, c);
+
+                                            if (h0 === 'agent' || h1 === 'agent' || h2 === 'agent') colMap.agent = c;
+
+                                            if (isMemberStats) {
+                                                if (h2 === 'player p&l' && h0 === 'total') colMap.pnl = c;
+                                                if ((h2 === 'rake&fee' || h2 === 'fee') && h0 === 'total') colMap.fee = c;
+                                                if (h2.includes('played hands') && (h0 === 'total' || h0 === '')) colMap.hands = c;
+                                            } else {
+                                                if (h0 === 'p&l' || h1 === 'p&l' || h2 === 'p&l') colMap.pnl = c;
+                                                if (h0 === 'rake' || h1 === 'rake' || h2 === 'rake' || h1 === 'contribution fee' || h0 === 'contribution fee') colMap.fee = c;
+                                                if (h0 === 'hands' || h1 === 'hands' || h2 === 'hands') colMap.hands = c;
+                                            }
+                                        }
+
+                                        dataStartRow = i + 1;
+                                        while(dataStartRow < rows.length) {
+                                            const testRow = rows[dataStartRow];
+                                            if (!testRow || testRow.length === 0) { dataStartRow++; continue; }
+                                            const firstCell = String(testRow[0] || '').toLowerCase().trim();
+                                            const nicknameCell = String(testRow[colMap.nickname] || '').toLowerCase().trim();
+                                            
+                                            if (nicknameCell === 'nickname' || nicknameCell === 'player' || firstCell.includes('total') || nicknameCell.includes('total')) {
+                                                dataStartRow++;
+                                            } else {
+                                                break;
+                                            }
                                         }
                                         break;
                                     }
@@ -489,7 +535,7 @@
                                     
                                     const nickname = String(nicknameRaw).replace(/["']/g, '').trim();
                                     
-                                    if (!nickname || nickname === '-' || nickname.toLowerCase().includes('total') || nickname.toLowerCase() === 'nickname') continue;
+                                    if (!nickname || nickname === '-' || nickname.toLowerCase().includes('total') || nickname.toLowerCase() === 'nickname' || nickname.toLowerCase() === 'player') continue;
 
                                     const pnl = colMap.pnl !== -1 ? extractNum(row[colMap.pnl]) : 0;
                                     const rake = colMap.fee !== -1 ? extractNum(row[colMap.fee]) : 0;
@@ -505,6 +551,8 @@
                                         }
                                     }
 
+                                    if (pnl === 0 && rake === 0 && hands === 0) continue;
+
                                     let player = newUsers.find(u => u.username === nickname);
                                     if (!player) {
                                         player = { 
@@ -519,13 +567,11 @@
                                         newUsers.push(player);
                                         newPlayersCount++;
                                     } else if (player.agentId === 'agent_default' && assignedAgentId !== 'agent_default') {
-                                        // השחקן היה "ללא סוכן", מעדכן לפי הקובץ
+                                        // השחקן היה "ללא סוכן", מעדכן לפי הקובץ. אם כבר יש לו סוכן, לא נוגעים!
                                         player.agentId = assignedAgentId;
                                     }
-                                    // שימו לב: אם לשחקן יש כבר סוכן (לא agent_default) - לא נוגעים בו בכלל! שומר על החלטות האדמין לנצח.
 
-                                    const tableName = "סיכום משחקים כללי"; 
-                                    const tableObj = { name: tableName, hands: hands, pnl: pnl, rake: rake, batchId: batchId };
+                                    const tableObj = { name: currentTableName, gameType: currentGameType, date: currentDates, hands: hands, pnl: pnl, rake: rake, batchId: batchId };
 
                                     const existingRecordIndex = newRecordsList.findIndex(r => r.cycleId === currentCycle && r.playerId === player.id);
                                     if (existingRecordIndex >= 0) {
@@ -682,7 +728,6 @@
             );
         };
 
-        // רכיב פנימי לעריכת P&L ורייק באופן ידני ע"י האדמין
         const AdminRecordEditor = ({ record, playerId, currentCycle, setRecords, showToast }) => {
             const [formData, setFormData] = useState({
                 pnl: record?.pnl || 0,
@@ -750,7 +795,6 @@
             const agents = users.filter(u => u.role === 'agent');
 
             const updatePlayer = (id, field, value) => {
-                // שימוש ב-prevUsers מונע שגיאות (Stale state) כשהרשימה גדולה ומעדכנים מהר
                 setUsers(prevUsers => prevUsers.map(u => u.id === id ? { ...u, [field]: value } : u));
                 if(field === 'agentId') showToast('השיוך עודכן בהצלחה!');
                 if(field === 'customCommission') showToast('עמלה חריגה עודכנה בהצלחה!');
@@ -792,7 +836,7 @@
             return (
                 <div>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-6">
-                        <div><h3 className="text-xl font-bold text-white">ניהול משתמשים במערכת</h3><p className="text-sm text-slate-400 mt-1">שיוך לסוכנים, שינוי הרשאות (סוכן/שחקן) ויצירת יוזרים ידנית.</p></div>
+                        <div><h3 className="text-xl font-bold text-white">ניהול משתמשים במערכת</h3><p className="text-sm text-slate-400 mt-1">שיוך לסוכנים, שינוי הרשאות ויצירת יוזרים ידנית.</p></div>
                         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                             <button onClick={() => setIsCreatingUser(!isCreatingUser)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold transition-colors whitespace-nowrap flex items-center justify-center gap-2">
                                 <Icon name="userPlus" size={16}/> צור משתמש / סוכן
@@ -838,11 +882,11 @@
                             <thead className="bg-slate-800 text-slate-300 uppercase text-[11px] tracking-widest">
                                 <tr>
                                     <th className="p-4 font-bold border-b border-slate-700 w-12 text-center">פירוט</th>
-                                    <th className="p-4 font-bold border-b border-slate-700">משתמש</th>
+                                    <th className="p-4 font-bold border-b border-slate-700 text-right">משתמש</th>
                                     <th className="p-4 font-bold border-b border-slate-700 text-center">תפקיד</th>
-                                    <th className="p-4 font-bold border-b border-slate-700">סוכן משויך</th>
+                                    <th className="p-4 font-bold border-b border-slate-700 text-right">סוכן משויך</th>
                                     <th className="p-4 font-bold border-b border-slate-700 text-center">עמלה (%)</th>
-                                    <th className="p-4 font-bold border-b border-slate-700">פעולות ובונוס (לשחקנים)</th>
+                                    <th className="p-4 font-bold border-b border-slate-700 text-right">פעולות ובונוס (לשחקנים)</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
@@ -861,8 +905,8 @@
                                                         {expandedRow === u.id ? <Icon name="chevronUp" size={16}/> : <Icon name="chevronDown" size={16}/>}
                                                     </div>
                                                 </td>
-                                                <td className="p-4 cursor-pointer" onClick={() => toggleRow(u.id)}>
-                                                    <div className="font-bold text-white text-base flex items-center justify-end gap-2">
+                                                <td className="p-4 text-right cursor-pointer" onClick={() => toggleRow(u.id)}>
+                                                    <div className="font-bold text-white text-base flex items-center justify-start gap-2">
                                                         {isHot && <span title="פעיל מאוד! שוחקו המון ידיים">🔥</span>}
                                                         {isWhale && <span title="לוויתן! מעל 5000 שח רווח/הפסד">🐋</span>}
                                                         {u.name}
@@ -885,7 +929,7 @@
                                                         <option value="agent" className="bg-slate-900 text-white">סוכן</option>
                                                     </select>
                                                 </td>
-                                                <td className="p-4">
+                                                <td className="p-4 text-right">
                                                     {u.role === 'player' ? (
                                                         <select value={u.agentId || 'agent_default'} onClick={(e)=>e.stopPropagation()} onChange={(e) => updatePlayer(u.id, 'agentId', e.target.value)} className={`bg-slate-900 border rounded-lg px-2 py-1.5 text-sm text-white font-medium outline-none cursor-pointer transition-colors ${u.agentId === 'agent_default' ? 'border-red-500/50 text-red-400 bg-red-900/10' : 'border-slate-600 focus:border-emerald-500'}`}>
                                                             {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
@@ -902,13 +946,13 @@
                                                         <span className="bg-slate-800 text-slate-400 px-2 py-1.5 font-bold text-xs">%</span>
                                                     </div>
                                                 </td>
-                                                <td className="p-4">
+                                                <td className="p-4 text-right">
                                                     {u.role === 'player' ? (
                                                         bonusInput.playerId === u.id ? (
                                                             <div className="flex items-center justify-end gap-2 bg-slate-900 p-1.5 rounded-lg border border-slate-600" onClick={(e)=>e.stopPropagation()}>
                                                                 <input type="number" value={bonusInput.amount} onChange={(e)=>setBonusInput({...bonusInput, amount: e.target.value})} placeholder="סכום" className="bg-transparent text-xs w-16 text-white outline-none px-1 text-center" autoFocus />
                                                                 <button onClick={() => handleAddBonus(u.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 rounded text-xs font-bold transition-colors">שמור</button>
-                                                                <button onClick={() => setBonusInput({playerId: null, amount:''})} className="text-slate-400 hover:text-white px-1 text-xs transition-colors">בטל</button>
+                                                                <button onClick={(e) => { e.stopPropagation(); setBonusInput({playerId: null, amount:''}); }} className="text-slate-400 hover:text-white px-1 text-xs transition-colors">בטל</button>
                                                             </div>
                                                         ) : (
                                                             <button onClick={(e) => { e.stopPropagation(); setBonusInput({playerId: u.id, amount: ''}); }} className={`text-xs flex items-center justify-center gap-2 w-full transition-colors font-medium px-3 py-2 rounded-lg ${record.bonus > 0 ? 'bg-emerald-900/20 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
@@ -946,46 +990,227 @@
             );
         };
 
-        const AdminSettingsView = ({ users, setUsers, records, setRecords, currentCycle, cyclesList, setCyclesList, showToast, setUploadBatches, uploadBatches }) => {
-            const [modal, setModal] = useState({ isOpen: false, type: null });
-
-            const executeDelete = () => {
-                if (modal.type === 'cycle') {
-                    setRecords(records.filter(r => r.cycleId !== currentCycle));
-                    const newCycles = cyclesList.filter(c => c !== currentCycle);
-                    setCyclesList(newCycles.length > 0 ? newCycles : [DEFAULT_CYCLE]);
-                    setUploadBatches(uploadBatches.filter(b => b.cycleId !== currentCycle));
-                    showToast('הנתונים של המחזור הנוכחי נמחקו בהצלחה', 'success');
-                } else if (modal.type === 'all') {
-                    setUsers(initialUsers); setRecords([]); setCyclesList([DEFAULT_CYCLE]); setUploadBatches([]);
-                    showToast('המערכת אופסה לחלוטין. נתוני בסיס נטענו.', 'success');
-                }
-                setModal({ isOpen: false, type: null });
+        const AdminMessagesView = ({ users, messages, setMessages, showToast }) => {
+            const [text, setText] = useState(''); const [imgUrl, setImgUrl] = useState(''); const [targetId, setTargetId] = useState('all');
+            const sendMsg = () => {
+                if(!text) return;
+                setMessages([{ id: Date.now(), senderId: 'admin1', receiverId: targetId, text, image: imgUrl, date: new Date().toLocaleDateString('he-IL') }, ...messages]);
+                setText(''); setImgUrl(''); showToast('ההודעה נשלחה לנמענים!');
             };
-
             return (
-                <div className="space-y-6 max-w-2xl mx-auto md:mx-0">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-3"><Icon name="settings" size={24}/> הגדרות מערכת מתקדמות</h3>
-                    <div className="bg-red-900/10 p-6 rounded-xl border border-red-900/30">
-                        <h4 className="text-red-400 font-bold mb-4 flex items-center gap-2"><Icon name="trash" size={18} /> אזור סכנה (מחיקת נתונים)</h4>
-                        <div className="space-y-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div><div className="text-white font-medium text-lg">מחיקת המחזור הנוכחי</div><div className="text-sm text-slate-400 mt-1">מוחק את כל רשומות המשחק והשולחנות ששויכו למחזור "{currentCycle}". השחקנים והסוכנים יישארו.</div></div>
-                                <button onClick={() => setModal({isOpen: true, type: 'cycle'})} className="bg-red-900/40 text-red-400 border border-red-800 hover:bg-red-600 hover:text-white px-5 py-2.5 rounded-lg font-semibold transition-colors whitespace-nowrap">מחק מחזור זה</button>
-                            </div>
-                            <div className="border-t border-red-900/30 pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div><div className="text-white font-medium text-lg">איפוס מערכת כללי (Factory Reset)</div><div className="text-sm text-slate-400 mt-1">מוחק לחלוטין את כל השחקנים, הדוחות והמחזורים. המערכת תחזור למצב ריק.</div></div>
-                                <button onClick={() => setModal({isOpen: true, type: 'all'})} className="bg-red-600 text-white hover:bg-red-700 px-5 py-2.5 rounded-lg font-bold shadow-lg transition-colors whitespace-nowrap">איפוס כולל למערכת</button>
-                            </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="space-y-5 bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50">
+                        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-3"><Icon name="message" size={24} className="text-emerald-400"/> שליחת הודעת מערכת</h3>
+                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">נמען</label><select value={targetId} onChange={(e)=>setTargetId(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner font-medium"><option value="all">שידור לכולם (גלובלי)</option><optgroup label="סוכנים">{users.filter(u=>u.role==='agent').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup><optgroup label="שחקנים">{users.filter(u=>u.role==='player').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup></select></div>
+                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תוכן ההודעה (קופץ באינבוקס)</label><textarea value={text} onChange={(e)=>setText(e.target.value)} rows="4" className="w-full bg-slate-800 border border-slate-600 rounded-xl p-4 text-white outline-none focus:border-emerald-500 shadow-inner resize-none" placeholder="הקלד את ההודעה שתקפוץ למשתמשים..."></textarea></div>
+                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תמונה מצורפת (אופציונלי)</label><input type="text" value={imgUrl} onChange={(e)=>setImgUrl(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner" placeholder="הדבק URL של תמונה (https://...)" /></div>
+                        <button onClick={sendMsg} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg py-4 rounded-xl shadow-lg transition-transform active:scale-95 w-full mt-2">שגר הודעה</button>
+                    </div>
+                    <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-700/50 flex flex-col h-[600px] shadow-inner">
+                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 pb-3 border-b border-slate-700 flex items-center gap-2"><Icon name="dashboard" size={16}/> היסטוריית שידורים</h4>
+                        <div className="space-y-4 overflow-y-auto flex-1 pr-2">
+                            {messages.filter(m => m.senderId === 'admin1').map(m => (
+                                <div key={m.id} className="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-sm relative"><div className="flex justify-between items-start mb-3 border-b border-slate-700/50 pb-2"><span className="font-bold text-emerald-400 text-sm">נמען: {m.receiverId === 'all' ? 'כולם' : users.find(u=>u.id===m.receiverId)?.name || 'לא ידוע'}</span><span className="text-[10px] text-slate-500 font-medium">{m.date}</span></div><p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{m.text}</p>{m.image && <img src={m.image} alt="Attachment" className="mt-3 rounded-lg border border-slate-600 max-h-40 object-cover shadow-md" />}</div>
+                            ))}
+                            {messages.length === 0 && (<div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50"><Icon name="message" size={48} className="mb-4" /><p>טרם נשלחו הודעות.</p></div>)}
                         </div>
                     </div>
-                    <ConfirmModal isOpen={modal.isOpen} title={modal.type === 'all' ? "איפוס מערכת כולל!" : "מחיקת מחזור"} message={modal.type === 'all' ? "האם אתה בטוח לחלוטין שברצונך לאפס את המערכת? פעולה זו תמחק עשרות שחקנים ונתונים ואינה הפיכה לעולם." : `האם למחוק את כל הנתונים של "${currentCycle}"?`} confirmText={modal.type === 'all' ? "כן, מחק הכל" : "מחק מחזור"} onConfirm={executeDelete} onCancel={() => setModal({isOpen: false, type: null})} />
                 </div>
             );
         };
 
-        // --- Rest of components are identical to the previous implementation ---
-        
+        const AgentDashboard = ({ user, users, records, currentCycle, showToast }) => {
+            const [sortBy, setSortBy] = useState('pnl');
+            const [expandedRow, setExpandedRow] = useState(null);
+            const [searchQuery, setSearchQuery] = useState('');
+
+            const myPlayers = users.filter(u => u.agentId === user.id);
+            
+            const playerStats = useMemo(() => {
+                const filtered = searchQuery ? myPlayers.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.username.toLowerCase().includes(searchQuery.toLowerCase())) : myPlayers;
+                return filtered.map(player => {
+                    const record = records.find(r => r.cycleId === currentCycle && r.playerId === player.id) || { pnl: 0, rake: 0, hands: 0, bonus: 0, tables: [] };
+                    const rate = player.customCommission !== null ? player.customCommission : user.commissionRate;
+                    const generatedCommissionNet = record.rake * (1 - SYSTEM_EXPENSES_RATE);
+                    const agentCommission = generatedCommissionNet * (rate / 100);
+                    return { ...player, ...record, generatedCommissionNet, calculatedCommission: agentCommission, finalPnl: record.pnl + (record.bonus || 0) };
+                }).sort((a, b) => {
+                    if (sortBy === 'pnl') return a.pnl - b.pnl;
+                    if (sortBy === 'commission') return b.calculatedCommission - a.calculatedCommission;
+                    if (sortBy === 'hands') return b.hands - a.hands;
+                    return 0;
+                });
+            }, [myPlayers, records, currentCycle, user.commissionRate, sortBy, searchQuery]);
+
+            const totalHands = playerStats.reduce((sum, p) => sum + p.hands, 0);
+            const totalPnl = playerStats.reduce((sum, p) => sum + p.finalPnl, 0);
+            const totalNetCommission = playerStats.reduce((sum, p) => sum + p.generatedCommissionNet, 0);
+            const totalAgentCommission = playerStats.reduce((sum, p) => sum + p.calculatedCommission, 0);
+            const totalAgainstClub = totalPnl + totalAgentCommission;
+
+            const toggleRow = (id) => setExpandedRow(expandedRow === id ? null : id);
+
+            return (
+                <div className="space-y-6">
+                    <div className="card-gradient rounded-2xl p-4 sm:p-8 border border-slate-700/50 shadow-2xl">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
+                            <div><h3 className="text-2xl font-black text-white">רשימת השחקנים שלי</h3><p className="text-slate-400 text-sm mt-1">לחץ על שחקן כדי לראות פירוט שולחנות וסיסמה.</p></div>
+                            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                                <div className="relative w-full sm:w-64"><input type="text" placeholder="חיפוש שחקן..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-slate-900/80 border border-slate-600 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white outline-none focus:border-emerald-500 shadow-inner transition-colors"/><div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500"><Icon name="search" size={18} /></div></div>
+                                <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-600 rounded-xl px-4 py-2.5 w-full sm:w-auto shadow-inner"><Icon name="sort" size={18} className="text-slate-400"/><select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm font-medium text-white outline-none cursor-pointer w-full"><option value="pnl">מיון: תוצאה (P&L)</option><option value="commission">מיון: עמלה</option><option value="hands">מיון: ידיים</option></select></div>
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto rounded-xl border border-slate-700/50 shadow-xl">
+                            <table className="w-full text-right text-sm whitespace-nowrap">
+                                <thead className="bg-slate-800 text-slate-300 uppercase text-[11px] tracking-widest">
+                                    <tr>
+                                        <th className="p-5 font-bold border-b border-slate-700 w-12 text-center">פירוט</th>
+                                        <th className="p-5 font-bold border-b border-slate-700 text-right">כינוי השחקן</th>
+                                        <th className="p-5 font-bold border-b border-slate-700 text-center">סה"כ ידיים</th>
+                                        <th className="p-5 font-bold border-b border-slate-700 text-right">תוצאה (P&L)</th>
+                                        <th className="p-5 font-bold border-b border-slate-700 text-right text-emerald-500">עמלה שייצר (נטו)</th>
+                                        <th className="p-5 font-bold border-b border-slate-700 text-right text-emerald-400 bg-emerald-900/10">העמלה שלי</th>
+                                        <th className="p-5 font-bold border-b border-slate-700 text-center w-16"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
+                                    {playerStats.map(stat => {
+                                        const isWhale = Math.abs(stat.finalPnl) >= 5000;
+                                        const isHot = stat.hands >= 3000;
+                                        return (
+                                        <Fragment key={stat.id}>
+                                            <tr className={`transition-colors cursor-pointer group ${expandedRow === stat.id ? 'bg-slate-800' : 'hover:bg-slate-800/50'}`} onClick={() => toggleRow(stat.id)}>
+                                                <td className="p-5 text-center text-slate-500 group-hover:text-emerald-400"><div className={`p-1.5 rounded-md inline-flex ${expandedRow === stat.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800'}`}>{expandedRow === stat.id ? <Icon name="chevronUp" size={16}/> : <Icon name="chevronDown" size={16}/>}</div></td>
+                                                <td className="p-5 text-right">
+                                                    <div className="font-bold text-white text-base flex items-center justify-start gap-2">
+                                                        {isHot && <span title="פעיל מאוד! שוחקו המון ידיים">🔥</span>}
+                                                        {isWhale && <span title="לוויתן! מעל 5000 שח רווח/הפסד">🐋</span>}
+                                                        {stat.name}
+                                                    </div>
+                                                    <div className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">{stat.username}</div>
+                                                </td>
+                                                <td className="p-5 text-center font-medium text-slate-300">{stat.hands.toLocaleString()}</td>
+                                                <td className={`p-5 text-right font-bold text-base money-value ${getColorClass(stat.finalPnl)}`}>{formatMoney(stat.finalPnl)}</td>
+                                                <td className="p-5 text-right font-bold text-emerald-500/80 money-value">{formatMoney(stat.generatedCommissionNet)}</td>
+                                                <td className="p-5 text-right font-black text-lg text-emerald-400 bg-emerald-900/5 money-value">{formatMoney(stat.calculatedCommission)}</td>
+                                                <td className="p-5 text-center">
+                                                    <a href={generateWhatsAppLink('', `היי ${stat.name},\nסיכום התחשבנות - מועדון NETABEL\nתוצאה סופית: ${formatMoney(stat.finalPnl)}\nסה"כ ידיים שוחקו: ${stat.hands}`)} target="_blank" onClick={(e)=>e.stopPropagation()} className="p-2 inline-block bg-slate-800 text-slate-400 hover:bg-emerald-600 hover:text-white rounded-full transition-colors" title="שלח לשחקן בוואטסאפ"><Icon name="whatsapp" size={16} /></a>
+                                                </td>
+                                            </tr>
+                                            {expandedRow === stat.id && (
+                                                <tr className="bg-slate-900"><td colSpan="7" className="p-0 border-b border-slate-800"><PlayerDetailsDrilldown player={stat} record={stat} finalPnl={stat.finalPnl} showToast={showToast} /></td></tr>
+                                            )}
+                                        </Fragment>
+                                    )})}
+                                </tbody>
+                                <tfoot className="bg-slate-800/90 border-t-2 border-slate-600">
+                                    <tr>
+                                        <td colSpan="2" className="p-5 text-right font-black text-slate-300">סיכום סוכן (סה"כ):</td>
+                                        <td className="p-5 text-center font-bold text-white">{totalHands.toLocaleString()}</td>
+                                        <td className={`p-5 text-right font-bold text-lg money-value ${getColorClass(totalPnl)}`}>{formatMoney(totalPnl)}</td>
+                                        <td className="p-5 text-right font-bold text-emerald-500/80 money-value">{formatMoney(totalNetCommission)}</td>
+                                        <td colSpan="2" className="p-5 text-right font-black text-xl text-emerald-400 bg-emerald-900/20 money-value">{formatMoney(totalAgentCommission)}</td>
+                                    </tr>
+                                    <tr className="bg-slate-900 border-t border-slate-700">
+                                        <td colSpan="4" className="p-6 text-right font-black text-slate-200 text-lg flex items-center gap-3"><div className="w-2 h-8 bg-cyan-500 rounded-full"></div>התחשבנות סופית מול מועדון (תוצאה + עמלה):</td>
+                                        <td colSpan="3" className={`p-6 text-right text-3xl font-black tracking-tight money-value ${getColorClass(totalAgainstClub)}`}>{formatMoney(totalAgainstClub)}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const PlayerDashboard = ({ user, records, messages, currentCycle }) => {
+            const cycleRecord = records.find(r => r.cycleId === currentCycle && r.playerId === user.id) || { pnl: 0, hands: 0, bonus: 0, tables: [] };
+            const finalResult = (cycleRecord.pnl || 0) + (cycleRecord.bonus || 0);
+            const myMessages = messages.filter(m => m.receiverId === 'all' || m.receiverId === user.id);
+
+            const getRank = (hands) => {
+                if(hands > 10000) return { name: 'Titanium', color: 'text-purple-400', bg: 'bg-purple-900/20', border: 'border-purple-500/30' };
+                if(hands > 5000) return { name: 'Gold', color: 'text-yellow-400', bg: 'bg-yellow-900/20', border: 'border-yellow-500/30' };
+                if(hands > 1000) return { name: 'Silver', color: 'text-slate-300', bg: 'bg-slate-700/50', border: 'border-slate-500/50' };
+                return { name: 'Bronze', color: 'text-orange-400', bg: 'bg-orange-900/20', border: 'border-orange-500/30' };
+            };
+            const rank = getRank(cycleRecord.hands || 0);
+
+            return (
+                <div className="max-w-4xl mx-auto space-y-8 mt-4">
+                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-2xl p-8 sm:p-12 group">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none transition-transform duration-700 group-hover:scale-110"></div>
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[60px] pointer-events-none transition-transform duration-700 group-hover:scale-110"></div>
+                        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+                            <div>
+                                <h2 className="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase mb-3 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> יתרת מחזור מעודכנת</h2>
+                                <div className={`text-6xl md:text-7xl font-black tracking-tight money-value ${getColorClass(finalResult)} drop-shadow-lg`}>{formatMoney(finalResult)}</div>
+                                {cycleRecord.bonus > 0 && <div className="mt-4 text-sm text-emerald-400 flex items-center gap-2 bg-emerald-900/40 inline-flex px-4 py-2 rounded-lg font-bold border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)]"><Icon name="gift" size={16}/> בונוס מועדון מצורף: {formatMoney(cycleRecord.bonus)}</div>}
+                            </div>
+                            <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl p-6 border border-slate-700 w-full md:w-64 shadow-xl">
+                                <div className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">סטטוס משתמש</div>
+                                <div className={`text-3xl font-black ${rank.color} tracking-wide mb-4`}>{rank.name} <span className="text-sm">VIP</span></div>
+                                <div className="flex justify-between items-center border-t border-slate-700/50 pt-3"><span className="text-xs text-slate-500 uppercase font-bold tracking-widest">ידיים שוחקו</span><span className="font-bold text-white text-lg">{cycleRecord.hands.toLocaleString()}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    {cycleRecord.tables && cycleRecord.tables.length > 0 && (
+                        <div className="bg-slate-900/60 rounded-3xl p-6 md:p-8 border border-slate-800 shadow-xl relative overflow-hidden">
+                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3"><Icon name="dashboard" size={24} className="text-emerald-400"/> פירוט שולחנות וטורנירים</h3>
+                            <div className="overflow-x-auto rounded-xl border border-slate-700/50">
+                                <table className="w-full text-right text-sm">
+                                    <thead className="bg-slate-800 text-slate-400 text-xs uppercase tracking-widest">
+                                        <tr>
+                                            <th className="p-4 font-bold border-b border-slate-700 text-right">שם שולחן / טורניר</th>
+                                            <th className="p-4 font-bold border-b border-slate-700 text-center">סוג משחק</th>
+                                            <th className="p-4 font-bold border-b border-slate-700 text-center">תאריכים</th>
+                                            <th className="p-4 font-bold text-center border-b border-slate-700">ידיים</th>
+                                            <th className="p-4 font-bold border-b border-slate-700 text-left">תוצאה (P&L)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
+                                        {cycleRecord.tables.map((t, idx) => (
+                                            <tr key={idx} className="hover:bg-slate-800/60 transition-colors">
+                                                <td className="p-4 font-medium text-slate-200 text-base text-right">{t.name}</td>
+                                                <td className="p-4 text-center text-slate-400">{t.gameType || '-'}</td>
+                                                <td className="p-4 text-center text-slate-400 text-[11px]" dir="ltr">{t.date || '-'}</td>
+                                                <td className="p-4 text-center text-slate-300 font-medium">{t.hands}</td>
+                                                <td className={`p-4 font-bold text-lg text-left money-value ${getColorClass(t.pnl)}`}>{formatMoney(t.pnl)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                    <tfoot className="bg-slate-800/90 border-t-2 border-slate-600">
+                                        <tr>
+                                            <td colSpan="3" className="p-5 font-black text-slate-300 text-base text-right">סה"כ משחקים:</td>
+                                            <td className="p-5 font-bold text-white text-center text-base">{cycleRecord.hands}</td>
+                                            <td className={`p-5 font-black text-xl text-left money-value ${getColorClass(cycleRecord.pnl)}`}>{formatMoney(cycleRecord.pnl)}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                    <div className="bg-slate-900/60 rounded-3xl p-6 md:p-8 border border-slate-800 shadow-xl">
+                        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3"><Icon name="message" size={24} className="text-cyan-400"/> הודעות ממועדון NETABEL</h3>
+                        {myMessages.length === 0 ? (
+                            <div className="text-center py-16 text-slate-500 bg-slate-800/20 rounded-2xl border-2 border-dashed border-slate-700/50"><Icon name="message" size={48} className="mx-auto mb-4 opacity-50"/><p className="font-medium text-lg">תיבת ההודעות שלך ריקה.</p></div>
+                        ) : (
+                            <div className="space-y-5">
+                                {myMessages.map(msg => (
+                                    <div key={msg.id} className="bg-slate-800/80 rounded-2xl p-6 border border-slate-700 shadow-md hover:border-cyan-500/30 transition-colors">
+                                        <div className="flex justify-between items-center mb-4 border-b border-slate-700/50 pb-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]"><span className="text-cyan-400 text-sm font-black">N</span></div><span className="font-bold text-slate-100 text-base">הנהלת המועדון</span></div><span className="text-xs text-slate-500 font-bold tracking-widest bg-slate-900 px-3 py-1 rounded-full">{msg.date}</span></div>
+                                        <p className="text-slate-300 text-base leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                                        {msg.image && <div className="mt-5 rounded-xl overflow-hidden border border-slate-600 inline-block shadow-lg"><img src={msg.image} alt="Club" className="max-w-full h-auto max-h-64 object-cover" /></div>}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
