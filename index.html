@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -16,19 +17,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Firebase Modules (Cloud Sync) -->
-    <script type="importmap">
-      {
-        "imports": {
-          "firebase/app": "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js",
-          "firebase/auth": "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js",
-          "firebase/firestore": "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"
-        }
-      }
-    </script>
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "firebase/auth";
-        import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "firebase/firestore";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         window.FB = {
             initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, doc, setDoc, onSnapshot, getDoc
@@ -100,7 +92,7 @@
                 chevronUp: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="18 15 12 9 6 15"></polyline></svg>,
                 sort: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="14" y2="12"></line><line x1="4" y1="18" x2="8" y2="18"></line></svg>,
                 search: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>,
-                settings: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
+                settings: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
                 trash: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
                 eye: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>,
                 eyeOff: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>,
@@ -182,6 +174,8 @@
                             const db = window.FB.getFirestore(app);
                             const appId = typeof __app_id !== 'undefined' ? __app_id : 'netabel-club-main';
 
+                            window.FB_setDoc = window.FB.setDoc;
+
                             const initAuth = async () => {
                                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                                     await window.FB.signInWithCustomToken(auth, __initial_auth_token);
@@ -220,7 +214,7 @@
                                         }
                                         setIsLoading(false);
                                     }, (err) => {
-                                        console.error(err);
+                                        console.error("Firebase Snapshot Error:", err);
                                         setIsLoading(false);
                                     });
                                 }
@@ -238,7 +232,7 @@
             const setUsers = (val) => {
                 setUsersState(prev => {
                     const newVal = typeof val === 'function' ? val(prev) : val;
-                    if (isCloud && dbRef) window.FB.setDoc(dbRef, { users: newVal }, { merge: true });
+                    if (isCloud && dbRef && window.FB_setDoc) window.FB_setDoc(dbRef, { users: newVal }, { merge: true });
                     else localStorage.setItem('netabel_db_users', JSON.stringify(newVal));
                     return newVal;
                 });
@@ -247,7 +241,7 @@
             const setRecords = (val) => {
                 setRecordsState(prev => {
                     const newVal = typeof val === 'function' ? val(prev) : val;
-                    if (isCloud && dbRef) window.FB.setDoc(dbRef, { records: newVal }, { merge: true });
+                    if (isCloud && dbRef && window.FB_setDoc) window.FB_setDoc(dbRef, { records: newVal }, { merge: true });
                     else localStorage.setItem('netabel_db_records', JSON.stringify(newVal));
                     return newVal;
                 });
@@ -256,7 +250,7 @@
             const setMessages = (val) => {
                 setMessagesState(prev => {
                     const newVal = typeof val === 'function' ? val(prev) : val;
-                    if (isCloud && dbRef) window.FB.setDoc(dbRef, { messages: newVal }, { merge: true });
+                    if (isCloud && dbRef && window.FB_setDoc) window.FB_setDoc(dbRef, { messages: newVal }, { merge: true });
                     else localStorage.setItem('netabel_db_messages', JSON.stringify(newVal));
                     return newVal;
                 });
@@ -265,7 +259,7 @@
             const setCyclesList = (val) => {
                 setCyclesListState(prev => {
                     const newVal = typeof val === 'function' ? val(prev) : val;
-                    if (isCloud && dbRef) window.FB.setDoc(dbRef, { cyclesList: newVal }, { merge: true });
+                    if (isCloud && dbRef && window.FB_setDoc) window.FB_setDoc(dbRef, { cyclesList: newVal }, { merge: true });
                     else localStorage.setItem('netabel_db_cycles', JSON.stringify(newVal));
                     return newVal;
                 });
@@ -274,7 +268,7 @@
             const setUploadBatches = (val) => {
                 setUploadBatchesState(prev => {
                     const newVal = typeof val === 'function' ? val(prev) : val;
-                    if (isCloud && dbRef) window.FB.setDoc(dbRef, { uploadBatches: newVal }, { merge: true });
+                    if (isCloud && dbRef && window.FB_setDoc) window.FB_setDoc(dbRef, { uploadBatches: newVal }, { merge: true });
                     else localStorage.setItem('netabel_db_uploads', JSON.stringify(newVal));
                     return newVal;
                 });
@@ -286,7 +280,8 @@
             };
 
             const login = (username, password) => {
-                const user = usersState.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+                const safeUsers = usersState || [];
+                const user = safeUsers.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
                 if (user) {
                     setCurrentUser(user);
                     showToast(`ברוך הבא למערכת, ${user.name || user.username}`);
@@ -315,26 +310,26 @@
 
             return (
                 <div className={`min-h-screen flex flex-col text-slate-100 bg-[#0b1120] relative overflow-x-hidden ${isPrivacyMode ? 'privacy-on' : ''}`}>
-                    <TopNavBar user={currentUser} logout={() => setCurrentUser(null)} currentCycle={currentCycle} setCurrentCycle={setCurrentCycle} cyclesList={cyclesListState} isPrivacyMode={isPrivacyMode} setIsPrivacyMode={setIsPrivacyMode} isCloud={isCloud} />
-                    <GlobalStatsHeader user={currentUser} users={usersState} records={recordsState.filter(r => r.cycleId === currentCycle)} />
+                    <TopNavBar user={currentUser} logout={() => setCurrentUser(null)} currentCycle={currentCycle} setCurrentCycle={setCurrentCycle} cyclesList={cyclesListState || []} isPrivacyMode={isPrivacyMode} setIsPrivacyMode={setIsPrivacyMode} isCloud={isCloud} />
+                    <GlobalStatsHeader user={currentUser} users={usersState || []} records={(recordsState || []).filter(r => r.cycleId === currentCycle)} />
                     
                     <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
                         {currentUser.role === 'admin' && (
                             <AdminDashboard 
-                                users={usersState} setUsers={setUsers} 
-                                records={recordsState} setRecords={setRecords}
-                                messages={messagesState} setMessages={setMessages} 
+                                users={usersState || []} setUsers={setUsers} 
+                                records={recordsState || []} setRecords={setRecords}
+                                messages={messagesState || []} setMessages={setMessages} 
                                 currentCycle={currentCycle} 
-                                cyclesList={cyclesListState} setCyclesList={setCyclesList} 
+                                cyclesList={cyclesListState || []} setCyclesList={setCyclesList} 
                                 showToast={showToast}
-                                uploadBatches={uploadBatchesState} setUploadBatches={setUploadBatches}
+                                uploadBatches={uploadBatchesState || []} setUploadBatches={setUploadBatches}
                             />
                         )}
                         {currentUser.role === 'agent' && (
-                            <AgentDashboard user={currentUser} users={usersState} records={recordsState} currentCycle={currentCycle} showToast={showToast} />
+                            <AgentDashboard user={currentUser} users={usersState || []} records={recordsState || []} currentCycle={currentCycle} showToast={showToast} />
                         )}
                         {currentUser.role === 'player' && (
-                            <PlayerDashboard user={currentUser} records={recordsState} messages={messagesState} currentCycle={currentCycle} showToast={showToast} />
+                            <PlayerDashboard user={currentUser} records={recordsState || []} messages={messagesState || []} currentCycle={currentCycle} showToast={showToast} />
                         )}
                     </main>
                     {toast && <Toast message={toast.message} type={toast.type} />}
@@ -342,7 +337,7 @@
             );
         };
 
-        const TopNavBar = ({ user, logout, currentCycle, setCurrentCycle, cyclesList, isPrivacyMode, setIsPrivacyMode, isCloud }) => (
+        const TopNavBar = ({ user, logout, currentCycle, setCurrentCycle, cyclesList = [], isPrivacyMode, setIsPrivacyMode, isCloud }) => (
             <nav className="glass-panel sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
                     <div className="flex items-center gap-4">
@@ -386,7 +381,7 @@
             </nav>
         );
 
-        const GlobalStatsHeader = ({ user, users, records }) => {
+        const GlobalStatsHeader = ({ user, users = [], records = [] }) => {
             if (user.role === 'player') return null;
 
             const players = users.filter(u => u.role === 'player');
@@ -435,7 +430,7 @@
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="text-slate-400 text-sm font-medium tracking-wide flex items-center gap-2">
                             <Icon name="dashboard" size={16}/>
-                            {headerTitle} <span className="text-slate-600">|</span> רשומות במחזור: <span className="text-white">{activePlayers}</span>
+                            {headerTitle} <span className="text-slate-600">|</span> רשומות פעילות: <span className="text-white">{activePlayers}</span>
                         </div>
                         <div className="flex flex-wrap gap-4 sm:gap-8">
                             <div className="text-right bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700/50">
@@ -473,7 +468,7 @@
                                 <span className="text-emerald-400 text-4xl font-black">♠</span>
                             </div>
                             <h2 className="text-3xl font-black text-white tracking-tight">מועדון NETABEL</h2>
-                            <p className="text-slate-400 text-sm mt-2 font-medium">מערכת בנקאות והתחשבנות (מחוברת לענן)</p>
+                            <p className="text-slate-400 text-sm mt-2 font-medium">מערכת בנקאות והתחשבנות</p>
                         </div>
                         <form onSubmit={(e) => { e.preventDefault(); onLogin(user, pass); }} className="space-y-6">
                             <div>
@@ -495,7 +490,10 @@
             );
         };
 
-        const AdminDashboard = ({ users, setUsers, records, setRecords, messages, setMessages, currentCycle, cyclesList, setCyclesList, showToast, uploadBatches, setUploadBatches }) => {
+        // ==========================================
+        // ADMIN DASHBOARD
+        // ==========================================
+        const AdminDashboard = ({ users = [], setUsers, records = [], setRecords, messages = [], setMessages, currentCycle, cyclesList = [], setCyclesList, showToast, uploadBatches = [], setUploadBatches }) => {
             const [activeTab, setActiveTab] = useState('import'); 
 
             return (
@@ -583,17 +581,68 @@
                                 let currentGameType = "-";
                                 let currentDates = "-";
 
-                                // מנוע סריקה רובסטי שמזהה גם Member Statistics וגם Ring Game
-                                for (let i = 0; i < Math.min(30, rows.length); i++) {
-                                    const row = rows[i];
-                                    if (!row || row.length === 0) continue;
-                                    
-                                    const r1 = row.map(c => String(c).toLowerCase().trim());
-                                    const r2 = (rows[i+1] || []).map(c => String(c).toLowerCase().trim());
-                                    const rowStr = r1.join('|');
+                                // מנוע סריקה משולב וגמיש
+                                let nicknameRowIndex = -1;
+                                for (let i = 0; i < Math.min(20, rows.length); i++) {
+                                    const rLower = rows[i].map(c => String(c).toLowerCase().trim());
+                                    if (rLower.includes('nickname') || rLower.includes('player')) { 
+                                        nicknameRowIndex = i; 
+                                        break; 
+                                    }
+                                }
 
-                                    // משיכת פרטי שולחן מדוחות ספציפיים
-                                    row.forEach(cell => {
+                                if (nicknameRowIndex === -1) {
+                                     setIsParsing(false);
+                                     showToast('לא נמצאו נתונים. ודא שקיימת עמודת Nickname בקובץ (יש להוריד מ-Google Sheets כ-CSV).', 'error');
+                                     e.target.value = '';
+                                     return;
+                                }
+
+                                const i = nicknameRowIndex;
+                                const rLower = rows[i].map(c => String(c).toLowerCase().trim());
+                                
+                                colMap.nickname = rLower.indexOf('nickname') !== -1 ? rLower.indexOf('nickname') : rLower.indexOf('player');
+                                
+                                colMap.agent = rLower.indexOf('agent');
+                                if (colMap.agent === -1 && i > 0) colMap.agent = rows[i-1].map(c=>String(c).toLowerCase().trim()).indexOf('agent');
+                                if (colMap.agent === -1 && i > 1) colMap.agent = rows[i-2].map(c=>String(c).toLowerCase().trim()).indexOf('agent');
+                                if (colMap.agent === -1 && i > 0) colMap.agent = rows[i-1].map(c=>String(c).toLowerCase().trim()).indexOf('super agent');
+                                if (colMap.agent === -1 && i > 1) colMap.agent = rows[i-2].map(c=>String(c).toLowerCase().trim()).indexOf('super agent');
+                                
+                                const rMainIdx = [i, i-1, i-2, i-3].find(idx => idx >= 0 && rows[idx].map(c=>String(c).toLowerCase().trim()).some(c => c.includes('p&l') || c.includes('profit')));
+                                
+                                if (rMainIdx !== undefined) {
+                                    const rMain = rows[rMainIdx].map(c=>String(c).toLowerCase().trim());
+                                    let pnlStart = rMain.findIndex(c => c.includes('p&l') || c.includes('profit'));
+                                    let feeStart = rMain.findIndex(c => c.includes('rake&fee') || (c.includes('fee') && !c.includes('contribution')) || c.includes('rake'));
+                                    let handsStart = rMain.findIndex(c => c.includes('played hands') || c === 'hands');
+                                    
+                                    const rSubIdx = rMainIdx + 1;
+                                    if (rSubIdx <= i && rows[rSubIdx].map(c=>String(c).toLowerCase().trim()).includes('total')) {
+                                        const rSub = rows[rSubIdx].map(c=>String(c).toLowerCase().trim());
+                                        
+                                        const findTotal = (start, end) => {
+                                            if (start === -1) return -1;
+                                            let limit = end !== -1 ? end : rSub.length;
+                                            for(let c = start; c < limit; c++) {
+                                                if (rSub[c] === 'total') return c;
+                                            }
+                                            return start;
+                                        };
+                                        
+                                        colMap.pnl = findTotal(pnlStart, feeStart);
+                                        colMap.fee = findTotal(feeStart, handsStart);
+                                        colMap.hands = findTotal(handsStart, -1);
+                                    } else {
+                                        colMap.pnl = pnlStart;
+                                        colMap.fee = feeStart;
+                                        colMap.hands = handsStart;
+                                    }
+                                }
+
+                                // חילוץ פרטי שולחן מדוחות Detail
+                                for (let topRow = 0; topRow <= i; topRow++) {
+                                    rows[topRow].forEach(cell => {
                                         const c = String(cell).trim();
                                         const cl = c.toLowerCase();
                                         if (cl.includes('table name :') || cl.includes('tournament title :')) {
@@ -608,61 +657,16 @@
                                             if (match && match[1]) currentDates = match[1].replace('~', '-').trim();
                                         }
                                     });
-
-                                    // זיהוי פורמט 1: Member Statistics (כותרות מפוצלות ל-2 שורות)
-                                    if (rowStr.includes('player p&l') && (rowStr.includes('rake&fee') || rowStr.includes('fee'))) {
-                                        let currentMain = "";
-                                        for (let c = 0; c < row.length; c++) {
-                                            if (r1[c]) currentMain = r1[c];
-                                            
-                                            if (currentMain === 'player p&l' && r2[c] === 'total') colMap.pnl = c;
-                                            if ((currentMain === 'rake&fee' || currentMain === 'fee' || currentMain === 'contribution fee') && r2[c] === 'total') colMap.fee = c;
-                                            if ((currentMain === 'played hands' || currentMain === 'hands') && (r2[c] === 'total' || !r2[c])) colMap.hands = c;
-                                        }
-                                        
-                                        // מיקומי עוגן ידועים
-                                        colMap.agent = 5;
-                                        colMap.nickname = 9;
-                                        
-                                        // דריסה אם הופיעה כותרת מפורשת
-                                        if (r1.indexOf('nickname') > -1) colMap.nickname = r1.indexOf('nickname');
-                                        else if (r1.indexOf('player') > -1) colMap.nickname = r1.indexOf('player');
-                                        if (r1.indexOf('agent') > -1) colMap.agent = r1.indexOf('agent');
-                                        
-                                        dataStartRow = i + 2;
-                                        break;
-                                    } 
-                                    // זיהוי פורמט 2: Ring Game Detail (שורה אחת ישרה)
-                                    else if (r1.includes('nickname') || r1.includes('player')) {
-                                        colMap.nickname = r1.indexOf('nickname') > -1 ? r1.indexOf('nickname') : r1.indexOf('player');
-                                        colMap.agent = r1.indexOf('agent') > -1 ? r1.indexOf('agent') : -1;
-                                        
-                                        colMap.pnl = r1.findIndex(c => c.includes('p&l') || c.includes('profit'));
-                                        colMap.fee = r1.findIndex(c => c.includes('rake') || c.includes('fee'));
-                                        colMap.hands = r1.findIndex(c => c.includes('hands'));
-
-                                        dataStartRow = i + 1;
-                                        break;
-                                    }
                                 }
-
-                                if (dataStartRow === -1 || colMap.nickname === -1) {
-                                     setIsParsing(false);
-                                     showToast('לא נמצאו נתונים רלוונטיים. אנא ודא שזהו קובץ תקין (Member Statistics או Detail).', 'error');
-                                     e.target.value = '';
-                                     return;
-                                }
-
-                                // דילוג על שורות ביניים וסיכומים עליונים
+                                
+                                dataStartRow = i + 1;
                                 while (dataStartRow < rows.length) {
                                     const testRow = rows[dataStartRow];
-                                    if (!testRow || testRow.length <= colMap.nickname) { 
-                                        dataStartRow++; 
-                                        continue; 
-                                    }
+                                    if (!testRow || testRow.length <= colMap.nickname) { dataStartRow++; continue; }
                                     const nickCell = String(testRow[colMap.nickname]).toLowerCase().trim();
                                     const firstCell = String(testRow[0]).toLowerCase().trim();
-                                    if (!nickCell || nickCell === '-' || nickCell === 'nickname' || nickCell === 'player' || nickCell.includes('total') || firstCell.includes('total')) {
+                                    
+                                    if (nickCell === '' || nickCell === '-' || nickCell === 'nickname' || nickCell === 'player' || nickCell.includes('total') || firstCell.includes('total')) {
                                         dataStartRow++;
                                     } else {
                                         break;
@@ -677,13 +681,13 @@
                                     if(nicknameRaw === undefined || nicknameRaw === null) continue;
                                     
                                     const nickname = String(nicknameRaw).replace(/["']/g, '').trim();
+                                    
                                     if (!nickname || nickname === '-' || nickname.toLowerCase().includes('total') || nickname.toLowerCase() === 'nickname' || nickname.toLowerCase() === 'player') continue;
 
                                     const pnl = colMap.pnl !== -1 ? extractNum(row[colMap.pnl]) : 0;
                                     const rake = colMap.fee !== -1 ? extractNum(row[colMap.fee]) : 0;
                                     const hands = colMap.hands !== -1 ? Math.round(extractNum(row[colMap.hands])) : 0;
                                     
-                                    // זיהוי סוכן מהקובץ
                                     let assignedAgentId = 'agent_default';
                                     if (colMap.agent !== -1 && row[colMap.agent]) {
                                         const rawAgentName = String(row[colMap.agent]).toLowerCase().trim();
@@ -693,7 +697,6 @@
                                         }
                                     }
 
-                                    // יוצר שחקן אם לא קיים במאגר
                                     let player = newUsers.find(u => u.username === nickname);
                                     if (!player) {
                                         player = { 
@@ -708,19 +711,16 @@
                                         newUsers.push(player);
                                         newPlayersCount++;
                                     } else if (player.agentId === 'agent_default' && assignedAgentId !== 'agent_default') {
-                                        // השחקן היה "ללא סוכן", מעדכן לפי הקובץ. אם יש לו כבר סוכן, נשאר עם מי שהאדמין קבע!
                                         player.agentId = assignedAgentId;
                                     }
 
                                     const tableObj = { name: currentTableName, gameType: currentGameType, date: currentDates, hands: hands, pnl: pnl, rake: rake, batchId: batchId };
 
-                                    // הכנסה לרשומות (מכניס את כל ה-90 שחקנים, רק מוסיף שולחן אם יש בו תנועה)
                                     const existingRecordIndex = newRecordsList.findIndex(r => r.cycleId === currentCycle && r.playerId === player.id);
                                     if (existingRecordIndex >= 0) {
                                         newRecordsList[existingRecordIndex].pnl += pnl;
                                         newRecordsList[existingRecordIndex].rake += rake;
                                         newRecordsList[existingRecordIndex].hands += hands;
-                                        // הגנה למקרה שהרשומה ישנה ואין לה tables
                                         if (!newRecordsList[existingRecordIndex].tables) newRecordsList[existingRecordIndex].tables = [];
                                         if (pnl !== 0 || rake !== 0 || hands !== 0) {
                                             newRecordsList[existingRecordIndex].tables.push(tableObj);
@@ -738,9 +738,7 @@
                                         });
                                     }
 
-                                    if (pnl !== 0 || rake !== 0 || hands !== 0) {
-                                        currentBatchDeltas.push({ playerId: player.id, pnl, rake, hands });
-                                    }
+                                    currentBatchDeltas.push({ playerId: player.id, pnl, rake, hands });
                                 }
 
                                 if (currentBatchDeltas.length > 0 || newPlayersCount > 0) {
@@ -752,7 +750,7 @@
                                         playersAffected: currentBatchDeltas.length,
                                         deltas: currentBatchDeltas
                                     };
-                                    setUploadBatches(prev => [newBatch, ...prev]);
+                                    setUploadBatches(prev => [newBatch, ...(prev || [])]);
                                     setUsers(newUsers);
                                     setRecords(newRecordsList);
                                     showToast(`קובץ יובא בהצלחה! רשומות שעודכנו: ${currentBatchDeltas.length}. שחקנים חדשים: ${newPlayersCount}.`);
@@ -784,11 +782,11 @@
             const undoBatch = (batchId) => {
                 if(!window.confirm('האם אתה בטוח שברצונך לבטל העלאה זו? פעולה זו תחסיר במדויק את הנתונים שהועלו מקובץ זה מתוך המחזור.')) return;
                 
-                const batch = uploadBatches.find(b => b.id === batchId);
+                const batch = (uploadBatches || []).find(b => b.id === batchId);
                 if(!batch) return;
 
                 setRecords(prev => {
-                    let updatedRecords = [...prev];
+                    let updatedRecords = [...(prev || [])];
                     batch.deltas.forEach(delta => {
                         const recIdx = updatedRecords.findIndex(r => r.cycleId === batch.cycleId && r.playerId === delta.playerId);
                         if(recIdx > -1) {
@@ -799,17 +797,16 @@
                             updatedRecords[recIdx].tables = (updatedRecords[recIdx].tables || []).filter(t => t.batchId !== batchId);
                         }
                     });
-                    // מנקה שחקנים שהתאפסו לגמרי ולא נשאר להם שולחנות
                     return updatedRecords.filter(r => r.pnl !== 0 || r.rake !== 0 || r.hands !== 0 || (r.tables && r.tables.length > 0) || r.bonus !== 0);
                 });
                 
-                setUploadBatches(prev => prev.filter(b => b.id !== batchId));
+                setUploadBatches(prev => (prev || []).filter(b => b.id !== batchId));
                 showToast('ההעלאה בוטלה והנתונים קוזזו בהצלחה', 'success');
             };
 
             const addCycle = () => {
-                if(newCycleName && !cyclesList.includes(newCycleName)) {
-                    setCyclesList(prev => [newCycleName, ...prev]);
+                if(newCycleName && !(cyclesList || []).includes(newCycleName)) {
+                    setCyclesList(prev => [newCycleName, ...(prev || [])]);
                     setNewCycleName('');
                     showToast('מחזור חדש נוצר לרשימה!');
                 }
@@ -825,7 +822,7 @@
                                 <Icon name="upload" size={40} />
                             </div>
                             <h3 className="text-2xl font-black mb-3 text-white relative z-10">{isParsing ? 'מפענח נתונים...' : 'ייבוא נתונים מקובץ CSV'}</h3>
-                            <p className="text-slate-400 text-sm mb-8 max-w-sm relative z-10 leading-relaxed">הורד את הדו"ח מ-Google Sheets או העלה Ring Game Detail לקבלת פירוט שולחנות.</p>
+                            <p className="text-slate-400 text-sm mb-8 max-w-sm relative z-10 leading-relaxed">הורד את הדו"ח מ-Google Sheets והעלה לכאן כ-CSV. המערכת תסרוק, תשייך סוכנים ותסכם הכל.</p>
                             <label className={`cursor-pointer text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all relative z-10 border 
                                 ${isParsing ? 'bg-slate-700 border-slate-600 opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 border-transparent hover:-translate-y-1'}`}>
                                 בחר קובץ CSV להעלאה
@@ -848,7 +845,7 @@
 
                     <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-700/50 shadow-inner">
                         <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Icon name="history" size={20} className="text-cyan-400"/> היסטוריית העלאות (מנגנון ביטול / Rollback)</h4>
-                        {uploadBatches.length === 0 ? (
+                        {!(uploadBatches || []).length ? (
                             <div className="text-center py-6 text-slate-500 bg-slate-800/20 rounded-xl border border-dashed border-slate-700">לא הועלו קבצים עדיין.</div>
                         ) : (
                             <div className="overflow-x-auto">
@@ -857,7 +854,7 @@
                                         <tr><th className="p-3 text-right">תאריך העלאה</th><th className="p-3 text-right">שם הקובץ</th><th className="p-3 text-right">מחזור יעד</th><th className="p-3 text-center">רשומות שעלו</th><th className="p-3 text-left">פעולה</th></tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-800">
-                                        {uploadBatches.map(batch => (
+                                        {(uploadBatches || []).map(batch => (
                                             <tr key={batch.id} className="hover:bg-slate-800 transition-colors">
                                                 <td className="p-3 font-medium text-right">{batch.date}</td>
                                                 <td className="p-3 text-right"><span className="font-mono text-xs text-slate-400 bg-slate-900/50 px-2 py-1 rounded inline-block mt-1 border border-slate-700">{batch.filename}</span></td>
@@ -895,13 +892,13 @@
             const saveChanges = (e) => {
                 e.stopPropagation();
                 setRecords(prev => {
-                    const existingIdx = prev.findIndex(r => r.cycleId === currentCycle && r.playerId === playerId);
+                    const existingIdx = (prev || []).findIndex(r => r.cycleId === currentCycle && r.playerId === playerId);
                     if (existingIdx > -1) {
                         const newRecs = [...prev];
                         newRecs[existingIdx] = { ...newRecs[existingIdx], ...formData };
                         return newRecs;
                     } else {
-                        return [...prev, { id: Date.now(), cycleId: currentCycle, playerId, bonus: 0, tables: [], ...formData }];
+                        return [...(prev || []), { id: Date.now(), cycleId: currentCycle, playerId, bonus: 0, tables: [], ...formData }];
                     }
                 });
                 showToast('הנתונים התעדכנו ידנית במערכת!');
@@ -928,7 +925,7 @@
             );
         };
 
-        const AdminPlayersView = ({ users, setUsers, records, setRecords, currentCycle, showToast }) => {
+        const AdminPlayersView = ({ users = [], setUsers, records = [], setRecords, currentCycle, showToast }) => {
             const [searchQuery, setSearchQuery] = useState('');
             const [expandedRow, setExpandedRow] = useState(null);
             const [bonusInput, setBonusInput] = useState({ playerId: null, amount: '' });
@@ -945,7 +942,7 @@
             const agents = users.filter(u => u.role === 'agent');
 
             const updatePlayer = (id, field, value) => {
-                setUsers(prevUsers => prevUsers.map(u => u.id === id ? { ...u, [field]: value } : u));
+                setUsers(prevUsers => (prevUsers || []).map(u => u.id === id ? { ...u, [field]: value } : u));
                 if(field === 'agentId') showToast('השיוך עודכן בהצלחה!');
                 if(field === 'customCommission') showToast('עמלה חריגה עודכנה בהצלחה!');
                 if(field === 'role') showToast(value === 'agent' ? 'המשתמש הוגדר כסוכן!' : 'המשתמש הוגדר כשחקן');
@@ -958,7 +955,7 @@
                     return;
                 }
                 const newId = (newUser.role === 'agent' ? 'agent_' : 'p_') + Date.now();
-                setUsers(prev => [...prev, { ...newUser, id: newId, agentId: newUser.role === 'player' ? 'agent_default' : null, customCommission: null }]);
+                setUsers(prev => [...(prev || []), { ...newUser, id: newId, agentId: newUser.role === 'player' ? 'agent_default' : null, customCommission: null }]);
                 showToast(`המשתמש ${newUser.username} נוצר בהצלחה כ-${newUser.role === 'agent' ? 'סוכן' : 'שחקן'}`);
                 setIsCreatingUser(false);
                 setNewUser({ username: '', password: '123', role: 'player', name: '', commissionRate: 70 });
@@ -968,13 +965,13 @@
                 if(!bonusInput.amount) return;
                 const amt = parseFloat(bonusInput.amount);
                 setRecords(prev => {
-                    const existingIdx = prev.findIndex(r => r.cycleId === currentCycle && r.playerId === playerId);
+                    const existingIdx = (prev || []).findIndex(r => r.cycleId === currentCycle && r.playerId === playerId);
                     if (existingIdx >= 0) {
                         const newRecords = [...prev];
                         newRecords[existingIdx] = { ...newRecords[existingIdx], bonus: (newRecords[existingIdx].bonus || 0) + amt };
                         return newRecords;
                     } else {
-                        return [...prev, { id: Date.now(), cycleId: currentCycle, playerId, pnl: 0, rake: 0, hands: 0, bonus: amt, tables: [] }];
+                        return [...(prev || []), { id: Date.now(), cycleId: currentCycle, playerId, pnl: 0, rake: 0, hands: 0, bonus: amt, tables: [] }];
                     }
                 });
                 showToast(`בונוס ע"ס ${amt} נוסף בהצלחה לשחקן!`);
@@ -1063,10 +1060,10 @@
                                                     </div>
                                                     <div className="text-xs text-slate-500">יוזר: {u.username}</div>
                                                 </td>
-                                                <td className="p-4 text-center" onClick={(e)=>e.stopPropagation()}>
-                                                    <select value={u.role} onChange={(e) => {
+                                                <td className="p-4 text-center">
+                                                    <select value={u.role} onClick={(e)=>e.stopPropagation()} onChange={(e) => {
                                                         const newRole = e.target.value;
-                                                        setUsers(prev => prev.map(userItem => {
+                                                        setUsers(prev => (prev || []).map(userItem => {
                                                             if(userItem.id === u.id) {
                                                                 if(newRole === 'agent') return { ...userItem, role: 'agent', commissionRate: 70, agentId: null };
                                                                 if(newRole === 'player') return { ...userItem, role: 'player', agentId: 'agent_default' };
@@ -1079,15 +1076,15 @@
                                                         <option value="agent" className="bg-slate-900 text-white">סוכן</option>
                                                     </select>
                                                 </td>
-                                                <td className="p-4 text-right" onClick={(e)=>e.stopPropagation()}>
+                                                <td className="p-4 text-right">
                                                     {u.role === 'player' ? (
-                                                        <select value={u.agentId || 'agent_default'} onChange={(e) => updatePlayer(u.id, 'agentId', e.target.value)} className={`bg-slate-900 border rounded-lg px-2 py-1.5 text-sm text-white font-medium outline-none cursor-pointer transition-colors ${u.agentId === 'agent_default' ? 'border-red-500/50 text-red-400 bg-red-900/10' : 'border-slate-600 focus:border-emerald-500'}`}>
+                                                        <select value={u.agentId || 'agent_default'} onClick={(e)=>e.stopPropagation()} onChange={(e) => updatePlayer(u.id, 'agentId', e.target.value)} className={`bg-slate-900 border rounded-lg px-2 py-1.5 text-sm text-white font-medium outline-none cursor-pointer transition-colors ${u.agentId === 'agent_default' ? 'border-red-500/50 text-red-400 bg-red-900/10' : 'border-slate-600 focus:border-emerald-500'}`}>
                                                             {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                                                         </select>
                                                     ) : <span className="text-slate-600 text-xs">לא רלוונטי לסוכן</span>}
                                                 </td>
-                                                <td className="p-4 text-center" onClick={(e)=>e.stopPropagation()}>
-                                                    <div className="inline-flex items-center justify-center bg-slate-900 border border-slate-600 rounded-lg overflow-hidden focus-within:border-emerald-500 transition-colors">
+                                                <td className="p-4 text-center">
+                                                    <div className="inline-flex items-center justify-center bg-slate-900 border border-slate-600 rounded-lg overflow-hidden focus-within:border-emerald-500 transition-colors" onClick={(e)=>e.stopPropagation()}>
                                                         <input type="number" placeholder={u.role === 'agent' ? "בסיס" : "דיפולט"} value={(u.role === 'agent' ? u.commissionRate : u.customCommission) !== null ? (u.role === 'agent' ? u.commissionRate : u.customCommission) : ''} onChange={(e) => {
                                                             const val = e.target.value === '' ? null : Number(e.target.value);
                                                             if (u.role === 'agent') updatePlayer(u.id, 'commissionRate', val || 0);
@@ -1096,10 +1093,10 @@
                                                         <span className="bg-slate-800 text-slate-400 px-2 py-1.5 font-bold text-xs">%</span>
                                                     </div>
                                                 </td>
-                                                <td className="p-4 text-right" onClick={(e)=>e.stopPropagation()}>
+                                                <td className="p-4 text-right">
                                                     {u.role === 'player' ? (
                                                         bonusInput.playerId === u.id ? (
-                                                            <div className="flex items-center justify-end gap-2 bg-slate-900 p-1.5 rounded-lg border border-slate-600">
+                                                            <div className="flex items-center justify-end gap-2 bg-slate-900 p-1.5 rounded-lg border border-slate-600" onClick={(e)=>e.stopPropagation()}>
                                                                 <input type="number" value={bonusInput.amount} onChange={(e)=>setBonusInput({...bonusInput, amount: e.target.value})} placeholder="סכום" className="bg-transparent text-xs w-16 text-white outline-none px-1 text-center" autoFocus />
                                                                 <button onClick={(e) => { e.stopPropagation(); handleAddBonus(u.id); }} className="bg-emerald-600 hover:bg-emerald-500 text-white px-2 py-1 rounded text-xs font-bold transition-colors">שמור</button>
                                                                 <button onClick={(e) => { e.stopPropagation(); setBonusInput({playerId: null, amount:''}); }} className="text-slate-400 hover:text-white px-1 text-xs transition-colors">בטל</button>
@@ -1140,278 +1137,30 @@
             );
         };
 
-        const AdminSettingsView = ({ users, setUsers, records, setRecords, currentCycle, cyclesList, setCyclesList, showToast, setUploadBatches, uploadBatches }) => {
-            const [modal, setModal] = useState({ isOpen: false, type: null });
-            const [syncString, setSyncString] = useState('');
-
-            const executeDelete = () => {
-                if (modal.type === 'cycle') {
-                    setRecords(prev => prev.filter(r => r.cycleId !== currentCycle));
-                    const newCycles = cyclesList.filter(c => c !== currentCycle);
-                    setCyclesList(newCycles.length > 0 ? newCycles : [DEFAULT_CYCLE]);
-                    setUploadBatches(prev => prev.filter(b => b.cycleId !== currentCycle));
-                    showToast('הנתונים של המחזור הנוכחי נמחקו בהצלחה', 'success');
-                } else if (modal.type === 'all') {
-                    setUsers(initialUsers); setRecords([]); setCyclesList([DEFAULT_CYCLE]); setUploadBatches([]);
-                    showToast('המערכת אופסה לחלוטין. נתוני בסיס נטענו.', 'success');
-                }
-                setModal({ isOpen: false, type: null });
+        const AdminMessagesView = ({ users = [], messages = [], setMessages, showToast }) => {
+            const [text, setText] = useState(''); const [imgUrl, setImgUrl] = useState(''); const [targetId, setTargetId] = useState('all');
+            const sendMsg = () => {
+                if(!text) return;
+                setMessages(prev => [{ id: Date.now(), senderId: 'admin1', receiverId: targetId, text, image: imgUrl, date: new Date().toLocaleDateString('he-IL') }, ...(prev || [])]);
+                setText(''); setImgUrl(''); showToast('ההודעה נשלחה לנמענים!');
             };
-
-            const generateSyncCode = () => {
-                const data = { users, records, cyclesList, uploadBatches };
-                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-                setSyncString(encoded);
-                showToast('קוד הסנכרון נוצר! העתק אותו והדבק בטלפון.');
-            };
-
-            const importSyncCode = () => {
-                if(!syncString) return;
-                try {
-                    const decoded = JSON.parse(decodeURIComponent(escape(atob(syncString))));
-                    if (decoded.users && decoded.records) {
-                        setUsers(decoded.users);
-                        setRecords(decoded.records);
-                        if(decoded.cyclesList) setCyclesList(decoded.cyclesList);
-                        if(decoded.uploadBatches) setUploadBatches(decoded.uploadBatches);
-                        showToast('הנתונים הסתנכרנו בהצלחה מהטלפון!');
-                        setSyncString('');
-                    }
-                } catch (e) {
-                    showToast('קוד סנכרון לא תקין', 'error');
-                }
-            };
-
             return (
-                <div className="space-y-6 max-w-2xl mx-auto md:mx-0">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-3"><Icon name="settings" size={24}/> הגדרות מערכת מתקדמות</h3>
-                    
-                    <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 shadow-sm">
-                        <h4 className="text-cyan-400 font-bold mb-4 flex items-center gap-2"><Icon name="dashboard" size={18} /> סנכרון ידני מהיר לנייד</h4>
-                        <p className="text-sm text-slate-300 mb-4 leading-relaxed">
-                            הענן הנוכחי במעבדה חסום לגישה חיצונית מטלפונים. כפתרון זמני (עד שנחבר מסד נתונים קבוע), תוכל ללחוץ על <strong>ייצר קוד</strong>, להעתיק את הטקסט, לשלוח לעצמך לוואטסאפ, ולהדביק אותו כאן דרך הטלפון.
-                        </p>
-                        <textarea 
-                            value={syncString} 
-                            onChange={(e) => setSyncString(e.target.value)} 
-                            className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-xs text-emerald-400 mb-4 h-24 font-mono outline-none focus:border-cyan-500 transition-colors" 
-                            placeholder="לחץ על 'ייצר קוד סנכרון' והעתק את הטקסט שיופיע, או הדבק כאן קוד ששלחת לעצמך מהמחשב..."
-                        ></textarea>
-                        <div className="flex gap-3">
-                            <button onClick={generateSyncCode} className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-md transition-colors">ייצר קוד סנכרון</button>
-                            <button onClick={importSyncCode} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-md transition-colors">משוך נתונים מקוד</button>
-                        </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="space-y-5 bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50">
+                        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-3"><Icon name="message" size={24} className="text-emerald-400"/> שליחת הודעת מערכת</h3>
+                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">נמען</label><select value={targetId} onChange={(e)=>setTargetId(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner font-medium"><option value="all">שידור לכולם (גלובלי)</option><optgroup label="סוכנים">{(users||[]).filter(u=>u.role==='agent').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup><optgroup label="שחקנים">{(users||[]).filter(u=>u.role==='player').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup></select></div>
+                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תוכן ההודעה (קופץ באינבוקס)</label><textarea value={text} onChange={(e)=>setText(e.target.value)} rows="4" className="w-full bg-slate-800 border border-slate-600 rounded-xl p-4 text-white outline-none focus:border-emerald-500 shadow-inner resize-none" placeholder="הקלד את ההודעה שתקפוץ למשתמשים..."></textarea></div>
+                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תמונה מצורפת (אופציונלי)</label><input type="text" value={imgUrl} onChange={(e)=>setImgUrl(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner" placeholder="הדבק URL של תמונה (https://...)" /></div>
+                        <button onClick={sendMsg} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg py-4 rounded-xl shadow-lg transition-transform active:scale-95 w-full mt-2">שגר הודעה</button>
                     </div>
-
-                    <div className="bg-red-900/10 p-6 rounded-xl border border-red-900/30">
-                        <h4 className="text-red-400 font-bold mb-4 flex items-center gap-2"><Icon name="trash" size={18} /> אזור סכנה (מחיקת נתונים)</h4>
-                        <div className="space-y-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div><div className="text-white font-medium text-lg">מחיקת המחזור הנוכחי</div><div className="text-sm text-slate-400 mt-1">מוחק את כל רשומות המשחק והשולחנות ששויכו למחזור "{currentCycle}". השחקנים והסוכנים יישארו.</div></div>
-                                <button onClick={() => setModal({isOpen: true, type: 'cycle'})} className="bg-red-900/40 text-red-400 border border-red-800 hover:bg-red-600 hover:text-white px-5 py-2.5 rounded-lg font-semibold transition-colors whitespace-nowrap">מחק מחזור זה</button>
-                            </div>
-                            <div className="border-t border-red-900/30 pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div><div className="text-white font-medium text-lg">איפוס מערכת כללי (Factory Reset)</div><div className="text-sm text-slate-400 mt-1">מוחק לחלוטין את כל השחקנים, הדוחות והמחזורים. המערכת תחזור למצב ריק.</div></div>
-                                <button onClick={() => setModal({isOpen: true, type: 'all'})} className="bg-red-600 text-white hover:bg-red-700 px-5 py-2.5 rounded-lg font-bold shadow-lg transition-colors whitespace-nowrap">איפוס כולל למערכת</button>
-                            </div>
+                    <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-700/50 flex flex-col h-[600px] shadow-inner">
+                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 pb-3 border-b border-slate-700 flex items-center gap-2"><Icon name="dashboard" size={16}/> היסטוריית שידורים</h4>
+                        <div className="space-y-4 overflow-y-auto flex-1 pr-2">
+                            {(messages || []).filter(m => m.senderId === 'admin1').map(m => (
+                                <div key={m.id} className="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-sm relative"><div className="flex justify-between items-start mb-3 border-b border-slate-700/50 pb-2"><span className="font-bold text-emerald-400 text-sm">נמען: {m.receiverId === 'all' ? 'כולם' : (users||[]).find(u=>u.id===m.receiverId)?.name || 'לא ידוע'}</span><span className="text-[10px] text-slate-500 font-medium">{m.date}</span></div><p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{m.text}</p>{m.image && <img src={m.image} alt="Attachment" className="mt-3 rounded-lg border border-slate-600 max-h-40 object-cover shadow-md" />}</div>
+                            ))}
+                            {!(messages || []).length && (<div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50"><Icon name="message" size={48} className="mb-4" /><p>טרם נשלחו הודעות.</p></div>)}
                         </div>
-                    </div>
-                    <ConfirmModal isOpen={modal.isOpen} title={modal.type === 'all' ? "איפוס מערכת כולל!" : "מחיקת מחזור"} message={modal.type === 'all' ? "האם אתה בטוח לחלוטין שברצונך לאפס את המערכת? פעולה זו תמחק עשרות שחקנים ונתונים ואינה הפיכה לעולם." : `האם למחוק את כל הנתונים של "${currentCycle}"?`} confirmText={modal.type === 'all' ? "כן, מחק הכל" : "מחק מחזור"} onConfirm={executeDelete} onCancel={() => setModal({isOpen: false, type: null})} />
-                </div>
-            );
-        };
-
-        const AdminAgentsView = ({ users, records, currentCycle }) => {
-            const [sortBy, setSortBy] = useState('pnl');
-            const [expandedAgent, setExpandedAgent] = useState(null);
-
-            const cycleRecords = records.filter(r => r.cycleId === currentCycle);
-            const players = users.filter(u => u.role === 'player');
-            const agents = users.filter(u => u.role === 'agent');
-
-            const agentStats = useMemo(() => {
-                return agents.map(agent => {
-                    const agentPlayers = players.filter(p => p.agentId === agent.id).map(p => p.id);
-                    const agentRecords = cycleRecords.filter(r => agentPlayers.includes(r.playerId));
-                    const pnl = agentRecords.reduce((sum, r) => sum + (r.pnl + (r.bonus||0)), 0);
-                    const hands = agentRecords.reduce((sum, r) => sum + (r.hands || 0), 0);
-                    let commission = 0;
-                    agentRecords.forEach(r => {
-                        const player = players.find(p => p.id === r.playerId);
-                        const rate = (player?.customCommission !== null && player?.customCommission !== undefined && player?.customCommission !== '') ? Number(player.customCommission) : agent.commissionRate;
-                        commission += (r.rake * (1 - SYSTEM_EXPENSES_RATE)) * (rate / 100);
-                    });
-                    return { ...agent, pnl, hands, commission, playerCount: agentPlayers.length };
-                }).sort((a, b) => {
-                    if (sortBy === 'pnl') return a.pnl - b.pnl;
-                    if (sortBy === 'commission') return b.commission - a.commission;
-                    if (sortBy === 'hands') return b.hands - a.hands;
-                    return 0;
-                });
-            }, [agents, players, cycleRecords, sortBy]);
-
-            const toggleAgentRow = (id) => setExpandedAgent(prev => prev === id ? null : id);
-
-            return (
-                <div>
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                        <h3 className="text-xl font-bold text-white flex items-center gap-3"><Icon name="users" size={24} className="text-emerald-400"/> סיכום פעילות סוכנים</h3>
-                        <div className="flex items-center gap-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 shadow-inner">
-                            <Icon name="sort" size={16} className="text-slate-400"/>
-                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm font-medium text-white outline-none cursor-pointer">
-                                <option value="pnl">מיון לפי רווח/הפסד (P&L)</option>
-                                <option value="commission">מיון לפי עמלה</option>
-                                <option value="hands">מיון לפי כמות ידיים</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div className="overflow-x-auto rounded-xl border border-slate-700/50 shadow-xl">
-                        <table className="w-full text-right text-sm whitespace-nowrap">
-                            <thead className="bg-slate-800 text-slate-300 uppercase text-xs tracking-widest">
-                                <tr>
-                                    <th className="p-5 font-bold border-b border-slate-700 text-center w-10">פירוט</th>
-                                    <th className="p-5 font-bold border-b border-slate-700 text-right">סוכן</th>
-                                    <th className="p-5 font-bold border-b border-slate-700 text-right">שחקנים פעילים</th>
-                                    <th className="p-5 font-bold border-b border-slate-700 text-right">% בסיס</th>
-                                    <th className="p-5 font-bold border-b border-slate-700 text-right">ידיים (סה"כ)</th>
-                                    <th className="p-5 font-bold border-b border-slate-700 text-right">P&L שחקנים</th>
-                                    <th className="p-5 font-bold border-b border-slate-700 text-right text-emerald-400">עמלת סוכן (נטו)</th>
-                                    <th className="p-5 font-bold border-b border-slate-700 text-right text-cyan-400">התחשבנות סופית</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
-                                {agentStats.map(agent => {
-                                    const totalAgainst = agent.pnl + agent.commission;
-                                    return (
-                                        <Fragment key={agent.id}>
-                                            <tr className={`transition-colors cursor-pointer ${expandedAgent === agent.id ? 'bg-slate-800' : 'hover:bg-slate-800/60'}`} onClick={() => toggleAgentRow(agent.id)}>
-                                                <td className="p-5 text-center text-slate-500 hover:text-emerald-400">
-                                                    <div className={`p-1.5 rounded-md inline-flex ${expandedAgent === agent.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800'}`}>
-                                                        {expandedAgent === agent.id ? <Icon name="chevronUp" size={16}/> : <Icon name="chevronDown" size={16}/>}
-                                                    </div>
-                                                </td>
-                                                <td className="p-5 text-right">
-                                                    <div className="font-bold text-white text-base">{agent.name}</div>
-                                                    <div className="text-xs text-slate-500 mt-1">{agent.id === 'agent_default' ? 'מערכת' : `יוזר: ${agent.username}`}</div>
-                                                </td>
-                                                <td className="p-5 text-right font-medium text-slate-300">{agent.playerCount}</td>
-                                                <td className="p-5 text-right font-medium text-slate-300">{agent.commissionRate}%</td>
-                                                <td className="p-5 text-right font-medium text-slate-300">{agent.hands.toLocaleString()}</td>
-                                                <td className={`p-5 text-right font-bold text-lg money-value ${getColorClass(agent.pnl)}`}>{formatMoney(agent.pnl)}</td>
-                                                <td className="p-5 text-right font-black text-lg text-emerald-400 money-value">{formatMoney(agent.commission)}</td>
-                                                <td className="p-5 text-right">
-                                                    <div className="flex items-center justify-start gap-3">
-                                                        <span className={`font-black text-lg money-value ${getColorClass(totalAgainst)}`}>{formatMoney(totalAgainst)}</span>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            {expandedAgent === agent.id && (
-                                                <tr className="bg-slate-900/80"><td colSpan="8" className="p-6 border-b border-slate-800 shadow-inner">
-                                                    <h4 className="text-emerald-400 font-bold mb-4 text-sm uppercase tracking-widest">תצוגת סוכן (פירוט שחקנים ל-{agent.name})</h4>
-                                                    <div className="overflow-x-auto rounded-lg border border-slate-700 bg-slate-800/30">
-                                                        <table className="w-full text-right text-xs">
-                                                            <thead className="bg-slate-800 text-slate-400">
-                                                                <tr>
-                                                                    <th className="p-3 font-semibold border-b border-slate-700 text-right">שם שחקן</th>
-                                                                    <th className="p-3 font-semibold border-b border-slate-700 text-center">ידיים</th>
-                                                                    <th className="p-3 font-semibold border-b border-slate-700 text-right">P&L (כולל בונוס)</th>
-                                                                    <th className="p-3 font-semibold border-b border-slate-700 text-right">עמלה שייצר (נטו)</th>
-                                                                    <th className="p-3 font-semibold border-b border-slate-700 text-right text-emerald-400">העמלה לסוכן</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody className="divide-y divide-slate-700/50">
-                                                                {players.filter(p => p.agentId === agent.id).map(player => {
-                                                                    const record = cycleRecords.find(r => r.playerId === player.id);
-                                                                    if(!record) return null;
-                                                                    const finalPnl = record.pnl + (record.bonus || 0);
-                                                                    const rate = (player.customCommission !== null && player.customCommission !== undefined && player.customCommission !== '') ? Number(player.customCommission) : agent.commissionRate;
-                                                                    const genComm = record.rake * (1 - SYSTEM_EXPENSES_RATE);
-                                                                    const agentComm = genComm * (rate / 100);
-                                                                    
-                                                                    return (
-                                                                        <tr key={player.id} className="hover:bg-slate-800 transition">
-                                                                            <td className="p-3 font-medium text-slate-200 text-right">{player.name}</td>
-                                                                            <td className="p-3 text-slate-300 text-center">{record.hands}</td>
-                                                                            <td className={`p-3 font-bold money-value text-right ${getColorClass(finalPnl)}`}>{formatMoney(finalPnl)}</td>
-                                                                            <td className="p-3 text-slate-300 money-value text-right">{formatMoney(genComm)}</td>
-                                                                            <td className="p-3 font-bold text-emerald-400 money-value text-right">{formatMoney(agentComm)}</td>
-                                                                        </tr>
-                                                                    )
-                                                                })}
-                                                                {players.filter(p => p.agentId === agent.id).every(p => !cycleRecords.find(r => r.playerId === p.id)) && (
-                                                                    <tr><td colSpan="5" className="p-4 text-center text-slate-500">לסוכן זה אין שחקנים פעילים במחזור.</td></tr>
-                                                                )}
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </td></tr>
-                                            )}
-                                        </Fragment>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            );
-        };
-
-        const PlayerDetailsDrilldown = ({ player, record, finalPnl, showToast }) => {
-            return (
-                <div className="px-6 sm:px-10 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 bg-slate-900/80 shadow-inner border-t-2 border-slate-700">
-                    <div className="space-y-6">
-                        <div className="bg-slate-800/80 p-5 rounded-xl border border-slate-700 shadow-md">
-                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icon name="eye" size={16} className="text-cyan-400"/> פרטי התחברות</h4>
-                            <div className="space-y-3 text-sm">
-                                <div className="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg"><span className="text-slate-500">משתמש:</span> <span className="font-mono font-bold text-emerald-400">{player.username}</span></div>
-                                <div className="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg"><span className="text-slate-500">סיסמה:</span> <span className="font-mono font-bold text-emerald-400">{player.password}</span></div>
-                            </div>
-                            <div className="mt-4 flex gap-2">
-                                <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(`משתמש: ${player.username}\nסיסמה: ${player.password}`); showToast('פרטים הועתקו ללוח!'); }} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium py-2 rounded-lg transition-colors">העתק פרטים</button>
-                                <a href={generateWhatsAppLink('', `היי, פרטי ההתחברות שלך למועדון NETABEL:\nמשתמש: ${player.username}\nסיסמה: ${player.password}`)} target="_blank" onClick={(e)=>e.stopPropagation()} className="bg-emerald-700 hover:bg-emerald-600 text-white px-3 flex items-center justify-center rounded-lg transition-colors" title="שליחה בוואטסאפ"><Icon name="whatsapp" size={16}/></a>
-                            </div>
-                        </div>
-                        <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-xl border border-slate-700 shadow-md">
-                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תוצאה סופית לשחקן (נטו)</h4>
-                            <div className={`text-4xl font-black tracking-tight money-value ${getColorClass(finalPnl)}`}>{formatMoney(finalPnl)}</div>
-                            {record.bonus > 0 && <div className="mt-3 text-sm text-emerald-400 flex items-center gap-1.5 bg-emerald-900/30 inline-flex px-3 py-1 rounded-md font-medium border border-emerald-500/20"><Icon name="gift" size={14}/> כולל בונוס ע"ס {formatMoney(record.bonus)}</div>}
-                        </div>
-                    </div>
-                    <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 shadow-md lg:col-span-2 flex flex-col">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icon name="dashboard" size={16} className="text-emerald-400"/> פירוט שולחנות ומשחקים (תצוגת שחקן)</h4>
-                        {record.tables && record.tables.length > 0 ? (
-                            <div className="overflow-x-auto flex-1">
-                                <table className="w-full text-right text-sm text-slate-300">
-                                    <thead className="bg-slate-900 text-slate-400 text-xs uppercase tracking-widest">
-                                        <tr>
-                                            <th className="p-3 font-semibold rounded-tr-lg border-b border-slate-700 text-right">שם שולחן / טורניר</th>
-                                            <th className="p-3 font-semibold text-center border-b border-slate-700">סוג משחק</th>
-                                            <th className="p-3 font-semibold text-center border-b border-slate-700">תאריכים</th>
-                                            <th className="p-3 font-semibold text-center border-b border-slate-700">ידיים</th>
-                                            <th className="p-3 font-semibold rounded-tl-lg text-left border-b border-slate-700">תוצאה (P&L)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-700/50">
-                                        {record.tables.map((t, idx) => (
-                                            <tr key={idx} className="hover:bg-slate-800 transition-colors">
-                                                <td className="p-3 font-medium text-slate-200 text-right">{t.name}</td>
-                                                <td className="p-3 text-center text-slate-400">{t.gameType || '-'}</td>
-                                                <td className="p-3 text-center text-slate-400 text-[11px]" dir="ltr">{t.date || '-'}</td>
-                                                <td className="p-3 text-center">{t.hands}</td>
-                                                <td className={`p-3 font-bold text-base money-value text-left ${getColorClass(t.pnl)}`}>{formatMoney(t.pnl)}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                    <tfoot className="border-t-2 border-slate-600 bg-slate-900/50">
-                                        <tr>
-                                            <td colSpan="3" className="p-3 font-bold text-slate-400 text-right">סה"כ משחקים:</td>
-                                            <td className="p-3 font-bold text-white text-center">{record.hands}</td>
-                                            <td className={`p-3 font-black text-lg money-value text-left ${getColorClass(record.pnl)}`}>{formatMoney(record.pnl)}</td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        ) : (<div className="flex-1 flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-lg p-6 bg-slate-900/30">אין פירוט שולחנות לדיווח זה.</div>)}
                     </div>
                 </div>
             );
@@ -1522,7 +1271,7 @@
             );
         };
 
-        const PlayerDashboard = ({ user, records, messages, currentCycle }) => {
+        const PlayerDashboard = ({ user, records = [], messages = [], currentCycle, showToast }) => {
             const cycleRecord = records.find(r => r.cycleId === currentCycle && r.playerId === user.id) || { pnl: 0, hands: 0, bonus: 0, tables: [] };
             const finalResult = (cycleRecord.pnl || 0) + (cycleRecord.bonus || 0);
             const myMessages = messages.filter(m => m.receiverId === 'all' || m.receiverId === user.id);
