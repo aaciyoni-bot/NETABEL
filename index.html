@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -14,17 +15,6 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Firebase Modules (Cloud Sync) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        window.FB = {
-            initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, doc, setDoc, onSnapshot, getDoc
-        };
-    </script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap');
@@ -91,7 +81,7 @@
                 chevronUp: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="18 15 12 9 6 15"></polyline></svg>,
                 sort: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="14" y2="12"></line><line x1="4" y1="18" x2="8" y2="18"></line></svg>,
                 search: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>,
-                settings: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
+                settings: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>,
                 trash: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
                 eye: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>,
                 eyeOff: <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>,
@@ -154,57 +144,60 @@
                 setMessagesState(JSON.parse(localStorage.getItem('netabel_db_messages')) || []);
                 setCyclesListState(JSON.parse(localStorage.getItem('netabel_db_cycles')) || [DEFAULT_CYCLE]);
                 setUploadBatchesState(JSON.parse(localStorage.getItem('netabel_db_uploads')) || []);
-
-                setTimeout(() => {
-                    if (typeof window.FB === 'undefined' || typeof __firebase_config === 'undefined') {
-                        setIsLoading(false);
-                    }
-                }, 1000);
             }, []);
 
             useEffect(() => {
-                const checkFb = setInterval(() => {
-                    if (window.FB && typeof __firebase_config !== 'undefined') {
-                        clearInterval(checkFb);
-                        try {
-                            const config = JSON.parse(__firebase_config);
-                            const app = window.FB.initializeApp(config);
-                            const auth = window.FB.getAuth(app);
-                            const db = window.FB.getFirestore(app);
-                            const appId = typeof __app_id !== 'undefined' ? __app_id : 'netabel-club-main';
+                let unsubscribeSnapshot = null;
+                let unsubscribeAuth = null;
 
-                            window.FB_setDoc = window.FB.setDoc;
+                const initFirebase = async () => {
+                    try {
+                        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
+                        const { getAuth, signInAnonymously, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
+                        const { getFirestore, doc, setDoc, onSnapshot, getDoc } = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
 
-                            const initAuth = async () => {
-                                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                    await window.FB.signInWithCustomToken(auth, __initial_auth_token);
-                                } else {
-                                    await window.FB.signInAnonymously(auth);
-                                }
-                            };
-                            initAuth();
+                        window.FB_setDoc = setDoc;
 
-                            window.FB.onAuthStateChanged(auth, (user) => {
-                                if (user) {
-                                    const ref = window.FB.doc(db, 'artifacts', appId, 'public', 'data', 'clubDB');
-                                    setDbRef(ref);
-                                    setIsCloud(true);
+                        // Configuration provided by the user
+                        const firebaseConfig = {
+                            apiKey: "AIzaSyCEC5xVKq58pgxY8aAnl3L7LPW8N-06tok",
+                            authDomain: "netabel-7c1c9.firebaseapp.com",
+                            projectId: "netabel-7c1c9",
+                            storageBucket: "netabel-7c1c9.firebasestorage.app",
+                            messagingSenderId: "827558848571",
+                            appId: "1:827558848571:web:65dc634d083baaadd1541e",
+                            measurementId: "G-30YK0PGR23"
+                        };
 
-                                    window.FB.getDoc(ref).then(snap => {
-                                        if (!snap.exists()) {
-                                            window.FB.setDoc(ref, {
-                                                users: initialUsers,
-                                                records: [],
-                                                messages: [],
-                                                cyclesList: [DEFAULT_CYCLE],
-                                                uploadBatches: []
-                                            });
-                                        }
-                                    });
+                        const app = initializeApp(firebaseConfig);
+                        const auth = getAuth(app);
+                        const db = getFirestore(app);
+                        
+                        // Use a dedicated path in Firestore for the club data
+                        const refPath = doc(db, 'club_data', 'main_db');
 
-                                    window.FB.onSnapshot(ref, (snap) => {
-                                        if (snap.exists()) {
-                                            const data = snap.data();
+                        setDbRef(refPath);
+                        setIsCloud(true);
+
+                        await signInAnonymously(auth);
+
+                        unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+                            if (user) {
+                                try {
+                                    const snap = await getDoc(refPath);
+                                    if (!snap.exists()) {
+                                        await setDoc(refPath, {
+                                            users: initialUsers,
+                                            records: [],
+                                            messages: [],
+                                            cyclesList: [DEFAULT_CYCLE],
+                                            uploadBatches: []
+                                        });
+                                    }
+
+                                    unsubscribeSnapshot = onSnapshot(refPath, (docSnap) => {
+                                        if (docSnap.exists()) {
+                                            const data = docSnap.data();
                                             if (data.users) setUsersState(data.users);
                                             if (data.records) setRecordsState(data.records);
                                             if (data.messages) setMessagesState(data.messages);
@@ -213,26 +206,45 @@
                                         }
                                         setIsLoading(false);
                                     }, (err) => {
-                                        console.error("Firebase Snapshot Error:", err);
+                                        console.error("Firebase Snapshot Error (Check Firestore Rules!):", err);
                                         setIsLoading(false);
                                     });
+                                } catch (e) {
+                                     console.error("Error reading doc (Check Firestore Rules!):", e);
+                                     setIsLoading(false);
                                 }
-                            });
-                        } catch (err) {
-                            console.error("Firebase setup failed. Falling back to local.", err);
-                            setIsLoading(false);
-                        }
+                            } else {
+                                setIsLoading(false);
+                            }
+                        });
+                    } catch (err) {
+                        console.error("Firebase init failed:", err);
+                        setIsLoading(false);
                     }
-                }, 100);
+                };
 
-                return () => clearInterval(checkFb);
+                initFirebase();
+
+                return () => {
+                    if (unsubscribeSnapshot) unsubscribeSnapshot();
+                    if (unsubscribeAuth) unsubscribeAuth();
+                };
             }, []);
+
+            useEffect(() => {
+                if (!isCloud && !isLoading) {
+                    localStorage.setItem('netabel_db_users', JSON.stringify(usersState));
+                    localStorage.setItem('netabel_db_records', JSON.stringify(recordsState));
+                    localStorage.setItem('netabel_db_messages', JSON.stringify(messagesState));
+                    localStorage.setItem('netabel_db_cycles', JSON.stringify(cyclesListState));
+                    localStorage.setItem('netabel_db_uploads', JSON.stringify(uploadBatchesState));
+                }
+            }, [usersState, recordsState, messagesState, cyclesListState, uploadBatchesState, isCloud, isLoading]);
 
             const setUsers = (val) => {
                 setUsersState(prev => {
                     const newVal = typeof val === 'function' ? val(prev) : val;
                     if (isCloud && dbRef && window.FB_setDoc) window.FB_setDoc(dbRef, { users: newVal }, { merge: true });
-                    else localStorage.setItem('netabel_db_users', JSON.stringify(newVal));
                     return newVal;
                 });
             };
@@ -241,7 +253,6 @@
                 setRecordsState(prev => {
                     const newVal = typeof val === 'function' ? val(prev) : val;
                     if (isCloud && dbRef && window.FB_setDoc) window.FB_setDoc(dbRef, { records: newVal }, { merge: true });
-                    else localStorage.setItem('netabel_db_records', JSON.stringify(newVal));
                     return newVal;
                 });
             };
@@ -250,7 +261,6 @@
                 setMessagesState(prev => {
                     const newVal = typeof val === 'function' ? val(prev) : val;
                     if (isCloud && dbRef && window.FB_setDoc) window.FB_setDoc(dbRef, { messages: newVal }, { merge: true });
-                    else localStorage.setItem('netabel_db_messages', JSON.stringify(newVal));
                     return newVal;
                 });
             };
@@ -259,7 +269,6 @@
                 setCyclesListState(prev => {
                     const newVal = typeof val === 'function' ? val(prev) : val;
                     if (isCloud && dbRef && window.FB_setDoc) window.FB_setDoc(dbRef, { cyclesList: newVal }, { merge: true });
-                    else localStorage.setItem('netabel_db_cycles', JSON.stringify(newVal));
                     return newVal;
                 });
             };
@@ -268,7 +277,6 @@
                 setUploadBatchesState(prev => {
                     const newVal = typeof val === 'function' ? val(prev) : val;
                     if (isCloud && dbRef && window.FB_setDoc) window.FB_setDoc(dbRef, { uploadBatches: newVal }, { merge: true });
-                    else localStorage.setItem('netabel_db_uploads', JSON.stringify(newVal));
                     return newVal;
                 });
             };
@@ -293,7 +301,8 @@
                 return (
                     <div className="min-h-screen flex flex-col items-center justify-center bg-[#0b1120]">
                         <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <h2 className="text-emerald-400 font-bold text-xl">מתחבר לענן וטוען נתונים...</h2>
+                        <h2 className="text-emerald-400 font-bold text-xl">מתחבר למסד הנתונים האישי...</h2>
+                        <p className="text-slate-400 mt-2 text-sm">(מוודא הרשאות גישה של פיירבייס)</p>
                     </div>
                 );
             }
@@ -352,12 +361,12 @@
                             </select>
                             
                             {isCloud ? (
-                                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-900/30 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold tracking-wider" title="מחובר לענן - הנתונים מסונכרנים בזמן אמת למובייל">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> ענן פעיל
+                                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-900/30 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold tracking-wider" title="מחובר לענן האישי - הנתונים מסונכרנים בזמן אמת">
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> ענן פעיל (DB שלך)
                                 </div>
                             ) : (
                                 <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-800 border border-slate-600 text-slate-400 text-[10px] font-bold tracking-wider" title="מצב עבודה מקומי במחשב בלבד">
-                                    <div className="w-2 h-2 rounded-full bg-slate-500"></div> מצב מקומי
+                                    <div className="w-2 h-2 rounded-full bg-slate-500"></div> עובד ללא רשת
                                 </div>
                             )}
                         </div>
@@ -489,9 +498,6 @@
             );
         };
 
-        // ==========================================
-        // ADMIN DASHBOARD
-        // ==========================================
         const AdminDashboard = ({ users = [], setUsers, records = [], setRecords, messages = [], setMessages, currentCycle, cyclesList = [], setCyclesList, showToast, uploadBatches = [], setUploadBatches }) => {
             const [activeTab, setActiveTab] = useState('import'); 
 
@@ -580,7 +586,6 @@
                                 let currentGameType = "-";
                                 let currentDates = "-";
 
-                                // מנוע סריקה משולב וגמיש
                                 let nicknameRowIndex = -1;
                                 for (let i = 0; i < Math.min(20, rows.length); i++) {
                                     const rLower = rows[i].map(c => String(c).toLowerCase().trim());
@@ -639,7 +644,6 @@
                                     }
                                 }
 
-                                // חילוץ פרטי שולחן מדוחות Detail
                                 for (let topRow = 0; topRow <= i; topRow++) {
                                     rows[topRow].forEach(cell => {
                                         const c = String(cell).trim();
@@ -712,6 +716,8 @@
                                     } else if (player.agentId === 'agent_default' && assignedAgentId !== 'agent_default') {
                                         player.agentId = assignedAgentId;
                                     }
+
+                                    if (pnl === 0 && rake === 0 && hands === 0) continue;
 
                                     const tableObj = { name: currentTableName, gameType: currentGameType, date: currentDates, hands: hands, pnl: pnl, rake: rake, batchId: batchId };
 
@@ -1136,30 +1142,235 @@
             );
         };
 
-        const AdminMessagesView = ({ users = [], messages = [], setMessages, showToast }) => {
-            const [text, setText] = useState(''); const [imgUrl, setImgUrl] = useState(''); const [targetId, setTargetId] = useState('all');
-            const sendMsg = () => {
-                if(!text) return;
-                setMessages(prev => [{ id: Date.now(), senderId: 'admin1', receiverId: targetId, text, image: imgUrl, date: new Date().toLocaleDateString('he-IL') }, ...(prev || [])]);
-                setText(''); setImgUrl(''); showToast('ההודעה נשלחה לנמענים!');
+        const AdminSettingsView = ({ users, setUsers, records, setRecords, currentCycle, cyclesList, setCyclesList, showToast, setUploadBatches, uploadBatches }) => {
+            const [modal, setModal] = useState({ isOpen: false, type: null });
+
+            const executeDelete = () => {
+                if (modal.type === 'cycle') {
+                    setRecords(prev => prev.filter(r => r.cycleId !== currentCycle));
+                    const newCycles = cyclesList.filter(c => c !== currentCycle);
+                    setCyclesList(newCycles.length > 0 ? newCycles : [DEFAULT_CYCLE]);
+                    setUploadBatches(prev => prev.filter(b => b.cycleId !== currentCycle));
+                    showToast('הנתונים של המחזור הנוכחי נמחקו בהצלחה', 'success');
+                } else if (modal.type === 'all') {
+                    setUsers(initialUsers); setRecords([]); setCyclesList([DEFAULT_CYCLE]); setUploadBatches([]);
+                    showToast('המערכת אופסה לחלוטין. נתוני בסיס נטענו.', 'success');
+                }
+                setModal({ isOpen: false, type: null });
             };
+
             return (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="space-y-5 bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50">
-                        <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-3"><Icon name="message" size={24} className="text-emerald-400"/> שליחת הודעת מערכת</h3>
-                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">נמען</label><select value={targetId} onChange={(e)=>setTargetId(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner font-medium"><option value="all">שידור לכולם (גלובלי)</option><optgroup label="סוכנים">{(users||[]).filter(u=>u.role==='agent').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup><optgroup label="שחקנים">{(users||[]).filter(u=>u.role==='player').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</optgroup></select></div>
-                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תוכן ההודעה (קופץ באינבוקס)</label><textarea value={text} onChange={(e)=>setText(e.target.value)} rows="4" className="w-full bg-slate-800 border border-slate-600 rounded-xl p-4 text-white outline-none focus:border-emerald-500 shadow-inner resize-none" placeholder="הקלד את ההודעה שתקפוץ למשתמשים..."></textarea></div>
-                        <div><label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תמונה מצורפת (אופציונלי)</label><input type="text" value={imgUrl} onChange={(e)=>setImgUrl(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-xl p-3.5 text-white outline-none focus:border-emerald-500 shadow-inner" placeholder="הדבק URL של תמונה (https://...)" /></div>
-                        <button onClick={sendMsg} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg py-4 rounded-xl shadow-lg transition-transform active:scale-95 w-full mt-2">שגר הודעה</button>
-                    </div>
-                    <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-700/50 flex flex-col h-[600px] shadow-inner">
-                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 pb-3 border-b border-slate-700 flex items-center gap-2"><Icon name="dashboard" size={16}/> היסטוריית שידורים</h4>
-                        <div className="space-y-4 overflow-y-auto flex-1 pr-2">
-                            {(messages || []).filter(m => m.senderId === 'admin1').map(m => (
-                                <div key={m.id} className="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-sm relative"><div className="flex justify-between items-start mb-3 border-b border-slate-700/50 pb-2"><span className="font-bold text-emerald-400 text-sm">נמען: {m.receiverId === 'all' ? 'כולם' : (users||[]).find(u=>u.id===m.receiverId)?.name || 'לא ידוע'}</span><span className="text-[10px] text-slate-500 font-medium">{m.date}</span></div><p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{m.text}</p>{m.image && <img src={m.image} alt="Attachment" className="mt-3 rounded-lg border border-slate-600 max-h-40 object-cover shadow-md" />}</div>
-                            ))}
-                            {!(messages || []).length && (<div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50"><Icon name="message" size={48} className="mb-4" /><p>טרם נשלחו הודעות.</p></div>)}
+                <div className="space-y-6 max-w-2xl mx-auto md:mx-0">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-3"><Icon name="settings" size={24}/> הגדרות מערכת מתקדמות</h3>
+                    <div className="bg-red-900/10 p-6 rounded-xl border border-red-900/30">
+                        <h4 className="text-red-400 font-bold mb-4 flex items-center gap-2"><Icon name="trash" size={18} /> אזור סכנה (מחיקת נתונים)</h4>
+                        <div className="space-y-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div><div className="text-white font-medium text-lg">מחיקת המחזור הנוכחי</div><div className="text-sm text-slate-400 mt-1">מוחק את כל רשומות המשחק והשולחנות ששויכו למחזור "{currentCycle}". השחקנים והסוכנים יישארו.</div></div>
+                                <button onClick={() => setModal({isOpen: true, type: 'cycle'})} className="bg-red-900/40 text-red-400 border border-red-800 hover:bg-red-600 hover:text-white px-5 py-2.5 rounded-lg font-semibold transition-colors whitespace-nowrap">מחק מחזור זה</button>
+                            </div>
+                            <div className="border-t border-red-900/30 pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div><div className="text-white font-medium text-lg">איפוס מערכת כללי (Factory Reset)</div><div className="text-sm text-slate-400 mt-1">מוחק לחלוטין את כל השחקנים, הדוחות והמחזורים. המערכת תחזור למצב ריק.</div></div>
+                                <button onClick={() => setModal({isOpen: true, type: 'all'})} className="bg-red-600 text-white hover:bg-red-700 px-5 py-2.5 rounded-lg font-bold shadow-lg transition-colors whitespace-nowrap">איפוס כולל למערכת</button>
+                            </div>
                         </div>
+                    </div>
+                    <ConfirmModal isOpen={modal.isOpen} title={modal.type === 'all' ? "איפוס מערכת כולל!" : "מחיקת מחזור"} message={modal.type === 'all' ? "האם אתה בטוח לחלוטין שברצונך לאפס את המערכת? פעולה זו תמחק עשרות שחקנים ונתונים ואינה הפיכה לעולם." : `האם למחוק את כל הנתונים של "${currentCycle}"?`} confirmText={modal.type === 'all' ? "כן, מחק הכל" : "מחק מחזור"} onConfirm={executeDelete} onCancel={() => setModal({isOpen: false, type: null})} />
+                </div>
+            );
+        };
+
+        const AdminAgentsView = ({ users, records, currentCycle }) => {
+            const [sortBy, setSortBy] = useState('pnl');
+            const [expandedAgent, setExpandedAgent] = useState(null);
+
+            const cycleRecords = records.filter(r => r.cycleId === currentCycle);
+            const players = users.filter(u => u.role === 'player');
+            const agents = users.filter(u => u.role === 'agent');
+
+            const agentStats = useMemo(() => {
+                return agents.map(agent => {
+                    const agentPlayers = players.filter(p => p.agentId === agent.id).map(p => p.id);
+                    const agentRecords = cycleRecords.filter(r => agentPlayers.includes(r.playerId));
+                    const pnl = agentRecords.reduce((sum, r) => sum + (r.pnl + (r.bonus||0)), 0);
+                    const hands = agentRecords.reduce((sum, r) => sum + (r.hands || 0), 0);
+                    let commission = 0;
+                    agentRecords.forEach(r => {
+                        const player = players.find(p => p.id === r.playerId);
+                        const rate = (player?.customCommission !== null && player?.customCommission !== undefined && player?.customCommission !== '') ? Number(player.customCommission) : agent.commissionRate;
+                        commission += (r.rake * (1 - SYSTEM_EXPENSES_RATE)) * (rate / 100);
+                    });
+                    return { ...agent, pnl, hands, commission, playerCount: agentPlayers.length };
+                }).sort((a, b) => {
+                    if (sortBy === 'pnl') return a.pnl - b.pnl;
+                    if (sortBy === 'commission') return b.commission - a.commission;
+                    if (sortBy === 'hands') return b.hands - a.hands;
+                    return 0;
+                });
+            }, [agents, players, cycleRecords, sortBy]);
+
+            const toggleAgentRow = (id) => setExpandedAgent(prev => prev === id ? null : id);
+
+            return (
+                <div>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                        <h3 className="text-xl font-bold text-white flex items-center gap-3"><Icon name="users" size={24} className="text-emerald-400"/> סיכום פעילות סוכנים</h3>
+                        <div className="flex items-center gap-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 shadow-inner">
+                            <Icon name="sort" size={16} className="text-slate-400"/>
+                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm font-medium text-white outline-none cursor-pointer">
+                                <option value="pnl">מיון לפי רווח/הפסד (P&L)</option>
+                                <option value="commission">מיון לפי עמלה</option>
+                                <option value="hands">מיון לפי כמות ידיים</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="overflow-x-auto rounded-xl border border-slate-700/50 shadow-xl">
+                        <table className="w-full text-right text-sm whitespace-nowrap">
+                            <thead className="bg-slate-800 text-slate-300 uppercase text-xs tracking-widest">
+                                <tr>
+                                    <th className="p-5 font-bold border-b border-slate-700 text-center w-10">פירוט</th>
+                                    <th className="p-5 font-bold border-b border-slate-700 text-right">סוכן</th>
+                                    <th className="p-5 font-bold border-b border-slate-700 text-right">שחקנים פעילים</th>
+                                    <th className="p-5 font-bold border-b border-slate-700 text-right">% בסיס</th>
+                                    <th className="p-5 font-bold border-b border-slate-700 text-right">ידיים (סה"כ)</th>
+                                    <th className="p-5 font-bold border-b border-slate-700 text-right">P&L שחקנים</th>
+                                    <th className="p-5 font-bold border-b border-slate-700 text-right text-emerald-400">עמלת סוכן (נטו)</th>
+                                    <th className="p-5 font-bold border-b border-slate-700 text-right text-cyan-400">התחשבנות סופית</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-700/50 bg-slate-900/30">
+                                {agentStats.map(agent => {
+                                    const totalAgainst = agent.pnl + agent.commission;
+                                    return (
+                                        <Fragment key={agent.id}>
+                                            <tr className={`transition-colors cursor-pointer ${expandedAgent === agent.id ? 'bg-slate-800' : 'hover:bg-slate-800/60'}`} onClick={() => toggleAgentRow(agent.id)}>
+                                                <td className="p-5 text-center text-slate-500 hover:text-emerald-400">
+                                                    <div className={`p-1.5 rounded-md inline-flex ${expandedAgent === agent.id ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800'}`}>
+                                                        {expandedAgent === agent.id ? <Icon name="chevronUp" size={16}/> : <Icon name="chevronDown" size={16}/>}
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-right">
+                                                    <div className="font-bold text-white text-base">{agent.name}</div>
+                                                    <div className="text-xs text-slate-500 mt-1">{agent.id === 'agent_default' ? 'מערכת' : `יוזר: ${agent.username}`}</div>
+                                                </td>
+                                                <td className="p-5 text-right font-medium text-slate-300">{agent.playerCount}</td>
+                                                <td className="p-5 text-right font-medium text-slate-300">{agent.commissionRate}%</td>
+                                                <td className="p-5 text-right font-medium text-slate-300">{agent.hands.toLocaleString()}</td>
+                                                <td className={`p-5 text-right font-bold text-lg money-value ${getColorClass(agent.pnl)}`}>{formatMoney(agent.pnl)}</td>
+                                                <td className="p-5 text-right font-black text-lg text-emerald-400 money-value">{formatMoney(agent.commission)}</td>
+                                                <td className="p-5 text-right">
+                                                    <div className="flex items-center justify-start gap-3">
+                                                        <span className={`font-black text-lg money-value ${getColorClass(totalAgainst)}`}>{formatMoney(totalAgainst)}</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {expandedAgent === agent.id && (
+                                                <tr className="bg-slate-900/80"><td colSpan="8" className="p-6 border-b border-slate-800 shadow-inner">
+                                                    <h4 className="text-emerald-400 font-bold mb-4 text-sm uppercase tracking-widest">תצוגת סוכן (פירוט שחקנים ל-{agent.name})</h4>
+                                                    <div className="overflow-x-auto rounded-lg border border-slate-700 bg-slate-800/30">
+                                                        <table className="w-full text-right text-xs">
+                                                            <thead className="bg-slate-800 text-slate-400">
+                                                                <tr>
+                                                                    <th className="p-3 font-semibold border-b border-slate-700 text-right">שם שחקן</th>
+                                                                    <th className="p-3 font-semibold border-b border-slate-700 text-center">ידיים</th>
+                                                                    <th className="p-3 font-semibold border-b border-slate-700 text-right">P&L (כולל בונוס)</th>
+                                                                    <th className="p-3 font-semibold border-b border-slate-700 text-right">עמלה שייצר (נטו)</th>
+                                                                    <th className="p-3 font-semibold border-b border-slate-700 text-right text-emerald-400">העמלה לסוכן</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-slate-700/50">
+                                                                {players.filter(p => p.agentId === agent.id).map(player => {
+                                                                    const record = cycleRecords.find(r => r.playerId === player.id);
+                                                                    if(!record) return null;
+                                                                    const finalPnl = record.pnl + (record.bonus || 0);
+                                                                    const rate = (player.customCommission !== null && player.customCommission !== undefined && player.customCommission !== '') ? Number(player.customCommission) : agent.commissionRate;
+                                                                    const genComm = record.rake * (1 - SYSTEM_EXPENSES_RATE);
+                                                                    const agentComm = genComm * (rate / 100);
+                                                                    
+                                                                    return (
+                                                                        <tr key={player.id} className="hover:bg-slate-800 transition">
+                                                                            <td className="p-3 font-medium text-slate-200 text-right">{player.name}</td>
+                                                                            <td className="p-3 text-slate-300 text-center">{record.hands}</td>
+                                                                            <td className={`p-3 font-bold money-value text-right ${getColorClass(finalPnl)}`}>{formatMoney(finalPnl)}</td>
+                                                                            <td className="p-3 text-slate-300 money-value text-right">{formatMoney(genComm)}</td>
+                                                                            <td className="p-3 font-bold text-emerald-400 money-value text-right">{formatMoney(agentComm)}</td>
+                                                                        </tr>
+                                                                    )
+                                                                })}
+                                                                {players.filter(p => p.agentId === agent.id).every(p => !cycleRecords.find(r => r.playerId === p.id)) && (
+                                                                    <tr><td colSpan="5" className="p-4 text-center text-slate-500">לסוכן זה אין שחקנים פעילים במחזור.</td></tr>
+                                                                )}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td></tr>
+                                            )}
+                                        </Fragment>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        const PlayerDetailsDrilldown = ({ player, record, finalPnl, showToast }) => {
+            return (
+                <div className="px-6 sm:px-10 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 bg-slate-900/80 shadow-inner border-t-2 border-slate-700">
+                    <div className="space-y-6">
+                        <div className="bg-slate-800/80 p-5 rounded-xl border border-slate-700 shadow-md">
+                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icon name="eye" size={16} className="text-cyan-400"/> פרטי התחברות</h4>
+                            <div className="space-y-3 text-sm">
+                                <div className="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg"><span className="text-slate-500">משתמש:</span> <span className="font-mono font-bold text-emerald-400">{player.username}</span></div>
+                                <div className="flex justify-between items-center bg-slate-900 px-3 py-2 rounded-lg"><span className="text-slate-500">סיסמה:</span> <span className="font-mono font-bold text-emerald-400">{player.password}</span></div>
+                            </div>
+                            <div className="mt-4 flex gap-2">
+                                <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(`משתמש: ${player.username}\nסיסמה: ${player.password}`); showToast('פרטים הועתקו ללוח!'); }} className="flex-1 bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium py-2 rounded-lg transition-colors">העתק פרטים</button>
+                                <a href={generateWhatsAppLink('', `היי, פרטי ההתחברות שלך למועדון NETABEL:\nמשתמש: ${player.username}\nסיסמה: ${player.password}`)} target="_blank" onClick={(e)=>e.stopPropagation()} className="bg-emerald-700 hover:bg-emerald-600 text-white px-3 flex items-center justify-center rounded-lg transition-colors" title="שליחה בוואטסאפ"><Icon name="whatsapp" size={16}/></a>
+                            </div>
+                        </div>
+                        <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-xl border border-slate-700 shadow-md">
+                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">תוצאה סופית לשחקן (נטו)</h4>
+                            <div className={`text-4xl font-black tracking-tight money-value ${getColorClass(finalPnl)}`}>{formatMoney(finalPnl)}</div>
+                            {record.bonus > 0 && <div className="mt-3 text-sm text-emerald-400 flex items-center gap-1.5 bg-emerald-900/30 inline-flex px-3 py-1 rounded-md font-medium border border-emerald-500/20"><Icon name="gift" size={14}/> כולל בונוס ע"ס {formatMoney(record.bonus)}</div>}
+                        </div>
+                    </div>
+                    <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 shadow-md lg:col-span-2 flex flex-col">
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icon name="dashboard" size={16} className="text-emerald-400"/> פירוט שולחנות ומשחקים (תצוגת שחקן)</h4>
+                        {record.tables && record.tables.length > 0 ? (
+                            <div className="overflow-x-auto flex-1">
+                                <table className="w-full text-right text-sm text-slate-300">
+                                    <thead className="bg-slate-900 text-slate-400 text-xs uppercase tracking-widest">
+                                        <tr>
+                                            <th className="p-3 font-semibold rounded-tr-lg border-b border-slate-700 text-right">שם שולחן / טורניר</th>
+                                            <th className="p-3 font-semibold text-center border-b border-slate-700">סוג משחק</th>
+                                            <th className="p-3 font-semibold text-center border-b border-slate-700">תאריכים</th>
+                                            <th className="p-3 font-semibold text-center border-b border-slate-700">ידיים</th>
+                                            <th className="p-3 font-semibold rounded-tl-lg text-left border-b border-slate-700">תוצאה (P&L)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-700/50">
+                                        {record.tables.map((t, idx) => (
+                                            <tr key={idx} className="hover:bg-slate-800 transition-colors">
+                                                <td className="p-3 font-medium text-slate-200 text-right">{t.name}</td>
+                                                <td className="p-3 text-center text-slate-400">{t.gameType || '-'}</td>
+                                                <td className="p-3 text-center text-slate-400 text-[11px]" dir="ltr">{t.date || '-'}</td>
+                                                <td className="p-3 text-center">{t.hands}</td>
+                                                <td className={`p-3 font-bold text-base money-value text-left ${getColorClass(t.pnl)}`}>{formatMoney(t.pnl)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                    <tfoot className="border-t-2 border-slate-600 bg-slate-900/50">
+                                        <tr>
+                                            <td colSpan="3" className="p-3 font-bold text-slate-400 text-right">סה"כ משחקים:</td>
+                                            <td className="p-3 font-bold text-white text-center">{record.hands}</td>
+                                            <td className={`p-3 font-black text-lg money-value text-left ${getColorClass(record.pnl)}`}>{formatMoney(record.pnl)}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        ) : (<div className="flex-1 flex items-center justify-center text-slate-500 text-sm border-2 border-dashed border-slate-700 rounded-lg p-6 bg-slate-900/30">אין פירוט שולחנות לדיווח זה.</div>)}
                     </div>
                 </div>
             );
